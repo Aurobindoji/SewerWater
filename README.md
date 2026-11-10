@@ -115,6 +115,11 @@ python -m venv .venv
 
 Where a manual leaves a choice, the value the app uses and its source are shown in the reports.
 
+## Credits
+
+- **Aurobindoji**: the engineering requirements, design decisions, reference data and testing.
+- **Claude** (Anthropic): written together with Aurobindoji, as an AI coding assistant.
+
 ## License
 
 Copyright (C) 2026 Aurobindoji.

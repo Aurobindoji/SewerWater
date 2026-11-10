@@ -92,6 +92,25 @@
   table.opts tr.cur { background: #dce8fb; }
   table.opts button { padding: 1px 6px; font-size: 11.5px; }
   .legend { font-size: 12px; margin-top: 6px; }
+  /* the sidebar in numbered steps (user decision 10-Nov-2026): a bar with the step's name between the steps; the
+     number counts only the steps shown (a DXF network has no layout step) */
+  #side { counter-reset: step; }
+  .stepbar { counter-increment: step; display: flex; align-items: center; gap: 8px; margin: 18px -14px 10px;
+    padding: 7px 14px; background: #e6edf9; border-top: 1px solid #c8d5ee; border-bottom: 1px solid #c8d5ee;
+    font-weight: 700; font-size: 13.5px; color: #123d84; letter-spacing: .02em; }
+  .stepbar::before { content: counter(step); flex: none; display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%; background: #1f6feb; color: #fff; font-size: 12.5px; }
+  .stepbar:first-of-type { margin-top: 10px; }
+  .stepact { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 6px; }
+  /* the view switch and the legend over the map */
+  #mapwrap { flex: 1; min-height: 0; position: relative; display: flex; }
+  #mapwrap #map { flex: 1; }
+  #mapwrap #viewseg { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; margin: 0;
+    background: #fff; border-radius: 8px; box-shadow: 0 1px 6px #0003; }
+  #mapwrap #legend { position: absolute; left: 10px; bottom: 26px; z-index: 1000; margin: 0; max-width: 46%;
+    max-height: 45%; overflow: auto; background: rgba(255,255,255,.93); padding: 6px 9px; border-radius: 6px;
+    box-shadow: 0 1px 6px #0003; }
+  #mapwrap #legend:empty { display: none; }
   .legend span.k { display: inline-block; width: 18px; height: 4px; vertical-align: middle; margin-right: 4px; }
   .box { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; margin-top: 6px; font-size: 12.5px; }
   .seg { display: flex; gap: 0; margin: 6px 0; }
@@ -268,7 +287,7 @@
       &nbsp; <a href="#" class="hint" id="otherapp"></a></span></div>
     <div class="sub">सड़कें, boundary, वार्ड (population), spot levels और STP खींचें; फिर "Layout बनाएँ"। हर layout PFR है।</div>
 
-    <h2>Project</h2>
+    <div class="stepbar">Project</div>
     <div class="row"><label>नाम</label><input type="text" id="pname" value="new_project"></div>
     <div class="row">
       <select id="plist"><option value="">— सहेजे हुए projects —</option></select>
@@ -309,7 +328,7 @@
     </div>
 
     <div id="netsec" hidden>
-      <h2>DXF network - जाँच और सुधार</h2>
+      <div class="stepbar">DXF network - जाँच और सुधार</div>
       <table class="sum" id="netsum"></table>
       <div class="row" id="prefrow"><label title="इस network के manhole / sewer के नाम एक साथ नए prefix में (संख्या वही): जैसे N-00468 → J-00468; एक Undo से वापस">नाम prefix</label>
         <span class="hint" style="min-width:0">Manhole</span><input type="text" id="rnpre" list="nodepre" style="width:5em">
@@ -343,7 +362,7 @@
     </div>
 
     <div id="kmlsec">
-    <h2>खींचें</h2>
+    <div class="stepbar">नक्शे पर खींचें</div>
     <div class="tools">
       <button data-kind="road"><span class="sw" style="background:var(--road)"></span>सड़क (centreline)</button>
       <button data-kind="boundary"><span class="sw" style="border:2px dashed var(--boundary)"></span>Project boundary</button>
@@ -378,7 +397,7 @@
     <table class="sum" id="sum"></table>
     <div id="checks"></div>
 
-    <h2>Layout बनाएँ</h2>
+    <div class="stepbar">Layout बनाएँ</div>
     <div class="row"><label>GL कहाँ से</label>
       <select id="glmode">
         <option value="spots">Spot levels (TIN) - इस नक्शे के</option>
@@ -404,7 +423,20 @@
     <pre id="log" hidden></pre>
 
     <div id="zd" hidden>
-      <h2>Zoning और design</h2>
+      <div class="stepbar">आबादी - stage और forecast</div>
+      <div class="row" id="poprow"><label>Population</label><span id="popinfo" class="hint"></span></div>
+      <div class="row"><input type="number" id="poptot" min="0" step="1" placeholder="कुल design population (अंतिम वर्ष), जैसे 657166" hidden></div>
+      <div class="row"><label title="CPHEEO Table 2.1 (p2-9): sewers आधार वर्ष + 30 वर्ष के लिए, pumps और STP + 15 वर्ष के लिए">Stage: आधार वर्ष</label>
+        <input type="number" id="byear" value="2027" min="1900" max="2200" step="1"></div>
+      <div class="row"><label title="पूरे project की आधार वर्ष की कुल आबादी (floating के बिना); +15 और +30 वर्ष की आबादी और floating इसी से अपने-आप निकलती है">आधार वर्ष की आबादी</label>
+        <input type="number" id="popb" min="0" step="1" placeholder="वार्डों में population हो तो खाली छोड़ सकते हैं"></div>
+      <div class="row"><label title="शहर / नगर निकाय की census आबादी: हर जोड़ा 'वर्ष आबादी', जैसे 2001 1374963, 2011 1636569 - इससे arithmetical, incremental और geometrical increase (Riverside DPR की तरह); खाली = default दर 28.74 % प्रति दशक">Census आबादी (वर्ष आबादी)</label>
+        <textarea id="census" rows="2" placeholder="1991 1139236, 2001 1374963, 2011 1636569"></textarea></div>
+      <div class="row"><label title="+15 और +30 वर्ष की आबादी इस तरीके से (Riverside DPR: geometrical)">Forecast का तरीका</label>
+        <select id="popmeth"><option value="geometrical">Geometrical increase</option><option value="incremental">Incremental increase</option><option value="arithmetical">Arithmetical increase</option></select></div>
+      <input type="hidden" id="popm">
+      <div class="hint" id="popfc">Design की आबादी = +30 वर्ष (forecast + floating 10 %)। Zoning / design के बाद यहाँ पूरा forecast दिखेगा।</div>
+      <div class="stepbar">Zoning की सेटिंग और options</div>
       <div class="row"><label>Pipe catalog</label><select id="catalog"></select></div>
       <div class="row"><label>Joint</label><select id="joint"></select></div>
       <div class="row"><label>Sewage (L/व्यक्ति/दिन)</label><input type="number" id="lpcd" value="108" step="1" min="1"></div>
@@ -423,38 +455,29 @@
         <input type="number" id="bangle" value="20" min="1" max="90" step="1"></div>
       <div class="row" id="maxzrow"><label title="पहले ज़मीन की ढलान से इतने zones तक के options बनते हैं; फिर गहराई-सीमा पार होने पर उनमें sub-zones (PS) जुड़ते हैं">ज़मीन की ढलान से अधिकतम zones</label><input type="number" id="maxz" value="8" min="1" max="30" step="1"></div>
       <div class="hint" id="maxzhint">पहले ज़मीन की ढलान से zones बनते हैं; जहाँ sewer "अधिकतम गहराई" से गहरा जाए वहाँ pumping station के साथ sub-zone अलग से जुड़ता है।</div>
-      <div class="row" id="poprow"><label>Population</label><span id="popinfo" class="hint"></span></div>
-      <div class="row"><input type="number" id="poptot" min="0" step="1" placeholder="कुल design population (अंतिम वर्ष), जैसे 657166" hidden></div>
-      <div class="row"><label title="CPHEEO Table 2.1 (p2-9): sewers आधार वर्ष + 30 वर्ष के लिए, pumps और STP + 15 वर्ष के लिए">Stage: आधार वर्ष</label>
-        <input type="number" id="byear" value="2027" min="1900" max="2200" step="1"></div>
-      <div class="row"><label title="पूरे project की आधार वर्ष की कुल आबादी (floating के बिना); +15 और +30 वर्ष की आबादी और floating इसी से अपने-आप निकलती है">आधार वर्ष की आबादी</label>
-        <input type="number" id="popb" min="0" step="1" placeholder="वार्डों में population हो तो खाली छोड़ सकते हैं"></div>
-      <div class="row"><label title="शहर / नगर निकाय की census आबादी: हर जोड़ा 'वर्ष आबादी', जैसे 2001 1374963, 2011 1636569 - इससे arithmetical, incremental और geometrical increase (Riverside DPR की तरह); खाली = default दर 28.74 % प्रति दशक">Census आबादी (वर्ष आबादी)</label>
-        <textarea id="census" rows="2" placeholder="1991 1139236, 2001 1374963, 2011 1636569"></textarea></div>
-      <div class="row"><label title="+15 और +30 वर्ष की आबादी इस तरीके से (Riverside DPR: geometrical)">Forecast का तरीका</label>
-        <select id="popmeth"><option value="geometrical">Geometrical increase</option><option value="incremental">Incremental increase</option><option value="arithmetical">Arithmetical increase</option></select></div>
-      <input type="hidden" id="popm">
-      <div class="hint" id="popfc">Design की आबादी = +30 वर्ष (forecast + floating 10 %)। Zoning / design के बाद यहाँ पूरा forecast दिखेगा।</div>
-      <div class="row"><button id="zrun" class="primary">Zoning options निकालें</button>
-        <button id="drun" class="primary" disabled title="पहले Zoning करें">Design</button></div>
+      <div class="stepact"><button id="zrun" class="primary">Zoning options निकालें</button></div>
       <div class="status" id="zstatus"></div>
       <div id="optbox"></div>
       <div id="zlist"></div>
-      <div class="seg" id="viewseg" hidden>
-        <button data-v="layout">Layout</button><button data-v="zones">Zones</button><button data-v="design">Design</button>
-      </div>
-      <div class="row" id="tblrow" hidden><button id="tblbtn" title="Design के हर pipe / manhole की तालिका: manual की जाँच, बदलाव, CSV">☷ Pipe / manhole तालिका</button>
-        <span class="hint" id="tbledits"></span></div>
-      <div class="row" id="exprow" hidden><button id="zexport">⇩ Export: DXF + KML + Excel</button>
+      <div class="stepact" id="exprow" hidden><button id="zexport">⇩ Export: DXF + KML + Excel</button>
         <span class="hint">चुने option के ज़ोन / sub-zones (नक्शे जैसे नाम और रंग)</span></div>
-      <div id="legend" class="legend"></div>
+      <div class="stepbar">Design</div>
+      <div class="stepact"><button id="drun" class="primary" disabled title="पहले Zoning करें">Design</button></div>
       <div class="status" id="dstatus"></div>
       <div id="dbox"></div>
+      <div class="stepact" id="tblrow" hidden><button id="tblbtn" title="Design के हर pipe / manhole की तालिका: manual की जाँच, बदलाव, CSV">☷ Pipe / manhole तालिका</button>
+        <span class="hint" id="tbledits"></span></div>
     </div>
   </div>
   <div id="splitter" title="खींचकर panel चौड़ा / पतला करें (double-click = पहले जैसा)"></div>
   <div id="mapcol">
-    <div id="map"></div>
+    <div id="mapwrap">
+      <div id="map"></div>
+    <div class="seg" id="viewseg" hidden>
+      <button data-v="layout">Layout</button><button data-v="zones">Zones</button><button data-v="design">Design</button>
+    </div>
+      <div id="legend" class="legend"></div>
+    </div>
     <div id="tbl" hidden>
       <div id="tblbar">
         <span class="seg" id="tbltabs"></span>

@@ -1,5 +1,7 @@
 # Sewer & Water Network Design
 
+**हिन्दी:** पूरी उपयोग पुस्तिका और हर मानक का स्रोत - [README.hi.md](README.hi.md)
+
 A Windows desktop app for planning and designing urban **sewerage** and **water supply** networks to the
 CPHEEO manuals (Government of India). You start from a map or a CAD drawing. The app gives you a checked
 network design, CAD drawings and a DPR cost estimate in Excel. You do not need SewerGEMS or WaterGEMS.

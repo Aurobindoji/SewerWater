@@ -98,6 +98,25 @@
   table.opts tr.cur { background: #dce8fb; }
   table.opts button { padding: 1px 6px; font-size: 11.5px; }
   .legend { font-size: 12px; margin-top: 6px; }
+  /* the sidebar in numbered steps (user decision 10-Nov-2026): a bar with the step's name between the steps; the
+     number counts only the steps shown (a DXF network has no layout step) */
+  #side { counter-reset: step; }
+  .stepbar { counter-increment: step; display: flex; align-items: center; gap: 8px; margin: 18px -14px 10px;
+    padding: 7px 14px; background: #e6edf9; border-top: 1px solid #c8d5ee; border-bottom: 1px solid #c8d5ee;
+    font-weight: 700; font-size: 13.5px; color: #123d84; letter-spacing: .02em; }
+  .stepbar::before { content: counter(step); flex: none; display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%; background: #1f6feb; color: #fff; font-size: 12.5px; }
+  .stepbar:first-of-type { margin-top: 10px; }
+  .stepact { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 6px; }
+  /* the view switch and the legend over the map */
+  #mapwrap { flex: 1; min-height: 0; position: relative; display: flex; }
+  #mapwrap #map { flex: 1; }
+  #mapwrap #viewseg { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; margin: 0;
+    background: #fff; border-radius: 8px; box-shadow: 0 1px 6px #0003; }
+  #mapwrap #legend { position: absolute; left: 10px; bottom: 26px; z-index: 1000; margin: 0; max-width: 46%;
+    max-height: 45%; overflow: auto; background: rgba(255,255,255,.93); padding: 6px 9px; border-radius: 6px;
+    box-shadow: 0 1px 6px #0003; }
+  #mapwrap #legend:empty { display: none; }
   .legend span.k { display: inline-block; width: 18px; height: 4px; vertical-align: middle; margin-right: 4px; }
   .box { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; margin-top: 6px; font-size: 12.5px; }
   .seg { display: flex; gap: 0; margin: 6px 0; }
@@ -289,7 +308,7 @@
       &nbsp; <a href="#" class="hint" id="otherapp"></a></span></div>
     <div class="sub">सड़कें, boundary, वार्ड (population), spot levels और OHT / ESR खींचें; फिर "Layout बनाएँ", Zoning (OZ / DMA) और Design। हर layout PFR है।</div>
 
-    <h2>Project</h2>
+    <div class="stepbar">Project</div>
     <div class="row"><label>नाम</label><input type="text" id="pname" value="new_project"></div>
     <div class="row">
       <select id="plist"><option value="">— सहेजे हुए projects —</option></select>
@@ -330,7 +349,7 @@
     </div>
 
     <div id="netsec" hidden>
-      <h2>DXF network - जाँच और सुधार</h2>
+      <div class="stepbar">DXF network - जाँच और सुधार</div>
       <table class="sum" id="netsum"></table>
       <div class="row" id="prefrow"><label title="इस network के junction / pipe के नाम एक साथ नए prefix में (संख्या वही): जैसे N-00468 → J-00468; एक Undo से वापस">नाम prefix</label>
         <span class="hint" style="min-width:0">Junction</span><input type="text" id="rnpre" list="nodepre" style="width:5em">
@@ -381,7 +400,7 @@
     </div>
 
     <div id="kmlsec">
-    <h2>खींचें</h2>
+    <div class="stepbar">नक्शे पर खींचें</div>
     <div class="tools">
       <button data-kind="road"><span class="sw" style="background:var(--road)"></span>सड़क (centreline)</button>
       <button data-kind="boundary"><span class="sw" style="border:2px dashed var(--boundary)"></span>Project boundary</button>
@@ -417,7 +436,7 @@
     <table class="sum" id="sum"></table>
     <div id="checks"></div>
 
-    <h2>Layout बनाएँ</h2>
+    <div class="stepbar">Layout बनाएँ</div>
     <div class="row"><label>GL कहाँ से</label>
       <select id="glmode">
         <option value="spots">Spot levels (TIN) - इस नक्शे के</option>
@@ -443,7 +462,7 @@
     <pre id="log" hidden></pre>
 
     <div id="zd" hidden>
-      <h2>Zoning और design</h2>
+      <div class="stepbar">आबादी - वार्ड और projection</div>
       <div class="row" id="poprow"><label>Population</label><span id="popinfo" class="hint"></span></div>
       <div class="row"><input type="number" id="poptot" min="0" step="1" placeholder="कुल design population (अंतिम वर्ष), जैसे 657166" hidden></div>
       <!-- the wards of the project (user decision 7-Nov-2026): their number, then each ward's no., name, population of a
@@ -478,55 +497,59 @@
       <div class="row"><label title="pumping machinery और STP इसी stage के लिए (Table 2.1, p2-9)">+15 वर्ष की आबादी</label>
         <input type="number" id="popm" min="0" step="1" placeholder="खाली = stage की जाँच नहीं"></div>
       <div class="hint">Design की आबादी = +30 वर्ष। भरने पर design के बाद हर stage पर velocity / दबाव और outfall / OHT का flow दिखता है।</div>
-      <div>
-        <div class="row"><label title="वार्डों की population x यह = design (अंतिम वर्ष) की population; जैसे वर्तमान से 30 वर्ष बाद की वृद्धि">आबादी गुणक (अंतिम वर्ष)</label>
-          <input type="number" id="wpopf" value="1" min="0.1" max="10" step="0.01"></div>
-        <div class="row"><label title="एक घर = एक कनेक्शन; Elmwood DPR में आबादी / घर = 6.08">व्यक्ति / कनेक्शन</label>
-          <input type="number" id="wppc" value="6" min="1" max="15" step="0.1"></div>
-        <div class="row"><label title="OHT में पानी किन घंटों में भरता है (tube well / pump चलने का समय); CPHEEO Table 2.7 S.No.12 (p175): क्षमता = mass balance या 33 %, जो अधिक हो (न्यूनतम 33 %) + fire demand का 1/3 (S.No.13)">OHT भरने के घंटे</label>
-          <input type="text" id="winflow" value="5-12, 13-22" placeholder="5-12, 13-22" style="width:9em"></div>
-        <div class="row"><label title="drawing के दो अलग टुकड़े (कोई pipe नहीं जोड़ता) इतनी दूरी या कम पर हों तो Zoning चेतावनी देती है (नक्शे पर लाल बिंदीदार रेखा) - शायद drawing में छूटा जोड़">Gap की चेतावनी (m तक)</label>
-          <input type="number" id="wnearm" value="50" min="1" max="1000" step="1"></div>
-        <div class="row"><label style="min-width:0" title="दबाव घटाने वाले valve (PRV): चालू हो तो design नक्शे के PRV लगाता है और 31 m से ऊपर के दबाव पर PRV सुझाता है, DPR (D2) में उनका ख़र्च; U.P. जल निगम की DPRs में आम नहीं, इसलिए default बंद">
-          <input type="checkbox" id="wprv"> PRV का विकल्प (दबाव घटाने वाले valve)</label></div>
-        <div class="hint">माँग: 150 LPCD + 10% हानि, floating 10% @ 45 LPCD, fire 100√P; peak factor 2.5; residual head ≥ 17 m (CPHEEO Table 2.7)।</div>
-        <div class="row"><button id="wzrun" class="primary">Zoning (OZ / DMA)</button><button id="wdrun" class="primary">Design</button>
-          <button id="wexport">Export DXF</button></div>
-        <details id="izbox" style="margin:6px 0"><summary title="नई OHTs की Intze टंकी: design (working stress, IS 3370 Part 2 / IS 456 / IS 1893 Part 2 / IS 875 Part 3), GA, reinforcement और BBS की drawings - capacity और staging आख़िरी Design से">🏗 Intze OHT drawings (नई टंकियाँ)</summary>
-        <div class="row"><label title="IS 1893 (Part 1):2016 Table 3; स्प्रिंगफ़ील्ड zone III">Seismic zone</label>
-          <select id="izzone"><option>II</option><option selected>III</option><option>IV</option><option>V</option></select></div>
-        <div class="row"><label title="मिट्टी की net bearing capacity नींव की गहराई पर - soil test आने तक मानी गई (Brookfield की Greenfield report: 8 t/m² = 80 kN/m²)">Net SBC (kN/m²)</label>
-          <input type="number" id="izsbc" value="80" min="30" max="1000" step="5"></div>
-        <div class="row"><label title="IS 1893 (Part 1) Table 4: I चट्टान / कड़ी, II मध्यम, III नरम">मिट्टी का प्रकार</label>
-          <select id="izsoil"><option value="I">I कड़ी</option><option value="II" selected>II मध्यम</option><option value="III">III नरम</option></select></div>
-        <div class="row"><label title="IS 875 (Part 3):2015 Annex A; स्प्रिंगफ़ील्ड 47 m/s">हवा की गति Vb (m/s)</label>
-          <input type="number" id="izvb" value="47" min="33" max="55" step="1"></div>
-        <div class="row"><label title="raft का तल ज़मीन से कितना नीचे">नींव की गहराई (m)</label>
-          <input type="number" id="izdepth" value="2.7" min="1" max="6" step="0.1"></div>
-        <div class="row"><label title="IS 3370 (Part 1):2009: पानी रोकने वाले RCC में कम से कम M30">Concrete / steel</label>
-          <select id="izfck"><option value="30" selected>M30</option><option value="35">M35</option><option value="40">M40</option></select>
-          <select id="izfckf" title="नींव और सीढ़ी का concrete (उदाहरण: M25)"><option value="25" selected>M25</option><option value="30">M30</option></select>
-          <select id="izfy"><option value="500" selected>Fe500</option><option value="415">Fe415</option></select></div>
-        <div class="row"><label title="soil test से किसी टंकी की अलग SBC: नाम=मान, कॉमा से अलग, जैसे Prop-OHT-1=120, Prop-OHT-3=80">टंकी-वार SBC</label>
-          <input type="text" id="izper" placeholder="Prop-OHT-1=120" style="width:11em"></div>
-        <div class="hint">Zone 14 (Brookfield) जैसी: wall पर पानी = CPHEEO max SWD, नीचे cone, balcony, annular raft, RCC सीढ़ी; हर नई OHT की staging-foundation, container, सीढ़ी और BBS की A1 sheets (DXF + PDF) और design xlsx (output\&lt;project&gt;\intze)। एक बार में एक टंकी: उसकी पंक्ति का "Design" दबाएँ। <b>निर्माण से पहले structural engineer की जाँच ज़रूरी।</b></div>
-        <div id="izlist"></div>
-        </details>
-        <div class="status" id="wstatus"></div>
-        <div id="wzbox"></div>
-        <div id="wdbox"></div>
-      </div>
-      <div class="seg" id="viewseg" hidden>
-        <button data-v="layout">Layout</button><button data-v="zones">Zones</button><button data-v="design">Design</button>
-      </div>
-      <div class="row" id="tblrow" hidden><button id="tblbtn" title="Design के हर pipe / junction की तालिका: manual की जाँच, बदलाव, CSV">☷ Pipe / junction तालिका</button>
+      <div class="row"><label title="वार्डों की population x यह = design (अंतिम वर्ष) की population; जैसे वर्तमान से 30 वर्ष बाद की वृद्धि">आबादी गुणक (अंतिम वर्ष)</label>
+        <input type="number" id="wpopf" value="1" min="0.1" max="10" step="0.01"></div>
+      <div class="stepbar">Zoning (OZ / DMA)</div>
+      <div class="hint">माँग: 150 LPCD + 10% हानि, floating 10% @ 45 LPCD, fire 100√P; peak factor 2.5; residual head ≥ 17 m (CPHEEO Table 2.7)।</div>
+      <div class="row"><label title="एक घर = एक कनेक्शन; Elmwood DPR में आबादी / घर = 6.08">व्यक्ति / कनेक्शन</label>
+        <input type="number" id="wppc" value="6" min="1" max="15" step="0.1"></div>
+      <div class="row"><label title="OHT में पानी किन घंटों में भरता है (tube well / pump चलने का समय); CPHEEO Table 2.7 S.No.12 (p175): क्षमता = mass balance या 33 %, जो अधिक हो (न्यूनतम 33 %) + fire demand का 1/3 (S.No.13)">OHT भरने के घंटे</label>
+        <input type="text" id="winflow" value="5-12, 13-22" placeholder="5-12, 13-22" style="width:9em"></div>
+      <div class="row"><label title="drawing के दो अलग टुकड़े (कोई pipe नहीं जोड़ता) इतनी दूरी या कम पर हों तो Zoning चेतावनी देती है (नक्शे पर लाल बिंदीदार रेखा) - शायद drawing में छूटा जोड़">Gap की चेतावनी (m तक)</label>
+        <input type="number" id="wnearm" value="50" min="1" max="1000" step="1"></div>
+      <div class="stepact"><button id="wzrun" class="primary">Zoning (OZ / DMA)</button></div>
+      <div class="status" id="wstatus"></div>
+      <div id="wzbox"></div>
+      <div class="stepbar">Design</div>
+      <div class="row"><label style="min-width:0" title="दबाव घटाने वाले valve (PRV): चालू हो तो design नक्शे के PRV लगाता है और 31 m से ऊपर के दबाव पर PRV सुझाता है, DPR (D2) में उनका ख़र्च; U.P. जल निगम की DPRs में आम नहीं, इसलिए default बंद">
+        <input type="checkbox" id="wprv"> PRV का विकल्प (दबाव घटाने वाले valve)</label></div>
+      <div class="stepact"><button id="wdrun" class="primary">Design</button>
+        <button id="wexport" title="Zoning और (हो तो) design की DXF - AutoCAD के लिए">Export DXF</button></div>
+      <div id="wdbox"></div>
+      <div class="stepact" id="tblrow" hidden><button id="tblbtn" title="Design के हर pipe / junction की तालिका: manual की जाँच, बदलाव, CSV">☷ Pipe / junction तालिका</button>
         <span class="hint" id="tbledits"></span></div>
-      <div id="legend" class="legend"></div>
+      <div class="stepbar">Intze OHT drawings (नई टंकियाँ)</div>
+      <details id="izbox" style="margin:6px 0"><summary title="नई OHTs की Intze टंकी: design (working stress, IS 3370 Part 2 / IS 456 / IS 1893 Part 2 / IS 875 Part 3), GA, reinforcement और BBS की drawings - capacity और staging आख़िरी Design से">🏗 टंकियाँ और उनके inputs (खोलें)</summary>
+      <div class="row"><label title="IS 1893 (Part 1):2016 Table 3; स्प्रिंगफ़ील्ड zone III">Seismic zone</label>
+        <select id="izzone"><option>II</option><option selected>III</option><option>IV</option><option>V</option></select></div>
+      <div class="row"><label title="मिट्टी की net bearing capacity नींव की गहराई पर - soil test आने तक मानी गई (Brookfield की Greenfield report: 8 t/m² = 80 kN/m²)">Net SBC (kN/m²)</label>
+        <input type="number" id="izsbc" value="80" min="30" max="1000" step="5"></div>
+      <div class="row"><label title="IS 1893 (Part 1) Table 4: I चट्टान / कड़ी, II मध्यम, III नरम">मिट्टी का प्रकार</label>
+        <select id="izsoil"><option value="I">I कड़ी</option><option value="II" selected>II मध्यम</option><option value="III">III नरम</option></select></div>
+      <div class="row"><label title="IS 875 (Part 3):2015 Annex A; स्प्रिंगफ़ील्ड 47 m/s">हवा की गति Vb (m/s)</label>
+        <input type="number" id="izvb" value="47" min="33" max="55" step="1"></div>
+      <div class="row"><label title="raft का तल ज़मीन से कितना नीचे">नींव की गहराई (m)</label>
+        <input type="number" id="izdepth" value="2.7" min="1" max="6" step="0.1"></div>
+      <div class="row"><label title="IS 3370 (Part 1):2009: पानी रोकने वाले RCC में कम से कम M30">Concrete / steel</label>
+        <select id="izfck"><option value="30" selected>M30</option><option value="35">M35</option><option value="40">M40</option></select>
+        <select id="izfckf" title="नींव और सीढ़ी का concrete (उदाहरण: M25)"><option value="25" selected>M25</option><option value="30">M30</option></select>
+        <select id="izfy"><option value="500" selected>Fe500</option><option value="415">Fe415</option></select></div>
+      <div class="row"><label title="soil test से किसी टंकी की अलग SBC: नाम=मान, कॉमा से अलग, जैसे Prop-OHT-1=120, Prop-OHT-3=80">टंकी-वार SBC</label>
+        <input type="text" id="izper" placeholder="Prop-OHT-1=120" style="width:11em"></div>
+      <div class="hint">Zone 14 (Brookfield) जैसी: wall पर पानी = CPHEEO max SWD, नीचे cone, balcony, annular raft, RCC सीढ़ी; हर नई OHT की staging-foundation, container, सीढ़ी और BBS की A1 sheets (DXF + PDF) और design xlsx (output\&lt;project&gt;\intze)। एक बार में एक टंकी: उसकी पंक्ति का "Design" दबाएँ। <b>निर्माण से पहले structural engineer की जाँच ज़रूरी।</b></div>
+      <div id="izlist"></div>
+      </details>
     </div>
   </div>
   <div id="splitter" title="खींचकर panel चौड़ा / पतला करें (double-click = पहले जैसा)"></div>
   <div id="mapcol">
-    <div id="map"></div>
+    <div id="mapwrap">
+      <div id="map"></div>
+    <div class="seg" id="viewseg" hidden>
+      <button data-v="layout">Layout</button><button data-v="zones">Zones</button><button data-v="design">Design</button>
+    </div>
+      <div id="legend" class="legend"></div>
+    </div>
     <div id="tbl" hidden>
       <div id="tblbar">
         <span class="seg" id="tbltabs"></span>
@@ -2639,6 +2662,7 @@ function zoneColor(names) { const c = {}; names.forEach((n, i) => c[n] = ZPAL[i 
 
 function renderWZoning(r, note) {
   wZoning = r;
+  $("wzbox").before($("wstatus"));       // its message in the zoning step (the sidebar's steps, 10-Nov-2026)
   zoneLayer.clearLayers();
   const col = zoneColor(r.zones.map(z => z.name));
   const geo = {}; (layoutData && layoutData.conduits || []).forEach(c => geo[c.label] = c); withCuts(r, geo);
@@ -2816,6 +2840,7 @@ function drawRising(r) {
 }
 function renderWDesign(r, note) {
   wDesign = r;
+  $("wdbox").before($("wstatus"));       // its message in the design step
   designLayer.clearLayers();
   const geo = {}; (layoutData && layoutData.conduits || []).forEach(c => geo[c.label] = c); withCuts(r, geo); drawCuts(r, designLayer);
   const dwhy = {}; for (const z of (wZoning && wZoning.zones) || []) dwhy[z.name] = whyZone(z);   // the OZ reason on its pipes
@@ -2952,6 +2977,7 @@ async function askLoops(r) {
   if (any) { changed(); if (selected) showProps(); $("wzrun").click(); }
 }
 $("wzrun").onclick = () => longTask(tr("पेयजल zoning (OZ / DMA)", "Water zoning (OZ / DMA)"), async () => {
+  $("wzbox").before($("wstatus"));
   const r = await api("/api/water_zoning", wInputs());
   if (!r.ok) { $("wstatus").className = "status err"; $("wstatus").textContent = r.log || "error"; return; }
   wDesign = null; tblAfterDesign(null); designLayer.clearLayers(); $("wdbox").innerHTML = "";
@@ -2960,6 +2986,7 @@ $("wzrun").onclick = () => longTask(tr("पेयजल zoning (OZ / DMA)", "Wat
   : [tr("Zoning हो गई", "Zoning done"), $("wstatus").textContent + (wZoning && wZoning.flags.length ? "\n\n" + wZoning.flags.map(f => "• " + flagText(f)).join("\n") : ""),
      wZoning && wZoning.flags.some(f => f.level === "error") ? "warn" : "ok"]).then(() => askLoops(wZoning));
 $("wdrun").onclick = () => longTask(tr("पेयजल design", "Water design"), async () => {
+  $("wdbox").before($("wstatus"));
   const r = await api("/api/water_design", wInputs());
   if (!r.ok) { $("wstatus").className = "status err"; $("wstatus").textContent = r.log || "error"; wDesign = null; tblAfterDesign(null); return; }
   const z = await api("/api/water_last?name=" + encodeURIComponent($("pname").value));

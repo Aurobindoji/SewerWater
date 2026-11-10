@@ -12,7 +12,7 @@ import re
 import urllib.request
 
 APP_NAME = "Sewer & Water Network Design"
-APP_VERSION = "0.9.2"
+APP_VERSION = "0.9.3"
 REPO = "Aurobindoji/SewerWater"
 REPO_URL = f"https://github.com/{REPO}"
 LATEST_API = f"https://api.github.com/repos/{REPO}/releases/latest"

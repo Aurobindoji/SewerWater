@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.9.3 (beta) - 2026-11-10
+
+- Both apps' side panels are now in numbered steps, from top to bottom: Project, the map (or the DXF network),
+  Layout, population, zoning, design, and Intze for water supply. A bar with its name opens each step, and each
+  step has its inputs, then its button, then its result.
+- The Layout / Zones / Design switch and the legend now float over the map.
+- A detailed guide in Hindi (README.hi.md): install, every step of both apps, the outputs and DPRs, and the source
+  of every design value.
+
 ## 0.9.2 (beta) - 2026-11-10
 
 - Updates from inside the app: menu **App → Check for updates**. If a newer release is out on GitHub, one click

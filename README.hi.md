@@ -6,7 +6,7 @@
 manuals के अनुसार करता है - नक्शे या CAD drawing से शुरू करके design report, DXF drawings और Excel में DPR
 तक। SewerGEMS या WaterGEMS की ज़रूरत नहीं।
 
-> **Beta (v0.9.2).** यह app design में सहायता के लिए है। Tender या निर्माण से पहले हर नतीजा योग्य engineer से
+> **Beta (v0.9.3).** यह app design में सहायता के लिए है। Tender या निर्माण से पहले हर नतीजा योग्य engineer से
 > जँचवाएँ - ख़ास तौर पर Intze टंकियों का structural design।
 
 इस पुस्तिका में:
@@ -28,7 +28,7 @@ manuals के अनुसार करता है - नक्शे या C
 **ज़रूरी:** Windows 10 या 11 (64-bit); Microsoft Edge WebView2 (Windows 11 में पहले से; न हो तो setup उसे
 internet से install करता है); नक्शे की पृष्ठभूमि (map tiles) के लिए internet - बाकी सब काम offline।
 
-1. [Releases](../../releases) पन्ने से `SewerWater_Setup_0.9.2.exe` download करें।
+1. [Releases](../../releases) पन्ने से `SewerWater_Setup_0.9.3.exe` download करें।
 2. उसे चलाएँ। Setup सिर्फ़ आपके user account के लिए install होता है - administrator की ज़रूरत नहीं।
 3. Setup पर digital signature नहीं है; Windows SmartScreen रोके तो **More info → Run anyway**।
 4. पहली बार खुलने पर **master folder** चुनें - सारा data इसी में रहता है (भाग 8)।

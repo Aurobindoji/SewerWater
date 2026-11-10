@@ -1,25 +1,20 @@
-"""Start both map pages - each module on its own server (isolation of sewer and water, user request 21-Oct-2026):
+"""Start the app in the browser (sewer_ui.bat): the launcher's start page - the language, then sewer or water.
 
-    sewer : sewer_app/ui.py      http://127.0.0.1:8765/   (also the start page: language, module)
-    water : water_app/server.py  http://127.0.0.1:8766/water
+    start page : launcher/server.py     http://127.0.0.1:8764/
+    sewer      : sewer_app/ui.py        http://127.0.0.1:8765/sewer    started only when chosen
+    water      : water_app/server.py    http://127.0.0.1:8766/water    started only when chosen
 
-Only starts them; the two modules share no code. One browser tab opens - the start page, "Sewer network design" -
-and choosing water there opens the water page in a tab of its own, "Water network design" (user request
-22-Oct-2026; before, 21-Oct-2026, each server opened its own tab). sewer_ui.bat runs this file; water_ui.bat starts
-the water one alone (python -m water_app ui, its own tab), python -m sewer_app ui the sewer one alone.
+User decision 10-Nov-2026: the two apps are fully independent - the module chosen opens alone (in the start page's
+tab); the other starts only from its button beside "CPHEEO / language" on a module's page, in a tab of its own.
+Each module also runs alone: python -m sewer_app ui, python -m water_app ui (water_ui.bat).
 """
 import sys
-import threading
 
-from sewer_app import ui as sewer_ui
-from water_app import server as water_server
+from launcher import server as launcher
 
 
 def main(argv):
-    no_browser = "--no-browser" in argv
-    # one tab: the start page (sewer, 8765); the water server opens none - its page opens from the start page
-    threading.Thread(target=water_server.serve, kwargs={"open_browser": False}, daemon=True).start()
-    sewer_ui.serve(open_browser=not no_browser)          # Ctrl+C stops both
+    launcher.serve(open_browser="--no-browser" not in argv)      # Ctrl+C stops it and the modules it started
 
 
 if __name__ == "__main__":

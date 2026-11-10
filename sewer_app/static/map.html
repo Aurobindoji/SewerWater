@@ -264,7 +264,8 @@
   <div id="side">
     <div class="row" style="justify-content:space-between"><h1 id="title">Sewer layout - नक्शे पर खींचें</h1>
       <span><a href="#" class="hint" id="gopen" title="मुख्य CPHEEO डिज़ाइन मानक - Main CPHEEO design guidelines">📘 CPHEEO</a>
-      &nbsp; <a href="/" class="hint" title="भाषा / विषय बदलें - Language / module">⌂ भाषा / Language</a></span></div>
+      &nbsp; <a href="#" class="hint" id="langsw"></a>
+      &nbsp; <a href="#" class="hint" id="otherapp"></a></span></div>
     <div class="sub">सड़कें, boundary, वार्ड (population), spot levels और STP खींचें; फिर "Layout बनाएँ"। हर layout PFR है।</div>
 
     <h2>Project</h2>
@@ -673,6 +674,50 @@ function hideGuide() {
 document.getElementById("gx").onclick = hideGuide;
 document.getElementById("gclose").onclick = hideGuide;
 document.getElementById("gopen").onclick = e => { e.preventDefault(); showGuide(); };
+// the language on this page itself, and the other module beside it (user decision 10-Nov-2026: the two apps fully
+// independent - the other one is started only now, by the launcher on port 8764, in a window / tab of its own;
+// the launcher not running (this module started alone): opened if it already runs)
+{
+  const sw = document.getElementById("langsw");
+  sw.textContent = EN ? "🌐 हिन्दी" : "🌐 English";
+  sw.title = EN ? "पेज हिन्दी में" : "Page in English";
+  sw.onclick = e => {
+    e.preventDefault();
+    const q = new URLSearchParams(location.search); q.set("lang", EN ? "hi" : "en"); q.delete("intro");
+    location.href = location.pathname + "?" + q + location.hash;
+  };
+  const O = { name: "water", port: 8766, page: "/water", win: "water_network_design", hi: "पेयजल", en: "Water" };
+  const ob = document.getElementById("otherapp");
+  ob.textContent = "↗ " + tr(O.hi, O.en);
+  ob.title = tr(`${O.hi} app अपनी window में खोलें (वह तभी शुरू होता है)`, `Open the ${O.en} app in a window of its own (it starts only then)`);
+  ob.onclick = async e => {
+    e.preventDefault();
+    // the browser: the window / tab opened at the click itself (a popup blocker lets it), its address set once the
+    // other app answers; one open already is only brought forward (its work stays). The desktop app: after.
+    const desk = !!(window.pywebview && window.pywebview.api);
+    const w = desk ? null : window.open("", O.win);
+    let ok = false, why = "";
+    try {
+      const r = await (await fetch(`http://127.0.0.1:8764/api/open?module=${O.name}`)).json();
+      ok = !!r.ok; why = r.log || "";
+    } catch (err) { why = ""; }
+    if (!ok) {                                        // no launcher: the other module may run on its own already
+      try { await fetch(`http://127.0.0.1:${O.port}/api/version`, { mode: "no-cors" }); ok = true; } catch (err) { ok = false; }
+    }
+    if (!ok) {
+      if (w) { try { if (w.location.href === "about:blank") w.close(); } catch (err) { } }
+      alert(tr(`${O.hi} app शुरू नहीं हो सका${why ? " - " + why : ""}। App को उसके icon / start page से खोलें।`,
+               `The ${O.en} app could not be started${why ? " - " + why : ""}. Open the app from its icon / start page.`));
+      return;
+    }
+    const url = `http://127.0.0.1:${O.port}${O.page}?lang=${LANG}`;
+    if (!w) { window.open(url, O.win); return; }
+    let blank = false;
+    try { blank = w.location.href === "about:blank"; } catch (err) { blank = false; }   // the other app's own page: cross-origin
+    if (blank) w.location.href = url;
+    w.focus();
+  };
+}
 { // opened from the start page (language chosen): the guidelines first; not again on F5
   const q = new URLSearchParams(location.search);
   if (q.get("intro") === "1") {

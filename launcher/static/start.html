@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sewer network design</title>
+<title>Sewer &amp; Water network design</title>
 <style>
   :root { --bg: #f4f5f2; --card: #ffffff; --text: #1f1f1d; --muted: #6b6a66; --line: #d9d8d3; --accent: #1f6feb; }
   * { box-sizing: border-box; }
@@ -27,7 +27,7 @@
 <main>
   <div class="card" id="step1">
     <h1>भाषा चुनें / Choose Language</h1>
-    <div class="sub">sewer_app</div>
+    <div class="sub">Sewer &amp; Water network design</div>
     <div class="choices">
       <button class="big" data-lang="hi">हिन्दी</button>
       <button class="big" data-lang="en">English</button>
@@ -45,8 +45,8 @@
 </main>
 <script>
 "use strict";
-// tell the server this page is open (a second start of sewer_ui.bat then opens no new tab)
-fetch("/api/ping").catch(() => { }); setInterval(() => fetch("/api/ping").catch(() => { }), 30000);
+// the launcher's start page (user decision 10-Nov-2026): only the module chosen is started (launcher/server.py
+// /api/open), in this same window; the other starts only from its button in a module's page
 const TXT = {
   hi: { t2: "क्या डिज़ाइन करना है?", s2: "विषय चुनें", sewer: "सीवर<small>sewer network, zoning, design</small>",
         water: "पेयजल<small>water supply</small>", back: "← भाषा बदलें" },
@@ -69,9 +69,24 @@ function step2(l) {
   document.getElementById("sewer").focus();
 }
 document.querySelectorAll("button[data-lang]").forEach(b => b.onclick = () => step2(b.dataset.lang));
-document.getElementById("sewer").onclick = () => { location.href = "/sewer?lang=" + lang + "&intro=1"; };
-// water in a tab of its own (user request 22-Oct-2026), the same one again when it is open already
-document.getElementById("water").onclick = () => { window.open("/water?lang=" + lang + "&intro=1", "water_network_design"); };
+async function openModule(name) {
+  const st = document.getElementById("s2"), was = st.textContent;
+  st.textContent = lang === "en" ? "Starting …" : "शुरू हो रहा है …";
+  document.querySelectorAll("#step2 button").forEach(b => b.disabled = true);
+  try {
+    const r = await (await fetch("/api/open?module=" + name)).json();
+    if (!r.ok) throw new Error(r.log || "error");
+    if (window.pywebview && window.pywebview.api && window.pywebview.api.module_opened)
+      await window.pywebview.api.module_opened(name);              // the desktop window: its title, its module
+    location.href = r.url + "?lang=" + lang + "&intro=1";          // in this window, alone
+  } catch (e) {
+    st.textContent = was;
+    document.querySelectorAll("#step2 button").forEach(b => b.disabled = false);
+    alert((lang === "en" ? "Could not start: " : "शुरू नहीं हुआ: ") + e.message);
+  }
+}
+document.getElementById("sewer").onclick = () => openModule("sewer");
+document.getElementById("water").onclick = () => openModule("water");
 document.getElementById("back").onclick = () => {
   document.getElementById("step2").hidden = true; document.getElementById("step1").hidden = false;
 };

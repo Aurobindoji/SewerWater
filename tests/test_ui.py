@@ -36,17 +36,21 @@ def call(url, body=None, host=None):
 
 
 def test_page_and_projects(server):
-    assert "Choose Language" in call(server + "/")                               # start: language, then module
     page = call(server + "/sewer")
     assert "leaflet@1.9.4" in page and "leaflet-draw@1.0.4" in page and "i18n.js" in page
     assert "I18N_EN" in call(server + "/i18n.js")
-    import http.client                                  # the water module: its own server - /water sends there
+    # nothing of the water module or the start page here (user decision 10-Nov-2026): "/" is the sewer page itself,
+    # /water is not known; the page's button opens the water app through the launcher
+    import http.client
     host, port = server.split("//")[1].split(":")
     c = http.client.HTTPConnection(host, int(port), timeout=10)
-    c.request("GET", "/water?lang=en")
+    c.request("GET", "/?lang=en")
     r = c.getresponse()
-    assert r.status == 302 and r.getheader("Location") == ui.WATER_URL + "?lang=en"
+    assert r.status == 302 and r.getheader("Location") == "/sewer?lang=en"
     c.close()
+    with pytest.raises(urllib.error.HTTPError):
+        call(server + "/water")
+    assert 'id="otherapp"' in page and "8764/api/open?module=${O.name}" in page and 'name: "water"' in page
     r = call(server + "/api/save", {"name": "वार्ड 5 / test", "kml": "<kml/>"})
     assert r["ok"] and r["name"] == "वार्ड_5_test"                      # no path separators survive
     assert [p["name"] for p in call(server + "/api/projects")["projects"]] == ["वार्ड_5_test"]

@@ -8,14 +8,15 @@ datas = [("data", "data"),                                   # sewer: criteria, 
          ("water_app/static", "water_app/static"),
          ("water_app/criteria.json", "water_app"), ("water_app/pipes.json", "water_app"),
          ("water_app/dpr_water.json", "water_app"), ("water_app/sor_2025_26.json", "water_app"),
-         ("water_app/dpr_template.xlsx", "water_app")]
+         ("water_app/dpr_template.xlsx", "water_app"),
+         ("launcher/static", "launcher/static")]               # the start page (language, sewer / water)
 
 a = Analysis(
     ["app.py"],
     pathex=["."],
     datas=datas,
     # the modules a server imports inside its functions (from . import netedit ...): all of both packages
-    hiddenimports=collect_submodules("sewer_app") + collect_submodules("water_app"),
+    hiddenimports=collect_submodules("sewer_app") + collect_submodules("water_app") + collect_submodules("launcher"),
     excludes=["tkinter", "pytest", "IPython"],
 )
 pyz = PYZ(a.pure)

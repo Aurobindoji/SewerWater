@@ -30,8 +30,7 @@ OUT_ROOT = os.path.join(HOME, "output")
 MAX_BODY = 30 * 1024 * 1024
 MAX_DXF = 1024 * 1024 * 1024        # a DXF picked on the page (uploaded as it is, to projects\dxf\)
 # the water module has its own server (water_app/server.py, port 8766), page and folders - isolation of sewer and
-# water (user request 21-Oct-2026); /water here only sends the browser there
-WATER_URL = "http://127.0.0.1:8766/water"
+# water (user requests 21-Oct-2026, 10-Nov-2026): nothing of it here; the start page is the launcher's (port 8764)
 
 
 def proj_dir():
@@ -1237,12 +1236,12 @@ class Handler(BaseHTTPRequestHandler):
         if not self._local_only():
             return
         u = self._route()
-        if u.path == "/water":                           # the water module: its own server
+        if u.path in ("/", "/index.html"):               # this module's own page (the start page: the launcher's)
             self.send_response(302)
-            self.send_header("Location", WATER_URL + (f"?{u.query}" if u.query else ""))
+            self.send_header("Location", "/sewer" + (f"?{u.query}" if u.query else ""))
             self.end_headers()
             return
-        pages = {"/": "start.html", "/index.html": "start.html", "/sewer": "map.html", "/i18n.js": "i18n.js"}
+        pages = {"/sewer": "map.html", "/i18n.js": "i18n.js"}
         if u.path in pages:
             with open(os.path.join(STATIC, pages[u.path]), "rb") as fh:
                 ctype = "text/javascript; charset=utf-8" if u.path.endswith(".js") else "text/html; charset=utf-8"

@@ -25,7 +25,7 @@ OUT_ROOT = os.path.join(HOME, "output")
 MAX_BODY = 30 * 1024 * 1024
 MAX_DXF = 1024 * 1024 * 1024        # a DXF picked on the page (uploaded as it is, to projects\\dxf\\)
 PORT = 8766
-SEWER_START = "http://127.0.0.1:8765/"   # the start page (language, module) is the sewer server's
+# nothing of the sewer module here (user decision 10-Nov-2026): the start page is the launcher's (port 8764)
 
 
 def proj_dir():
@@ -506,9 +506,9 @@ class Handler(BaseHTTPRequestHandler):
         if not self._local_only():
             return
         u = self._route()
-        if u.path in ("/", "/index.html", "/sewer"):    # the start page / the sewer module: the sewer server's
+        if u.path in ("/", "/index.html"):               # this module's own page (the start page: the launcher's)
             self.send_response(302)
-            self.send_header("Location", SEWER_START + ("sewer" if u.path == "/sewer" else "") + (f"?{u.query}" if u.query else ""))
+            self.send_header("Location", "/water" + (f"?{u.query}" if u.query else ""))
             self.end_headers()
             return
         pages = {"/water": "map.html", "/i18n.js": "i18n.js"}

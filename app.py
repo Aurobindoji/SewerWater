@@ -1,7 +1,8 @@
-"""The map UI as a desktop app (user request 30-Oct-2026): both servers as start_ui.py starts them, the start page in a
-window of its own (pywebview: Edge WebView2 on Windows) - no browser, no address bar, no tabs. Choosing water opens the
-water page in a second window, as the browser opened it in a tab of its own. Closing every window ends the app (and
-its servers).
+"""The map UI as a desktop app (user request 30-Oct-2026): the start page (the launcher's: language, then sewer or
+water) in a window of its own (pywebview: Edge WebView2 on Windows) - no browser, no address bar, no tabs. Only the
+module chosen is started, in that same window (user decision 10-Nov-2026: the two apps fully independent); the other
+starts only from its button in a module's page, in a second window. Closing every window ends the app (and its
+servers).
 
     .venv\\Scripts\\pythonw app.py          (desktop.bat; packed: SewerWater.exe, its setup: installer\\SewerWater.iss)
 
@@ -27,7 +28,7 @@ import webview
 from webview.menu import Menu, MenuAction
 
 TITLE = "Sewer & Water network design"
-START_URL = "http://127.0.0.1:8765/"
+START_URL = "http://127.0.0.1:8764/"              # the launcher's start page
 CONFIG = os.environ.get("APP_CONFIG") or os.path.join(os.environ.get("APPDATA") or os.path.expanduser("~"),
                                                       "SewerWater", "config.json")
 SUBDIRS = {"sewer": "Sewer", "water": "Water", "app": "App"}
@@ -93,13 +94,12 @@ def _version(port):
 
 
 def start_servers(wait_s=15.0):
-    """Both servers in threads (as start_ui.py, no browser); then wait until each answers. Returns the problems:
-    [(module, port, version found)] - a port answered by older code or by nothing."""
-    from sewer_app import ui as sewer_ui                         # imported here: after use_master
-    from water_app import server as water_server
-    ports = {"sewer": (8765, sewer_ui.VERSION), "water": (water_server.PORT, water_server.VERSION)}
-    threading.Thread(target=water_server.serve, kwargs={"open_browser": False}, daemon=True).start()
-    threading.Thread(target=sewer_ui.serve, kwargs={"open_browser": False}, daemon=True).start()
+    """The launcher's server in a thread (no browser) - the modules' own servers start only when chosen (user decision
+    10-Nov-2026); then wait until it answers. Returns the problems: [(name, port, version found)] - a port answered by
+    older code or by nothing."""
+    from launcher import server as launcher                      # imported here: after use_master
+    ports = {"start page": (launcher.PORT, launcher.VERSION)}
+    threading.Thread(target=launcher.serve, kwargs={"open_browser": False}, daemon=True).start()
     t0, seen = time.time(), {}
     while time.time() - t0 < wait_s:
         seen = {k: _version(p) for k, (p, _) in ports.items()}
@@ -162,17 +162,26 @@ class Api:
         self._last_dir = None                                     # the file dialog opens where the last file was
 
     def open_window(self, url, name=""):
-        """A page's window.open: one window per name (the water page: 'water_network_design'), loaded again if open."""
+        """A page's window.open: one window per name (a module: 'sewer_network_design' / 'water_network_design');
+        one open already is only brought forward - not loaded again, its work stays (10-Nov-2026)."""
         w = self._windows.get(name)
         if w is not None and w in webview.windows:
-            w.load_url(url)
             w.restore()
+            w.show()
             return
-        title = "Water network design" if "/water" in url else TITLE
+        title = "Water supply network design" if "/water" in url else "Sewer network design" if "/sewer" in url else TITLE
         w = webview.create_window(title, url, js_api=self, min_size=(900, 600), **WINDOW)
         w.events.loaded += lambda: w.evaluate_js(OPEN_JS)
         if name:
             self._windows[name] = w
+
+    def module_opened(self, module):
+        """The start page opened a module in the main window: the window's title, and the window known by the module's
+        name - the other module's button then brings it forward instead of opening a second one."""
+        if self._main is None:
+            return
+        self._main.set_title("Water supply network design" if module == "water" else "Sewer network design")
+        self._windows[f"{module}_network_design"] = self._main
 
     def pick_file(self, kind="dxf"):
         """Windows' own file dialog (step 2 of the desktop app, user request 30-Oct-2026): the path of the file as it is -

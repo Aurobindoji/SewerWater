@@ -1,0 +1,14 @@
+{
+  "_readme": "Design inputs for the sample KML (samples/sample_area.kml) - same keys as inputs\\<model>_sewer_inputs.json. pop_csv = the population file written by 'layout' (path from the sewer_app folder).",
+  "catalog": "UPJN_RCC_NP3_SRC",
+  "joint": "ss",
+  "pop_total": 9000,
+  "pop_dist": "csv",
+  "pop_csv": "output/sample_kml/sample_area_layout_population.csv",
+  "sewage_lpcd": 108.0,
+  "infil_basis": "none",
+  "infil_rate": 0.0,
+  "peak": "table",
+  "start_depth": 0.7,
+  "data_grade": "PFR"
+}

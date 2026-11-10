@@ -1,0 +1,537 @@
+{
+  "_readme": "Sewer pipe sizes for sewer_design.py. 'active' picks the set used. Each size: material, nominal (as in BOQ), id_mm = INTERNAL diameter used in hydraulics (CPHEEO p187/p190: D = internal diameter), manning_n (null = keep the n already in the model), rate item and rate (Rs/m, material supply only, GST extra) for reference. A combined set uses \"from_sets\": [[\"SET_A\", max_id_mm], [\"SET_B\", null]]. 'default' = set used when no --catalog/--dwc is given. 'joint_n' (RCC sets) = Manning n by joint type, chosen with --joint ss|collar (default ss).",
+  "default": "UPJN_RCC_NP3_SRC",
+  "sets": {
+    "SAMPLE_US_TEST": {
+      "source": "TEST ONLY - US inch sizes so that Bentley Sample-1.stsw (8-inch pipes) can be designed. NOT for UPJN work.",
+      "sizes": [
+        {
+          "material": "TEST",
+          "nominal": "8 in",
+          "id_mm": 203.2,
+          "manning_n": null
+        },
+        {
+          "material": "TEST",
+          "nominal": "10 in",
+          "id_mm": 254.0,
+          "manning_n": null
+        },
+        {
+          "material": "TEST",
+          "nominal": "12 in",
+          "id_mm": 304.8,
+          "manning_n": null
+        },
+        {
+          "material": "TEST",
+          "nominal": "15 in",
+          "id_mm": 381.0,
+          "manning_n": null
+        },
+        {
+          "material": "TEST",
+          "nominal": "18 in",
+          "id_mm": 457.2,
+          "manning_n": null
+        },
+        {
+          "material": "TEST",
+          "nominal": "21 in",
+          "id_mm": 533.4,
+          "manning_n": null
+        },
+        {
+          "material": "TEST",
+          "nominal": "24 in",
+          "id_mm": 609.6,
+          "manning_n": null
+        }
+      ]
+    },
+    "UPJN_DWC_SN8": {
+      "source": "Rate_2025-26.pdf (SE Nirman Mandal Westbrook, office memo 22-08-2025) p9, item M.192 'Double wall corrugated pipe (DWC SN-8) conforming to IS 16098:2013' - sizes listed by internal diameter (MM ID). Manning n: PROJECT DECISION pending (Table 3.11 p188: HDPE/UPVC 0.010; note below table 0.011 for plastic) - null keeps the model's n. PROJECT DECISION 10-Oct-2026: DWC used only when asked (--dwc).",
+      "sizes": [
+        {
+          "material": "DWC HDPE SN-8",
+          "nominal": "100 mm ID",
+          "id_mm": 100,
+          "manning_n": null,
+          "rate_item": "M.192(a)",
+          "rate_rs_per_m": 125
+        },
+        {
+          "material": "DWC HDPE SN-8",
+          "nominal": "135 mm ID",
+          "id_mm": 135,
+          "manning_n": null,
+          "rate_item": "M.192(c)",
+          "rate_rs_per_m": 330
+        },
+        {
+          "material": "DWC HDPE SN-8",
+          "nominal": "150 mm ID",
+          "id_mm": 150,
+          "manning_n": null,
+          "rate_item": "M.192(d)",
+          "rate_rs_per_m": 420
+        },
+        {
+          "material": "DWC HDPE SN-8",
+          "nominal": "170 mm ID",
+          "id_mm": 170,
+          "manning_n": null,
+          "rate_item": "M.192(e)",
+          "rate_rs_per_m": 480
+        },
+        {
+          "material": "DWC HDPE SN-8",
+          "nominal": "200 mm ID",
+          "id_mm": 200,
+          "manning_n": null,
+          "rate_item": "M.192(f)",
+          "rate_rs_per_m": 520
+        },
+        {
+          "material": "DWC HDPE SN-8",
+          "nominal": "250 mm ID",
+          "id_mm": 250,
+          "manning_n": null,
+          "rate_item": "M.192(h)",
+          "rate_rs_per_m": 570
+        },
+        {
+          "material": "DWC HDPE SN-8",
+          "nominal": "300 mm ID",
+          "id_mm": 300,
+          "manning_n": null,
+          "rate_item": "M.192(i)",
+          "rate_rs_per_m": 620
+        },
+        {
+          "material": "DWC HDPE SN-8",
+          "nominal": "400 mm ID",
+          "id_mm": 400,
+          "manning_n": null,
+          "rate_item": "M.192(j)",
+          "rate_rs_per_m": 1150
+        },
+        {
+          "material": "DWC HDPE SN-8",
+          "nominal": "500 mm ID",
+          "id_mm": 500,
+          "manning_n": null,
+          "rate_item": "M.192(k)",
+          "rate_rs_per_m": 1700
+        },
+        {
+          "material": "DWC HDPE SN-8",
+          "nominal": "600 mm ID",
+          "id_mm": 600,
+          "manning_n": null,
+          "rate_item": "M.192(l)",
+          "rate_rs_per_m": 2700
+        },
+        {
+          "material": "DWC HDPE SN-8",
+          "nominal": "800 mm ID",
+          "id_mm": 800,
+          "manning_n": null,
+          "rate_item": "M.192(m)",
+          "rate_rs_per_m": 5450
+        },
+        {
+          "material": "DWC HDPE SN-8",
+          "nominal": "1000 mm ID",
+          "id_mm": 1000,
+          "manning_n": null,
+          "rate_item": "M.192(n)",
+          "rate_rs_per_m": 8900
+        }
+      ]
+    },
+    "UPJN_RCC_NP3_SRC": {
+      "source": "Rate_2025-26.pdf (SE Nirman Mandal Westbrook, office memo 22-08-2025) p7, item M.187 'ISI marked RCC pipes with SRC cement conforming to IS 458:2021' NP-3. IS 458 sizes are nominal INTERNAL diameters (verify with the IS table). Manning n by joint (CPHEEO Table 3.11 p188, VERIFIED): S/S joints 0.011 (spun RCC design value) - DEFAULT; collar joints 0.013 (cement concrete pipes with collar joints, good). PROJECT DECISION 10-Oct-2026: RCC NP3 is the default sewer pipe, S/S joint default.",
+      "sizes": [
+        {
+          "material": "RCC NP3 (SRC)",
+          "nominal": "150 mm",
+          "id_mm": 150,
+          "manning_n": null,
+          "rate_item": "M.187(a)",
+          "rate_rs_per_m": 600
+        },
+        {
+          "material": "RCC NP3 (SRC)",
+          "nominal": "200 mm",
+          "id_mm": 200,
+          "manning_n": null,
+          "rate_item": "M.187(b)",
+          "rate_rs_per_m": 650
+        },
+        {
+          "material": "RCC NP3 (SRC)",
+          "nominal": "250 mm",
+          "id_mm": 250,
+          "manning_n": null,
+          "rate_item": "M.187(c)",
+          "rate_rs_per_m": 725
+        },
+        {
+          "material": "RCC NP3 (SRC)",
+          "nominal": "300 mm",
+          "id_mm": 300,
+          "manning_n": null,
+          "rate_item": "M.187(d)",
+          "rate_rs_per_m": 1150
+        },
+        {
+          "material": "RCC NP3 (SRC)",
+          "nominal": "350 mm",
+          "id_mm": 350,
+          "manning_n": null,
+          "rate_item": "M.187(e)",
+          "rate_rs_per_m": 1350
+        },
+        {
+          "material": "RCC NP3 (SRC)",
+          "nominal": "400 mm",
+          "id_mm": 400,
+          "manning_n": null,
+          "rate_item": "M.187(f)",
+          "rate_rs_per_m": 1600
+        },
+        {
+          "material": "RCC NP3 (SRC)",
+          "nominal": "450 mm",
+          "id_mm": 450,
+          "manning_n": null,
+          "rate_item": "M.187(g)",
+          "rate_rs_per_m": 1950
+        },
+        {
+          "material": "RCC NP3 (SRC)",
+          "nominal": "500 mm",
+          "id_mm": 500,
+          "manning_n": null,
+          "rate_item": "M.187(h)",
+          "rate_rs_per_m": 2250
+        },
+        {
+          "material": "RCC NP3 (SRC)",
+          "nominal": "600 mm",
+          "id_mm": 600,
+          "manning_n": null,
+          "rate_item": "M.187(i)",
+          "rate_rs_per_m": 2700
+        },
+        {
+          "material": "RCC NP3 (SRC)",
+          "nominal": "700 mm",
+          "id_mm": 700,
+          "manning_n": null,
+          "rate_item": "M.187(j)",
+          "rate_rs_per_m": 3650
+        },
+        {
+          "material": "RCC NP3 (SRC)",
+          "nominal": "800 mm",
+          "id_mm": 800,
+          "manning_n": null,
+          "rate_item": "M.187(k)",
+          "rate_rs_per_m": 4700
+        },
+        {
+          "material": "RCC NP3 (SRC)",
+          "nominal": "900 mm",
+          "id_mm": 900,
+          "manning_n": null,
+          "rate_item": "M.187(l)",
+          "rate_rs_per_m": 5950
+        },
+        {
+          "material": "RCC NP3 (SRC)",
+          "nominal": "1000 mm",
+          "id_mm": 1000,
+          "manning_n": null,
+          "rate_item": "M.187(m)",
+          "rate_rs_per_m": 7050
+        },
+        {
+          "material": "RCC NP3 (SRC)",
+          "nominal": "1100 mm",
+          "id_mm": 1100,
+          "manning_n": null,
+          "rate_item": "M.187(n)",
+          "rate_rs_per_m": 8200
+        },
+        {
+          "material": "RCC NP3 (SRC)",
+          "nominal": "1200 mm",
+          "id_mm": 1200,
+          "manning_n": null,
+          "rate_item": "M.187(o)",
+          "rate_rs_per_m": 9500
+        },
+        {
+          "material": "RCC NP3 (SRC)",
+          "nominal": "1400 mm",
+          "id_mm": 1400,
+          "manning_n": null,
+          "rate_item": "M.187(p)",
+          "rate_rs_per_m": 12100
+        },
+        {
+          "material": "RCC NP3 (SRC)",
+          "nominal": "1600 mm",
+          "id_mm": 1600,
+          "manning_n": null,
+          "rate_item": "M.187(q)",
+          "rate_rs_per_m": 17300
+        },
+        {
+          "material": "RCC NP3 (SRC)",
+          "nominal": "1800 mm",
+          "id_mm": 1800,
+          "manning_n": null,
+          "rate_item": "M.187(r)",
+          "rate_rs_per_m": 20950
+        },
+        {
+          "material": "RCC NP3 (SRC)",
+          "nominal": "2000 mm",
+          "id_mm": 2000,
+          "manning_n": null,
+          "rate_item": "M.187(s)",
+          "rate_rs_per_m": 25600
+        },
+        {
+          "material": "RCC NP3 (SRC)",
+          "nominal": "2200 mm",
+          "id_mm": 2200,
+          "manning_n": null,
+          "rate_item": "M.187(t)",
+          "rate_rs_per_m": 30250
+        },
+        {
+          "material": "RCC NP3 (SRC)",
+          "nominal": "2400 mm",
+          "id_mm": 2400,
+          "manning_n": null,
+          "rate_item": "M.187(u)",
+          "rate_rs_per_m": 35700
+        },
+        {
+          "material": "RCC NP3 (SRC)",
+          "nominal": "2600 mm",
+          "id_mm": 2600,
+          "manning_n": null,
+          "rate_item": "M.187(v)",
+          "rate_rs_per_m": 44800
+        }
+      ],
+      "joint_n": {
+        "ss": 0.011,
+        "collar": 0.013
+      }
+    },
+    "UPJN_RCC_NP3_OPC": {
+      "source": "Rate_2025-26.pdf (SE Nirman Mandal Westbrook, office memo 22-08-2025) p6-7, item M.186 'ISI marked RCC pipes with OPC cement conforming to IS 458:2021' NP-3. NOTE: rate list shows 1100 mm (5150) cheaper than 1000 mm (5820) - check the rate list. Manning n by joint (CPHEEO Table 3.11 p188, VERIFIED): S/S joints 0.011 (spun RCC design value) - DEFAULT; collar joints 0.013 (cement concrete pipes with collar joints, good). PROJECT DECISION 10-Oct-2026: RCC NP3 is the default sewer pipe, S/S joint default.",
+      "sizes": [
+        {
+          "material": "RCC NP3 (OPC)",
+          "nominal": "150 mm",
+          "id_mm": 150,
+          "manning_n": null,
+          "rate_item": "M.186(a)",
+          "rate_rs_per_m": 500
+        },
+        {
+          "material": "RCC NP3 (OPC)",
+          "nominal": "200 mm",
+          "id_mm": 200,
+          "manning_n": null,
+          "rate_item": "M.186(b)",
+          "rate_rs_per_m": 550
+        },
+        {
+          "material": "RCC NP3 (OPC)",
+          "nominal": "250 mm",
+          "id_mm": 250,
+          "manning_n": null,
+          "rate_item": "M.186(c)",
+          "rate_rs_per_m": 675
+        },
+        {
+          "material": "RCC NP3 (OPC)",
+          "nominal": "300 mm",
+          "id_mm": 300,
+          "manning_n": null,
+          "rate_item": "M.186(d)",
+          "rate_rs_per_m": 980
+        },
+        {
+          "material": "RCC NP3 (OPC)",
+          "nominal": "350 mm",
+          "id_mm": 350,
+          "manning_n": null,
+          "rate_item": "M.186(e)",
+          "rate_rs_per_m": 1140
+        },
+        {
+          "material": "RCC NP3 (OPC)",
+          "nominal": "400 mm",
+          "id_mm": 400,
+          "manning_n": null,
+          "rate_item": "M.186(f)",
+          "rate_rs_per_m": 1340
+        },
+        {
+          "material": "RCC NP3 (OPC)",
+          "nominal": "450 mm",
+          "id_mm": 450,
+          "manning_n": null,
+          "rate_item": "M.186(g)",
+          "rate_rs_per_m": 1550
+        },
+        {
+          "material": "RCC NP3 (OPC)",
+          "nominal": "500 mm",
+          "id_mm": 500,
+          "manning_n": null,
+          "rate_item": "M.186(h)",
+          "rate_rs_per_m": 1860
+        },
+        {
+          "material": "RCC NP3 (OPC)",
+          "nominal": "600 mm",
+          "id_mm": 600,
+          "manning_n": null,
+          "rate_item": "M.186(i)",
+          "rate_rs_per_m": 2220
+        },
+        {
+          "material": "RCC NP3 (OPC)",
+          "nominal": "700 mm",
+          "id_mm": 700,
+          "manning_n": null,
+          "rate_item": "M.186(j)",
+          "rate_rs_per_m": 2940
+        },
+        {
+          "material": "RCC NP3 (OPC)",
+          "nominal": "800 mm",
+          "id_mm": 800,
+          "manning_n": null,
+          "rate_item": "M.186(k)",
+          "rate_rs_per_m": 3870
+        },
+        {
+          "material": "RCC NP3 (OPC)",
+          "nominal": "900 mm",
+          "id_mm": 900,
+          "manning_n": null,
+          "rate_item": "M.186(l)",
+          "rate_rs_per_m": 4950
+        },
+        {
+          "material": "RCC NP3 (OPC)",
+          "nominal": "1000 mm",
+          "id_mm": 1000,
+          "manning_n": null,
+          "rate_item": "M.186(m)",
+          "rate_rs_per_m": 5820
+        },
+        {
+          "material": "RCC NP3 (OPC)",
+          "nominal": "1100 mm",
+          "id_mm": 1100,
+          "manning_n": null,
+          "rate_item": "M.186(n)",
+          "rate_rs_per_m": 5150
+        },
+        {
+          "material": "RCC NP3 (OPC)",
+          "nominal": "1200 mm",
+          "id_mm": 1200,
+          "manning_n": null,
+          "rate_item": "M.186(o)",
+          "rate_rs_per_m": 5950
+        },
+        {
+          "material": "RCC NP3 (OPC)",
+          "nominal": "1400 mm",
+          "id_mm": 1400,
+          "manning_n": null,
+          "rate_item": "M.186(p)",
+          "rate_rs_per_m": 7600
+        },
+        {
+          "material": "RCC NP3 (OPC)",
+          "nominal": "1600 mm",
+          "id_mm": 1600,
+          "manning_n": null,
+          "rate_item": "M.186(q)",
+          "rate_rs_per_m": 10900
+        },
+        {
+          "material": "RCC NP3 (OPC)",
+          "nominal": "1800 mm",
+          "id_mm": 1800,
+          "manning_n": null,
+          "rate_item": "M.186(r)",
+          "rate_rs_per_m": 13500
+        },
+        {
+          "material": "RCC NP3 (OPC)",
+          "nominal": "2000 mm",
+          "id_mm": 2000,
+          "manning_n": null,
+          "rate_item": "M.186(s)",
+          "rate_rs_per_m": 16450
+        },
+        {
+          "material": "RCC NP3 (OPC)",
+          "nominal": "2200 mm",
+          "id_mm": 2200,
+          "manning_n": null,
+          "rate_item": "M.186(t)",
+          "rate_rs_per_m": 19700
+        },
+        {
+          "material": "RCC NP3 (OPC)",
+          "nominal": "2400 mm",
+          "id_mm": 2400,
+          "manning_n": null,
+          "rate_item": "M.186(u)",
+          "rate_rs_per_m": 23650
+        },
+        {
+          "material": "RCC NP3 (OPC)",
+          "nominal": "2600 mm",
+          "id_mm": 2600,
+          "manning_n": null,
+          "rate_item": "M.186(v)",
+          "rate_rs_per_m": 29400
+        }
+      ],
+      "joint_n": {
+        "ss": 0.011,
+        "collar": 0.013
+      }
+    },
+    "UPJN_DWC_THEN_RCC": {
+      "source": "Optional combination (use with --catalog UPJN_DWC_THEN_RCC): fill the largest DWC size (mm ID) before switching to RCC NP3 (SRC).",
+      "from_sets": [
+        [
+          "UPJN_DWC_SN8",
+          null
+        ],
+        [
+          "UPJN_RCC_NP3_SRC",
+          null
+        ]
+      ]
+    }
+  }
+}

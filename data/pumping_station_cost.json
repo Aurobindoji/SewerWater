@@ -1,0 +1,47 @@
+{
+  "_readme": "Approximate cost of a sewage pumping station (SPS / IPS) for comparing zoning options at PFR stage - NOT a DPR estimate. User decision 12-Oct-2026: there is no rule per MLD for pumping stations; they are worked out from their civil, mechanical and electrical parts, so a logical approximate cost is made now and checked properly when the DPR is made. The cost of each part follows the THREE pumping stations of the user's DPR files (data_points): for every E&M part and for the civil works, cost = A x (Q / 639 L/s)^e fitted through Riverside SPS-1 and the mean of the two Lakeside SPS (pumping.fit); a part that does not grow with the flow in these data (e < 0) is taken as the mean of the three. Civil works follow the depth (deep structures share); brought to one depth, the civil cost of the three stations hardly changes with the flow. Values marked 'assumed' are Claude's engineering assumptions - verify.",
+
+  "data_points": {
+    "Riverside SPS-1": {
+      "source": "SPSorIPS.xlsx (BOQ SPS1, DESIGN DATA SPS, INLET CHAMBER SPS) + abstract .xlsx (BREAKUP OF COST 1) - Riverside zone, AMRUT 2.0, Springfield",
+      "count": 1, "capacity_mld": [55.25], "capacity_note": "peak flow incl. 10 % infiltration, design year 2057",
+      "average_mld": [24.54], "incoming_depth_m": [10.74],
+      "civil_lakh": 395.40,
+      "em_lakh": {"pumping plant, main piping, valves": 233.58149, "bar screens and sluice gates": 215.57,
+                  "DG sets": 53.374, "automation": 20.30, "LT panel and cable": 41.88,
+                  "HT panel, cable and substation": 65.42548, "trial run (3 months)": 36.03314712},
+      "power_connection_lakh": null
+    },
+    "Lakeside SPS-1 + SPS-2": {
+      "source": "this file to imrove ips rates.pdf - appraisal note (CE Westbrook zone) of 29-08-2025, Lakeside zone sewer network, AMRUT 2.0, Springfield: A4 SPS-1 11 MLD 294.56, A5 SPS-2 4 MLD 325.09; B E&M of SPS-1 & SPS-2 together (2 jobs); power connection charge for SPS 1 & 2 162.15 lakh",
+      "count": 2, "capacity_mld": [11.0, 4.0], "capacity_note": "peak flow of the ultimate (design) year - user, 12-Oct-2026",
+      "average_mld": [null, null], "incoming_depth_m": [6.27, 8.54],
+      "depth_note": "inlet chamber height 7.57 m (SPS-1) and 9.84 m (SPS-2) - lakeside 2sps.pdf (Estimate for proposed SPS-1 / SPS 2, item 1 INLET CHAMBER) - minus chamber_extra_height_m 1.3 m (the Riverside relation)",
+      "civil_lakh_each": [294.56, 325.09],
+      "em_lakh": {"pumping plant, main piping, valves": 292.70, "bar screens and sluice gates": 117.60,
+                  "DG sets": 116.16, "automation": 73.80, "LT panel and cable": 28.28,
+                  "HT panel, cable and substation": 154.86, "trial run (3 months)": 37.03},
+      "power_connection_lakh": 162.15
+    }
+  },
+
+  "deep_share": {"value": 0.7787, "status": "reference", "note": "share of the civil cost in structures as deep as the incoming sewer (wet well 125.70 + inlet chamber 29.28 + coarse screen chambers 152.90 of 395.40 lakh, Riverside BOQ); scaled by (depth + chamber_extra_height_m) / (10.74 + chamber_extra_height_m). The Lakeside civil costs are brought to the Riverside depth with this factor before the fit"},
+  "chamber_extra_height_m":    {"value": 1.3,  "status": "reference", "note": "chamber height = incoming depth + 1.3 m (Riverside: 12.04 = 10.74 + 1.3)"},
+  "ht_threshold_kw":           {"value": 0.0,  "status": "data", "note": "all three pumping stations of the DPRs have an HT supply + substation (even the 4 MLD one) - so always HT; set a kW here to use an LT connection below it"},
+  "lt_connection_lakh":        {"value": 3.0,  "status": "assumed", "note": "LT service connection when no HT supply is taken (only with ht_threshold_kw > 0)"},
+  "power_connection_lakh":     {"value": 81.075, "status": "data", "note": "per SPS = Lakeside 162.15 / 2 (not shown in the Riverside files)"},
+  "connected_load_factor":     {"value": 1.5,  "status": "assumed", "note": "connected kW = working pump kW x this (standby pumps, screens, lights)"},
+  "inlet_drop_m":              {"value": 0.3,  "status": "reference", "note": "IL of inlet chamber = incoming invert - 0.3 m (Riverside INLET CHAMBER SPS, CPHEEO)"},
+  "wet_well_effective_depth_m":{"value": 2.5,  "status": "assumed", "note": ""},
+  "wet_well_retention_s":      {"value": 300,  "status": "assumed", "note": "effective volume = 5 min of peak flow (Riverside: 9.9 m dia - drawn 10 m); for the report only"},
+  "wet_well_min_dia_m":        {"value": 3.0,  "status": "assumed", "note": ""},
+  "rising_main_head_m":        {"value": 5.0,  "status": "assumed", "note": "delivery + friction of the rising main when its length is not known; with the STP given, the rising main is sized and its friction computed (rising_main.py)"},
+  "pump_efficiency":           {"value": 0.65, "status": "assumed", "note": "wire-to-water"},
+  "tariff_rs_per_kwh":         {"value": 8.0,  "status": "assumed", "note": "UPPCL tariff for the connection - verify"},
+  "om_em_fraction":            {"value": 0.03, "status": "assumed", "note": "yearly staff + maintenance = this x E&M capex ..."},
+  "om_civil_fraction":         {"value": 0.005,"status": "assumed", "note": "... + this x civil capex"},
+  "npv_years":                 {"value": 30,   "status": "assumed", "note": ""},
+  "discount_rate":             {"value": 0.08, "status": "assumed", "note": ""},
+
+  "stp_lakh_per_mld":          {"value": 150.0, "status": "user", "note": "user, 12-Oct-2026: STP Rs 1.5 crore per MLD (Lakeside appraisal: STP 10 MLD = 1500 lakh)"}
+}

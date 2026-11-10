@@ -1,0 +1,88 @@
+{
+  "_readme": "E&M works of a sewage pumping station in the sewer DPR (dpr_em.py) - user decisions 26-Oct-2026: the format of the U.P. Jal Nigam E&M estimate 'R2 DISTRICT-Elmwood ZONE VNS SENDED TO cd.xls' (Construction Division E/M, Springfield); pumps for the +15 years peak of the design (CPHEEO Table 2.1 p2-9); a size the estimate has no rate for: its rate x (size / size there)^exponent (exponent fitted on the estimate's sizes, or assumed - 'src' says which); screens, automation, tools, lighting, safety and the 11 kV line as in the estimate for every station. Everything here is yellow in the workbook, to be confirmed.",
+  "sizing": {
+    "value": {"specific_gravity": 1.05, "parallel": 0.95, "em_head_m": 3, "np_share": 0.5, "big_working": 2,
+              "big_standby": 2, "small_working": 1, "small_standby": 1, "misc_kva": 15, "pf": 0.8, "volt_kv": 0.4,
+              "load_margin": 1.2, "col_velocity": 1.6, "header_velocity": 1.4, "dg_sets": 1, "transformers": 2,
+              "cable_factor": 2.5, "derating": 0.87, "pump_cable_m": 75},
+    "src": "R2 'Revise c': BHP = Q (LPM) x H x 1.05 / 4500; 95 % of the rated discharge in parallel; head = civil head + 3 m E/M head (entry, pump, column pipe); non-peak flow 0.5 x average on one small pump (1 W + 1 S), the rest on 2 working + 2 standby big pumps; load = motors x 0.746 / 0.8 + 15 kVA miscellaneous; DG and transformer for 1.2 x load (DG also for the starting current, 2nd pump on soft starter 1.5 x); transformers 1 W + 1 S; column pipe 1.6 m/s, header 1.4 m/s; pump cable: current / 0.87 x 2.5 (what gives the estimate's 6 and 16 sq mm for 10 and 20 HP), 75 m a pump (R2 300 m for 4 pumps)"
+  },
+  "efficiency": {
+    "value": [[0, 0.67], [400, 0.70], [700, 0.72], [1900, 0.85]],
+    "src": "R2 'Revise c' K53:N57: pump efficiency by discharge (LPM): < 400 0.67, 400-700 0.70, 700-1900 0.72, above 0.85"
+  },
+  "margin": {
+    "value": [[0, 0.5], [1.5, 0.4], [3.7, 0.3], [7.5, 0.2], [15, 0.15], [75, 0.1]],
+    "src": "R2 'Revise c' K46:N51: margin on the motor by kW: up to 1.5 kW 50 %, 1.5-3.7 40 %, 3.7-7.5 30 %, 7.5-15 20 %, 15-75 15 %, above 75 kW 10 %"
+  },
+  "motor_hp": {"value": [1, 1.5, 2, 3, 5, 7.5, 10, 12.5, 15, 20, 25, 30, 40, 50, 60, 75, 100, 125, 150, 180, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 1000],
+               "src": "commercial motor ratings (HP)"},
+  "dg_kva": {"value": [15, 20, 25, 30, 40, 50, 62.5, 82.5, 100, 125, 160, 200, 250, 320, 380, 500, 625, 750, 1010, 1250, 1500, 2000],
+             "src": "commercial DG set ratings (kVA)"},
+  "transformer_kva": {"value": [25, 63, 100, 160, 200, 250, 315, 400, 500, 630, 800, 1000, 1250, 1600, 2000, 2500, 3150],
+                      "src": "commercial distribution transformer ratings (kVA, IS 1180)"},
+  "pipe_mm": {"value": [80, 100, 150, 200, 250, 300, 350, 400, 450, 500, 600, 700, 750, 800, 900, 1000, 1100, 1200],
+              "src": "commercial DI / CI pipe and valve sizes (mm)"},
+  "cable_sqmm": {"value": [[2.5, 27], [4, 36], [6, 46], [10, 63], [16, 85], [25, 112], [35, 138], [50, 168], [70, 213],
+                           [95, 258], [120, 299], [150, 344], [185, 392], [240, 461], [300, 530]],
+                 "src": "copper XLPE armoured cable, current rating in air (A) - approximate catalogue values"},
+  "rates": {
+    "value": {
+      "pump":       {"text": "Submersible sewage non-clog pump set with jacket-cooled integrated motor, guide rail / auto-coupling, guide pipe and chain", "size": 20, "unit_size": "HP", "rate": 353559, "exp": 0.573, "src": "R2 Pumping Plants B8 (DJB 2.2.5, 20 HP) and B13 (237653, 10 HP): exponent fitted"},
+      "soft":       {"text": "Soft starter (fitted in the L.T. panel)", "size": 20, "unit_size": "HP", "rate": 70000, "exp": 0.222, "src": "R2 Pumping Plants B5 (20 HP) and B10 (60000, 10 HP)"},
+      "capacitor":  {"text": "Shunt type power factor improvement capacitor", "size": 61.62, "unit_size": "kVA load", "rate": 107760, "exp": 1.0, "src": "R2 Pumping Plants B19 (DJB 14.1.4) at the R2 load 61.62 kVA; kVAr in proportion to the load"},
+      "mov":        {"text": "Motor operated sluice valve with actuator, CIDF", "size": 250, "unit_size": "mm", "rate": 190000, "exp": 0.472, "src": "R2 Pumping Plants B25:B27 (100 / 150 mm 125000, 250 mm 190000): exponent fitted"},
+      "reflux":     {"text": "Reflux valve, DIDF", "size": 250, "unit_size": "mm", "rate": 95610, "exp": 1.373, "src": "R2 Pumping Plants B29:B31 (DJB 4.32.3-6: 27430 / 41960 / 95610)"},
+      "pipe3m":     {"text": "DIDF pipe 3 m long", "size": 250, "unit_size": "mm", "rate": 8850, "exp": 1.079, "src": "R2 Pumping Plants B33:B35 (DJB 45.1.154-156)"},
+      "dj":         {"text": "Dismantling joint", "size": 250, "unit_size": "mm", "rate": 21122, "exp": 1.152, "src": "R2 Pumping Plants B42:B44 (DJB 51.95.6-10)"},
+      "specials":   {"text": "CIDF specials (tees, bends, duck-foot bends, reducers, blind flanges)", "size": 1, "unit_size": "kg", "rate": 130, "exp": 0, "src": "R2 Pumping Plants B36: 5400 kg at Rs 130 for 6 pumps and a 250 mm header"},
+      "bolts":      {"text": "Nuts and bolts with washer (SS)", "size": 1, "unit_size": "kg", "rate": 300, "exp": 0, "src": "R2 Pumping Plants B45: 900 kg at Rs 300"},
+      "flowmeter":  {"text": "Electromagnetic flow meter with CVT and control cables", "size": 250, "unit_size": "mm", "rate": 245000, "exp": 0.8, "src": "R2 Pumping Plants B50:B51 (225000 + 20000, 250 mm); exponent assumed"},
+      "pumpcable":  {"text": "Copper XLPE submersible pump cable", "size": 16, "unit_size": "sq mm", "rate": 2100, "exp": 0.659, "src": "R2 Pumping Plants B94:B95 (Havells 2025: 3.5C x 6 sq mm 1100, 4C x 16 sq mm 2100 per m)"},
+      "dg":         {"text": "DG set, 1500 RPM, acoustic enclosure, AMF panel, control panel", "size": 62.5, "unit_size": "kVA", "rate": 950000, "exp": 0.6, "src": "R2 DG B11 (UPJN, 62.5 kVA); exponent assumed (0.6 rule)"},
+      "dgcable":    {"text": "Power cable 1.1 kV (DG to panel)", "size": 62.5, "unit_size": "kVA", "rate": 1316, "exp": 0.6, "src": "R2 DG B33 (200 m)"},
+      "transformer":{"text": "11 kV / 0.4 kV outdoor step-down transformer", "size": 100, "unit_size": "kVA", "rate": 393048, "exp": 0.6, "src": "R2 Sub Station B8 (UPJN, 100 kVA); exponent assumed"},
+      "ltpanel":    {"text": "L.T. panel, CRCA, factory wired, incomer / outgoing MCCBs, bus coupler", "size": 61.62, "unit_size": "kVA load", "rate": 450000, "exp": 0.6, "src": "R2 Panel B5 (DJB 10.1.2) at the R2 load 61.62 kVA"},
+      "ltcable":    {"text": "Power cable 1.1 kV (transformer to L.T. panel)", "size": 139, "unit_size": "A", "rate": 1643, "exp": 0.8, "src": "R2 Panel B26 (300 m) at the R2 incomer 139 A"}
+    },
+    "src": "rate of the item at 'size' in the R2 estimate; another size: rate x (size / that size)^exp"
+  },
+  "fixed": {
+    "value": {
+      "pumping": [["Necessary piping, pump set foundation, rubber packing, insertion etc.", "set/pump", 25000],
+                  ["3 T mono rail single girder lifting tackle", "No", 230265],
+                  ["Tools & plants (meggers, crimping tools, multimeter, wrenches, spanners etc.)", "Set", 250000],
+                  ["Fire extinguishers, rubber sheets, steel chairs, fire bucket, almirahs, table", "Job", 128360],
+                  ["Installation & commissioning of pump sets, piping & valves", "Job", 120000],
+                  ["Painting of pumps, piping and valves", "Job", 50000],
+                  ["Light wiring, fittings, LED fixtures and 9 m poles", "Job", 224000],
+                  ["Junction boxes", "No/pump", 15000],
+                  ["Exhaust fans", "No", 45000],
+                  ["Double earthing of the pumping plant", "No/pump", 15000],
+                  ["Safety equipment (helmets, gas detectors, harness etc.)", "Job", 480000]],
+      "screens": [["SS 316 manual coarse bar screen", "No", 1, 106300], ["SS 316 mechanical coarse bar screen with conveyor, panel", "No", 2, 1603900],
+                  ["CI thimble mounted sluice gate with motor actuator", "No", 7, 390000], ["Testing at manufacturer's works", "Job", 1, 70000],
+                  ["Installation & commissioning of screens and gates", "Job", 1, 100000]],
+      "dg_other": [["Fuel tank", 50000], ["Batteries 24 V 150 AH (2)", 70000], ["Double earthing", 50000], ["Cable end termination", 25000],
+                   ["Rubber sheets", 9000], ["Installation and testing at site", 10000], ["Testing at manufacturer's works", 40000]],
+      "dg_cable_m": 200,
+      "automation": [["GPRS/GSM redundant RTU with CPU, I/O", 550000], ["GSM/GPRS communication hardware", 30000], ["Intelligent energy meter", 25000],
+                     ["Smart pressure transmitters (7)", 350000], ["Auto phase reversal unit / ATS", 240000], ["Cabling", 60000],
+                     ["IP cameras (6)", 120000], ["Radar level transmitters (2)", 240000], ["Control panel IP 65", 75000],
+                     ["Surge protector", 15000], ["7 inch HMI", 30000], ["Installation, testing and commissioning", 10000]],
+      "lt_other": [["End termination / joints of cables", 45000], ["Double earthing of panel", 50000], ["Fencing of sub-station portion", 50000],
+                   ["Electrical safety clearance", 100000], ["Fire extinguishers and rubber sheets", 56000], ["Erection of L.T. panels, cables, trenches", 150000],
+                   ["Exhaust fans", 30000], ["Commissioning and testing", 100000], ["Testing of L.T. panels at manufacturer's works", 40000]],
+      "lt_cable_m": 300,
+      "ht": [["11 kV floor mounting H.T. panel (VCB)", 2200000], ["11 kV XLPE 3 x 35 sq mm cable, 150 m", 238050], ["Cable jointing kits", 72000],
+             ["Double earthing of sub-station equipment (12 pits)", 240000], ["Internal electrification of H.T. / L.T. rooms", 50000],
+             ["MS chequered plates over cable trenches", 20000], ["Barbed wire fencing of switch yard", 50000], ["Erection and commissioning", 50000],
+             ["Testing at manufacturer's works", 50000], ["Foundations of transformers and panels", 200000]],
+      "power": {"line_km": 3, "line_rate_per_km": 2461686, "processing": 5950, "security_per_kva": 4500, "meter": 35700},
+      "trial": {"months": 3, "staff": [["SCADA operator", 3, 25000], ["Sweeper", 1, 12000]], "fixed_rs_per_kva_month": 350,
+                "tariff": 8.30, "hours": [4, 10, 8], "surcharge": 0.0428, "duty": 0.075, "dg_hours_per_day": 2,
+                "diesel_l_per_kva_hour": 0.08, "diesel_rs": 90, "lubricant_rs_per_day": 500}
+    },
+    "src": "R2 Pumping Plants rows 48-99, Screens, DG, Automation, Panel, Sub Station, Power Connection, Trial Run - the same for every station (user decision 26-Oct-2026); per pump where the estimate has one a pump; DG diesel 10 l/h for 125 kVA = 0.08 l/kVA/h"
+  }
+}

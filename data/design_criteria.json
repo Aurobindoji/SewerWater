@@ -1,0 +1,302 @@
+{
+  "_readme": "Design limits used by design_check.py. Values come from the agent's CPHEEO answers (my_questions report). 'page' = PDF page used by the agent. VERIFY each against the printed manual and change here if your project/UPJN norm differs. Set a value to null to skip that check.",
+  "water": {
+    "min_residual_head_m": {
+      "value": 17,
+      "page": "CPHEEO_WATER_MANUAL p839, p717",
+      "note": "17-21 m at all nodes throughout the day for Class I/II cities (24x7, tap supply without storage); 21 m at ferrule of highest point of OZ (p717). Other towns 12-15 m. Older norm 7/12/17 m for 1/2/3 storeys."
+    },
+    "max_velocity_mps": {
+      "value": 3.0,
+      "page": "CPHEEO_WATER_MANUAL p400 (also p145: 2.5 m/s)",
+      "note": "Filtered water 3 m/s; raw water 2.5 m/s; hilly area / branch to ESR 4.0 m/s (MS/DI with mortar lining)."
+    },
+    "min_diameter_mm": {
+      "value": 99,
+      "page": "CPHEEO_WATER_MANUAL p1003 (printed p870) sec 16.19; also p829 (Class I cities 100 mm, others 80 mm), p144 (distribution 100 plain / 80 hilly), p172 (existing 80 mm pipe may be retained)",
+      "note": "Springfield = Class I city -> 100 mm. Urban & peri-urban: minimum INTERNAL diameter of primary pipes 100 mm (plain area), 80 mm (hilly). Existing 80 mm pipes may be retained (rehabilitation, p172). Hilly small lanes (HSC): 32-63 mm. Other rural: 63 mm OD plain, 50 mm hilly. PROJECT DECISION (10-Oct-2026): HDPE 110 OD (ID 99.3 mm) accepted as the 100 mm size, so value set to 99 instead of the manual's 100. This is a project decision, not a manual value."
+    },
+    "max_connections_per_isolation_segment": {
+      "value": 120,
+      "page": "CPHEEO_WATER_MANUAL p184 (printed p88), Part A Ch.2, table 'Conversion from Present Intermittent Supply to 24x7 Pressurised Water Supply System', S.No.30 'Sub-DMAs/Isolation valves'",
+      "note": "Manual: isolation valves located so that a segment of not exceeding 50 connections (hilly areas) and 50 to 250 connections (other areas) gets isolated for repairs. Springfield = plain area -> 50-250. PROJECT DECISION (10-Oct-2026): 120 connections per segment. Used by model_valves.py to place/count isolation valves."
+    },
+    "max_hl_gradient_m_per_km": {
+      "value": null,
+      "page": "",
+      "note": "Optional: maximum head loss per km of pipe. Stops auto_design from shrinking pipes until the velocity is close to the maximum. Fill from manual / project practice (the manual allows exceeding it in hilly areas, so a normal value exists - look it up with 'water: head loss gradient')."
+    },
+    "low_velocity_flag_mps": {
+      "value": null,
+      "page": "",
+      "note": "Optional: only flags very low velocity (stagnation). Not a CPHEEO limit unless you add a source."
+    }
+  },
+  "sewer": {
+    "min_velocity_initial_peak_mps": {
+      "value": 0.6,
+      "page": "CPHEEO_sewer_manual_all p185 (printed 3-26), sec 3.15.1, Table 3.9 - VERIFIED on page image 10-Oct-2026",
+      "note": "Minimum velocity at initial peak flow."
+    },
+    "min_velocity_ultimate_peak_mps": {
+      "value": 0.8,
+      "page": "CPHEEO_sewer_manual_all p185 (printed 3-26), sec 3.15.1, Table 3.9 - VERIFIED on page image 10-Oct-2026",
+      "note": "Minimum velocity at ultimate peak flow."
+    },
+    "check_basis": {
+      "value": "uniform",
+      "page": "CPHEEO_sewer_manual_all p187 (printed 3-28) sec 3.15.5 and p190 (printed 3-31) below Table 3.12 - 'only the fixed value of Manning's n shall be used' - VERIFIED on page image 10-Oct-2026",
+      "note": "PROJECT DECISION (10-Oct-2026): minimum/maximum velocity and d/D are checked on uniform flow (Manning partial flow with constant n at the peak flow, as Table 3.12 / p190 directs). SewerGEMS solver velocity/depth (affected by backwater) are shown in the report for information only. Set to \"solver\" to check on solver results instead."
+    },
+    "max_velocity_mps": {
+      "value": 3.0,
+      "page": "CPHEEO_sewer_manual_all p185 (printed 3-26), Table 3.9 (3 m/s) - VERIFIED on page image 10-Oct-2026; p186 for the CI/DI note",
+      "note": "Above 3 m/s only CI/DI pipes with S/S joints and O-rings (hilly areas). No separate maximum slope in the manual (agent, 10-Oct-2026: none found in general clauses; 2.0 m/s in p849 is a worked example only) - maximum velocity governs steep sewers."
+    },
+    "max_d_by_D": {
+      "value": 0.8,
+      "page": "CPHEEO_sewer_manual_all p187 (printed 3-28), sec 3.15.5 'Design Depth of Flow' - VERIFIED on page image 10-Oct-2026",
+      "note": "'The maximum depth of flow in design shall be limited to 0.8 of the diameter at ultimate peak flow' (velocity at 0.8 depth = 1.14 x full, discharge = 0.98 x full; sewers shall not run full, for ventilation). D = internal diameter (p187, p190). Checked on uniform flow per check_basis."
+    },
+    "min_diameter_mm": {
+      "value": 200,
+      "page": "CPHEEO_sewer_manual_all p184",
+      "note": "200 mm for cities with base-year population over 1 lakh (150 mm may be considered for growth areas); 150 mm for towns under 1 lakh and hilly areas."
+    },
+    "min_slope_by_diameter": {
+      "value": {
+        "150": 0.005882,
+        "200": 0.004,
+        "250": 0.002778,
+        "300": 0.002222,
+        "375": 0.001493,
+        "450": 0.001205,
+        "525": 0.001
+      },
+      "page": "CPHEEO_sewer_manual_all p190 (printed 3-31), sec 3.15.6, Table 3.13 'Minimum slopes of sanitary sewers' - VERIFIED on page image 10-Oct-2026",
+      "note": "Slope as fraction from the 'As 1 in' column: 150-1/170, 200-1/250, 250-1/360, 300-1/450, 375-1/670, 450-1/830, >=525-1/1000. The 'As percent' column is rounded (0.6, 0.40, 0.28, 0.22, 0.15, 0.12, 0.10). design_check.py uses the row of the largest tabulated size <= pipe diameter (+5 % tolerance for internal diameters); the 525 row covers all larger sewers."
+    },
+    "max_manhole_spacing_m": {
+      "value": 30,
+      "page": "CPHEEO_sewer_manual_all p285 (printed 3-126), sec 3.71.1 'In Public Sewers'; also p286 Table 3.31 last row ('30 m or less depending on the street') - VERIFIED on page image 10-Oct-2026",
+      "note": "Sewers receiving house service connections: 30 m (plot frontage ~10 m, road 6-8 m; house sewer <= 3 m perpendicular / 15 m hypotenuse). May be less in economically weaker sections. Extra manholes at every change of direction. Applied to every conduit NOT listed in trunk_conduits."
+    },
+    "bend_manhole_min_angle_deg": {
+      "value": 20,
+      "page": "CPHEEO_sewer_manual_all p3-125 sec 3.71 ('there will be additional manholes at changes of directions') and p3-126 sec 3.71.1 ('The standard provision of additional manholes at changes of directions will continue')",
+      "note": "PROJECT DECISION (user, 20-Oct-2026), NOT a manual value: a conduit drawn with bends (DXF network) gets a new manhole at every bend of 20 deg or more. Sec 3.71 gives no angle (for reference: sec 3.12.6 p3-21 limits the deflection at a CI pipe joint to 5 / 4 / 3 deg). The drawn line is straightened to within 1 m first (road wobble is no bend). The manholes are put into the network before zoning and design (spacing.presplit). A number = one angle for all sizes; {up to diameter: angle} by size; null = no manholes at bends."
+    },
+    "max_manhole_spacing_trunk_m": {
+      "value": {
+        "600": 60,
+        "900": 90,
+        "1200": 120,
+        "1500": 150
+      },
+      "page": "CPHEEO_sewer_manual_all p286 (printed 3-127), sec 3.71.2, Table 3.31 'Spacing of manholes in gravity sewers not receiving house service sewers' - VERIFIED on page image 10-Oct-2026",
+      "note": "Trunk/outfall sewers with no house service connections: up to 600 mm 60 m, 600-900 mm 90 m, 900-1200 mm 120 m, 1200-1500 mm 150 m. Above 1500 mm the manual suggests exploring egg-shaped sewers (no spacing given). Applied only to conduits listed in trunk_conduits. Japanese manual Table 3.30 (p286) and WEF text (p285) are reference only - not used."
+    },
+    "trunk_conduits": {
+      "value": [],
+      "page": "",
+      "note": "PROJECT DECISION per model: labels of conduits that receive NO house connections (trunk/outfall), e.g. [\"CO-17\"]. Empty = all conduits checked at 30 m."
+    },
+    "min_cover_m": {
+      "value": 1.0,
+      "page": "CPHEEO_sewer_manual_all p283 (printed 3-124), sec 3.70 'Connection of house sewer to public sewer' - VERIFIED on page image 10-Oct-2026; sec 3.20.3 (about p200) referred there - still to be read",
+      "note": "Page 3-124: the minimum earth cover above the crown of the (house service) sewer is mandatorily 90 cm, 'as the public manhole shall start at its crown at 100 cm below ground level'. So the PUBLIC sewer crown is at least 1.0 m below ground; 0.9 m applies to the house service sewer. p200 (agent): 1 m minimum cover at the starting point of the network. Cover = node ground level - (conduit invert + diameter), checked at both ends. NOTE p205 (3-46): after a lift station sewage is lifted to an 'initial cover depth of 0.9 m' - differs from the 1.0 m of p283; 1.0 m kept for public sewers."
+    },
+    "manning_n_by_material": {
+      "value": {
+        "Salt glazed stoneware - good": 0.012,
+        "Cement concrete, collar joints - good": 0.013,
+        "Spun RCC/PSC, S/S joints (design value)": 0.011,
+        "Cast/Ductile iron - unlined": 0.013,
+        "Cast/Ductile iron - spun cement mortar lining": 0.011,
+        "Plastic (smooth)": 0.011,
+        "HDPE/UPVC": 0.01
+      },
+      "page": "CPHEEO_sewer_manual_all p188 (printed 3-29), Table 3.11 - VERIFIED on page image 10-Oct-2026",
+      "note": "REFERENCE ONLY - not checked by design_check.py yet (the Manning n in the model is used as it is). For sewer_design.py. Note below the table: n may be taken as 0.015 for unlined metallic pipes and 0.011 for plastic and other smooth pipes - this differs from the HDPE/UPVC row (0.01); choose one as a project decision before design."
+    },
+    "manhole_level_rule": {
+      "value": "crown_match",
+      "page": "CPHEEO_sewer_manual_all p201 (printed 3-42) sec 3.20.3 and p193 (printed 3-34) sec 3.17.1 - VERIFIED on page image 10-Oct-2026",
+      "note": "p201: if the sewer changes in size, the crowns of inlet and outlet sewers are set at the same elevation. p193: crowns of sewers are always kept continuous; the crown of the outgoing sewer shall not be higher than the crown of the incoming sewer. (p193 also lists recommended invert drops at transitions - half / 2/3 / 4/5 of the difference in diameter for <400 / 400-900 / >900 mm; crown matching gives the full difference, which satisfies the 'crown not higher' rule.)"
+    },
+    "drop_same_size_mm": {
+      "value": 30,
+      "page": "CPHEEO_sewer_manual_all p201 (printed 3-42) sec 3.20.3 - VERIFIED on page image 10-Oct-2026",
+      "note": "'If the sewer changes in direction in a manhole without change of size, a drop of usually 30 mm is provided.' sewer_design.py applies it where the flow turns by more than straight_run_tolerance_deg (from node coordinates); if coordinates cannot be read, at junction manholes (2+ incoming) only."
+    },
+    "straight_run_tolerance_deg": {
+      "value": 10,
+      "page": "",
+      "note": "Decision by Claude (10-Oct-2026): a manhole counts as a 'change in direction' (p201 30 mm drop) when the flow turns by more than this angle, computed from the node coordinates. Survey/plotting irregularity of a few degrees on a straight road is not treated as a turn. Without coordinates the drop is given at junctions only."
+    },
+    "drop_manhole_threshold_m": {
+      "value": 0.6,
+      "page": "CPHEEO_sewer_manual_all p212 (printed 3-53) sec 3.25 and p193 (printed 3-34) sec 3.17.1 - VERIFIED on page image 10-Oct-2026",
+      "note": "Vertical drop / drop connection only when the difference in level is more than 600 mm; below that it is avoided by adjusting the slope (p193)."
+    },
+    "max_depth_to_invert_m": {
+      "value": 6.0,
+      "page": "CPHEEO_sewer_manual_all p205 (printed 3-46), note below Table 3.15 - VERIFIED on page image 10-Oct-2026",
+      "note": "'Where depths exceed 6 m below GL, lift stations as in Section 4.18 shall be inserted and sewage lifted to initial cover depth of 0.9 m. In specific situations deeper depth can be justified in the DPR like outfall, etc.' (p311: about 3 m in high water table / rocky strata.)"
+    },
+    "lift_stations_allowed": {
+      "value": false,
+      "page": "PROJECT DECISION (user, 12-Oct-2026)",
+      "note": "Only PUMPING STATIONS and the STP are built in this department - no lift stations inside a sewer network. Where a sewer would go deeper than max_depth_project_m, the area above that point becomes its own zone whose outlet is a pumping station (zoning.py); sewer_design.py makes no lift-station study."
+    },
+    "max_depth_project_m": {
+      "value": 10.0,
+      "page": "PROJECT DECISION (user, 12-Oct-2026); permitted by the note to CPHEEO p205 Table 3.15: 'In specific situations deeper depth can be justified in the DPR'",
+      "note": "Sewers may go deeper than max_depth_to_invert_m (6 m, CPHEEO p205) up to this depth below GL - depths between the two are listed as deeper than the CPHEEO value (to be justified in the DPR); deeper than this -> new zone + pumping station. SOR excavation slices go to 12 m (sewer_sor_rates.json)."
+    },
+    "max_slope_for_self_cleansing": {
+      "value": 0.01,
+      "page": "",
+      "note": "Decision by Claude at the user's request (10-Oct-2026). Table 3.13 is only the MINIMUM slope; a sewer is steepened as needed for the self-cleansing velocity (user, 10-Oct-2026) when the velocity is REACHED at a slope not steeper than 1 in 100 AND the downstream invert stays within max_depth_for_velocity_steepening_m. Otherwise it is not steepened part way and is flagged 'flushing needed'. Why both limits: tested on Sample-1 - with a depth limit only, a small branch (0.66 L/s, needed 1 in 21) used up the whole 3 m depth and the main line below it (1.74 L/s) then could not be steepened; a slope limit keeps the depth for the main lines. With 200 mm RCC (n 0.011) 1 in 100 reaches 0.8 m/s from about 4 L/s upward. null = no slope limit."
+    },
+    "max_depth_for_velocity_steepening_m": {
+      "value": 3.0,
+      "page": "reference: CPHEEO_sewer_manual_all p311 (agent, about 3 m in high water table / rocky strata - not verified on page image)",
+      "note": "Decision by Claude at the user's request (10-Oct-2026): a sewer is steepened for the self-cleansing velocity only if the velocity is REACHED while the downstream invert stays within 3.0 m of ground. If not (heads of sewers with a few L/s or less: e.g. 0.08 L/s in 200 mm needs about 1 in 2), it is NOT steepened part way - that would only push every downstream sewer deeper without reaching the velocity - the base slope (Table 3.13 / cover) is kept and the sewer is flagged 'flushing needed'. Reason for 3.0 m: Springfield high water table near the rivers; dewatering and shoring cost rise steeply beyond ~3 m. Depth needed for minimum slope, cover or capacity is not limited by this - those go up to max_depth_to_invert_m (6 m, p205). null = no depth limit."
+    },
+    "no_size_reduction_downstream": {
+      "value": true,
+      "page": "CPHEEO_sewer_manual_all p193 (printed 3-34) sec 3.17.1 - VERIFIED on page image 10-Oct-2026",
+      "note": "'Transition from larger to smaller diameters shall not be made.'"
+    },
+    "min_sewage_flow_lpcd": {
+      "value": 100,
+      "page": "CPHEEO_sewer_manual_all p162 (printed 3-3), sec 3.5 'Per capita sewage flow' - VERIFIED on page image 11-Oct-2026",
+      "note": "'Conventional sewers shall be designed for a minimum sewage flow of 100 litres per capita per day or higher as the case may be.' Lower limit for the per capita sewage flow (water supply x return factor) asked by sewer_design.py --ask."
+    },
+    "sewage_return_factor": {
+      "value": null,
+      "range": [
+        0.4,
+        0.9
+      ],
+      "page": "CPHEEO_sewer_manual_all p162 (printed 3-3), sec 3.5 - VERIFIED on page image 11-Oct-2026 (range); examples p687 (0.85, decentralised systems) and p849/p850 (0.90, worked examples) - agent 11-Oct-2026, not general rules",
+      "note": "Manual: mean sewage flow may be as little as 40 % of water consumption in arid regions and as high as 90 % in well developed areas; no single value prescribed. PROJECT DECISION per project - null = asked every time (shown with this range)."
+    },
+    "peak_factor_by_population": {
+      "value": [
+        [
+          20000,
+          3.0
+        ],
+        [
+          50000,
+          2.5
+        ],
+        [
+          750000,
+          2.25
+        ],
+        [
+          null,
+          2.0
+        ]
+      ],
+      "page": "CPHEEO_sewer_manual_all p162 (printed 3-3), Table 3.2 'Peak factor for contributory population' - VERIFIED on page image 11-Oct-2026",
+      "note": "Rows [contributory population up to, peak factor]: up to 20,000 -> 3.00; 20,001-50,000 -> 2.50; 50,001-7,50,000 -> 2.25; above 7,50,001 -> 2.00 (null = no upper limit). Applies to the CONTRIBUTORY population of each sewer, so it falls downstream. p163 (3-4): the peak factor also depends on population density, topography and hours of water supply - individual cases may be analysed further."
+    },
+    "min_flow_fraction_of_average": {
+      "value": [
+        0.333,
+        0.5
+      ],
+      "page": "CPHEEO_sewer_manual_all p163 (printed 3-4), after Table 3.2 - VERIFIED on page image 11-Oct-2026",
+      "note": "'The minimum flow may vary from 1/3 to 1/2 of average flow.' REFERENCE ONLY - for a later initial-stage / minimum-flow check."
+    },
+    "infiltration_range": {
+      "value": {
+        "l_per_ha_day": [
+          5000,
+          50000
+        ],
+        "l_per_km_day": [
+          500,
+          5000
+        ],
+        "l_per_manhole_day": [
+          250,
+          500
+        ]
+      },
+      "page": "CPHEEO_sewer_manual_all p163 (printed 3-4), sec 3.6, Table 3.3 'Ground water infiltration' - VERIFIED on page image 11-Oct-2026",
+      "note": "Allowance for groundwater infiltration for the worst condition in the area, [minimum, maximum] per unit. Chosen value is a PROJECT DECISION (asked by sewer_design.py --ask)."
+    },
+    "infiltration_max_fraction": {
+      "value": 0.1,
+      "page": "CPHEEO_sewer_manual_all p163 (printed 3-4), sec 3.6 - agent 11-Oct-2026; the line is below Table 3.3 and was NOT in the page image seen - verify",
+      "note": "'The design infiltration value shall be limited to a maximum of 10 % of the design value of sewage flow.'"
+    },
+    "storm_inflow": {
+      "value": false,
+      "page": "CPHEEO_sewer_manual_all p164 (printed 3-5) - agent 11-Oct-2026, not yet verified on page image",
+      "note": "Sanitary sewers are not expected to receive storm water (except small habitations with almost continuous rainfall). Not added to the design flow."
+    },
+    "population_distribution": {
+      "value": "equal",
+      "options": [
+        "equal",
+        "length",
+        "csv"
+      ],
+      "page": "",
+      "note": "PROJECT DECISION (user, 11-Oct-2026): how the design population is spread over the manholes - 'equal' (default) = same population on every manhole; 'length' = in proportion to half the length of the sewers meeting at each manhole; 'csv' = from a CSV file (manhole label, population) whose path is asked. Asked by sewer_design.py --ask."
+    },
+    "flushing_water_l": {
+      "value": {
+        "200": {
+          "200": 2300,
+          "130": 1500,
+          "100": 1300,
+          "50": 500,
+          "33": 400
+        },
+        "250": {
+          "200": 2500,
+          "130": 1800,
+          "100": 1500,
+          "50": 800,
+          "33": 500
+        },
+        "300": {
+          "200": 3000,
+          "130": 2300,
+          "100": 2000,
+          "50": 1000,
+          "33": 700
+        }
+      },
+      "page": "CPHEEO_sewer_manual_all p215 (printed 3-56), sec 3.29 'Flushing manholes', Table 3.16 'Quantity of water needed for flushing' (source CPHEEO 1993) - VERIFIED on page image 11-Oct-2026",
+      "note": "Litres for ONE flush: {internal diameter mm: {slope '1 in': litres}}. Sec 3.29: where self-cleansing velocity cannot be obtained due to flat gradient, especially at the top ends of branch sewers, some flushing device is essential; flushing manholes are located generally at the head of a sewer; the flush is effective up to a certain distance only (no distance given). Methods: planks in grooves (main drains, grooves at 45-50 m), elevated tank of treated sewage with flushing hydrants (IS 4111 Part 2), fire hydrant or tanker and hose; automatic mechanical systems corrode and are NOT recommended. Suggested: butterfly valve at the head sewer mouth (extended handle) + tanker of treated sewage from the STP; jet rodding machines are safer but costly. sewer_design.py: column = largest size <= pipe ID (+5 %); row = next FLATTER tabulated slope (more water, safe side); flatter than 1 in 200 or above 300 mm is outside the table and flagged."
+    },
+    "flushing_tanker_l": {
+      "value": 6000,
+      "page": "CPHEEO_sewer_manual_all p215 (printed 3-56), last paragraph of sec 3.29 - VERIFIED on page image 11-Oct-2026",
+      "note": "'Usually a sewer tanker can hold about 6000 litres and is adequate to flush at least two manholes per trip.' Used to count tanker trips per flushing round."
+    },
+    "flushing_frequency_per_day": {
+      "value": 1,
+      "page": "",
+      "note": "PROJECT DECISION (user, 11-Oct-2026): every flushing manhole is flushed once a day. The manual gives no general rule (agent 11-Oct-2026: only a worked example on p851 flushes once a day - not verified on page image, not a rule). Used for water and tanker trips per day."
+    },
+    "terminal_cleanout_max_distance_m": {
+      "value": 50,
+      "page": "CPHEEO_sewer_manual_all p216 (printed 3-57), sec 3.31 'Terminal cleanout structure' - VERIFIED on page image 11-Oct-2026",
+      "note": "REFERENCE ONLY - not used by the scripts. Terminal cleanouts only at the ends of branch sewers that may never be extended, within 50 m of a manhole; never a substitute for a manhole; lamp holes to be discontinued."
+    },
+    "flushing_flatter_slope_rule": {
+      "value": "flattest_row",
+      "page": "CPHEEO_sewer_manual_all p215 (printed 3-56), Table 3.16 - flattest row 1 in 200",
+      "note": "PROJECT DECISION (user, 11-Oct-2026): for a sewer flatter than the flattest row of Table 3.16 (1 in 200; e.g. 200 mm at the Table 3.13 minimum slope 1 in 250) the 1 in 200 row is used (200 mm: 2300 L per flush). Table 3.16 dates from CPHEEO 1993 and gives no value for flatter slopes. null = such manholes are flagged 'outside Table 3.16' instead."
+    }
+  }
+}

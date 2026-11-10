@@ -1,0 +1,204 @@
+{
+  "_readme": "Design norms of the water module. CPHEEO = Manual on Water Supply and Treatment (CPHEEO, MoHUA), pages = PDF pages of CPHEEO_WATER_MANUAL.pdf (Table 2.7 = recommended norms for 24x7 pressurised supply). UPJN = U.P. Jal Nigam departmental practice as stated by the engineer. A value used by the design reads its 'value'; 'ref' is printed with every check that uses it.",
+  "residual_head_m": {
+    "value": 17.0,
+    "ref": "CPHEEO Table 2.7 S.No.10 p173: 17-21 m at the highest node for Class I and II cities (12-15 m others)"
+  },
+  "residual_head_max_m": {
+    "value": 21.0,
+    "ref": "CPHEEO Table 2.7 S.No.10 p173"
+  },
+  "peak_factor": {
+    "value": 2.5,
+    "ref": "CPHEEO Table 2.7 S.No.7(b) p172: urban distribution network 2.5 irrespective of population"
+  },
+  "transmission_hours": {
+    "value": 22,
+    "ref": "CPHEEO Table 2.7 S.No.7(a) p172: transmission up to ESRs designed for 22 h"
+  },
+  "min_diameter_mm": {
+    "value": 100,
+    "ref": "CPHEEO Table 2.7 S.No.8 p172: 100 mm for primary pipes (existing 80 mm may stay)"
+  },
+  "min_velocity_mps": {
+    "value": 0.3,
+    "ref": "CPHEEO 6.6(i) p400: 0.4-0.6 m/s recommended, down to 0.3 m/s where the minimum diameter forces it (with scouring)"
+  },
+  "min_velocity_desired_mps": {
+    "value": 0.4,
+    "ref": "CPHEEO 6.6(i) p400"
+  },
+  "max_velocity_mps": {
+    "value": 3.0,
+    "ref": "CPHEEO 6.6(ii) p400: filtered water 3 m/s (raw water 2.5 m/s)"
+  },
+  "max_hl_gradient_m_per_km": {
+    "value": 10.0,
+    "ref": "CPHEEO 6.6(v) p400 and Table 2.7 S.No.22 p182 (transmission mains)"
+  },
+  "minor_loss_factor": {
+    "value": 1.1,
+    "ref": "CPHEEO 6.6(vi) p400: minor losses 10% of friction - pipe lengths increased by 10%"
+  },
+  "headloss_formula": {
+    "value": "hazen-williams",
+    "ref": "CPHEEO Table 2.7 S.No.36 p187; eq 6.4 p393: h = 10.68 (Q/C)^1.852 L / D^4.87"
+  },
+  "lpcd": {
+    "value": 150,
+    "ref": "CPHEEO Table 2.7 S.No.4 p169: 150 LPCD for cities of 10 lakh or more (135 below)"
+  },
+  "distribution_losses": {
+    "value": 0.1,
+    "ref": "CPHEEO Table 2.7 S.No.6 p171: distribution losses not more than 10% (ground water direct: 11% in all)"
+  },
+  "floating_lpcd": {
+    "value": 45,
+    "ref": "CPHEEO Table 2.7 S.No.5 p170: 45 LPCD with bathing facilities (25 without, 15 public facilities only)"
+  },
+  "floating_share": {
+    "value": 0.1,
+    "ref": "Elmwood DPR practice: floating population 10% of the population"
+  },
+  "fire_formula": {
+    "value": "100*sqrt(P_thousand) m3/d for the city, shared by population",
+    "ref": "CPHEEO Table 2.7 S.No.13 p176"
+  },
+  "fire_storage_share": {
+    "value": 0.333333,
+    "ref": "CPHEEO Table 2.7 S.No.13 p176-177: one third of the OZ's fire requirement kept in the ESR (normal outlet just above it) - added to the balancing capacity (user decision 30-Oct-2026)"
+  },
+  "oz_max_population": {
+    "value": 50000,
+    "ref": "CPHEEO Table 2.7 S.No.20 p180: OZ of a new service tank not more than 50,000 population or 10,000 connections"
+  },
+  "oz_max_connections": {
+    "value": 10000,
+    "ref": "CPHEEO Table 2.7 S.No.20 p180"
+  },
+  "oz_max_slope_m": {
+    "value": 5.0,
+    "ref": "CPHEEO Table 2.7 S.No.18 p180: slope within an OZ up to 5 m in non-hilly areas"
+  },
+  "dma_min_connections": {
+    "value": 500,
+    "ref": "CPHEEO Table 2.7 S.No.21 p181: 500-3000 HSC per DMA in plain areas"
+  },
+  "dma_max_connections": {
+    "value": 3000,
+    "ref": "CPHEEO Table 2.7 S.No.21 p181"
+  },
+  "dma_max_per_oz": {
+    "value": 4,
+    "ref": "CPHEEO Table 2.7 S.No.21 p181: not more than four, preferably two or three"
+  },
+  "esr_capacity_share": {
+    "value": 0.33,
+    "ref": "CPHEEO Table 2.7 S.No.12 p175: balancing capacity by mass balance or 33% of the ultimate-stage demand of the OZ - in any case not less than 33% (the larger is taken)"
+  },
+  "oht_inflow_hours": {
+    "value": [[5, 12], [13, 22]],
+    "ref": "Elmwood DPR T3 (mass balance): OHT filled 16 h/day, 5-12 h and 13-22 h (tube wells 16 h)"
+  },
+  "draw_off_pattern": {
+    "value": [0.08, 0.08, 0.08, 0.08, 0.08, 0.5, 0.7, 2.5, 2.5, 1.8, 1.5, 1.4, 0.55, 0.4, 0.6, 0.5, 0.6, 1.0, 1.8, 2.5, 2.5, 1.95, 0.25, 0.05],
+    "ref": "Elmwood DPR T3 'Draw Off Pattern': hourly draw-off in multiples of the average hourly demand, hours 0-1 ... 23-24 (peak 2.5, sum 24; 12-13 h = 0.65 x 0.5 + 0.45 x 0.5)"
+  },
+  "tubewell_pumping_hours": {
+    "value": 16,
+    "ref": "UPJN practice (Elmwood DPR): tube wells pumped 16 h/day"
+  },
+  "tubewell_discharge_lpm": {
+    "value": 1500,
+    "ref": "Elmwood DPR 'TW' C28: discharge of a proposed tube well 1500 LPM"
+  },
+  "existing_tubewell_lpm": {
+    "value": 1200,
+    "ref": "Elmwood DPR 'TW' C21: discharge of an existing / rebored tube well 1200 LPM"
+  },
+  "pumping_main_factor": {
+    "value": 1.11,
+    "ref": "Elmwood DPR 'T1' AU: demand of the pumping main from the tube wells / WTP to the OHT = demand without losses x 1.11"
+  },
+  "cwr_when_tubewells_over": {
+    "value": 3,
+    "ref": "UPJN rule: a CWR is mandatory when more than 3 tube wells fill one ESR (CPHEEO p126-127 only recommends a common CWR); only the NEW tube wells are counted - the existing ones stay engaged with the existing structures (user decision 27-Oct-2026); only the WORKING new ones - the standby tube wells (standby_pumps) not counted (user decision 7-Nov-2026)"
+  },
+  "standby_pumps": {
+    "value": [[2, 1], [5, 2], [10, 3]],
+    "ref": "CPHEEO water manual Part A (2024) 5.7.5 p245-246 (PDF p350-351): standby by the working pumps - 1 W + 1 S, 2 W + 1 S (generally), 3-5 W + 2 S, 6-10 W + 3 S ([[working up to, standby]]; more than 10: the last). Booster and CWR pumps; and the new tube wells of an OZ (user decision 7-Nov-2026): standby tube wells, each a whole tube well of its own - boring, pump house, pumping plant, power connection, rising main - as built on site"
+  },
+  "cwr_capacity_share": {
+    "value": 0.25,
+    "ref": "CPHEEO 2.8.1.17 p127: capacity of the clear water sump 25% of the ESR"
+  },
+  "stages": {
+    "value": {
+      "base": 0,
+      "intermediate": 15,
+      "ultimate": 30
+    },
+    "ref": "CPHEEO Table 2.7 S.No.1 p168: distribution pipes and ESRs for the ultimate stage (base + 30 years)"
+  },
+  "persons_per_connection": {
+    "value": 6.0,
+    "ref": "Elmwood DPR (UPJN Springfield): population / households = 2818720 / 463856 = 6.08 (2027) - one connection per household"
+  },
+  "oht_capacity_round_kl": {
+    "value": 50,
+    "ref": "practice: OHT capacity rounded up to 50 KL"
+  },
+  "existing_oht_head_loss_m_per_km": {
+    "value": 0.5,
+    "ref": "planning allowance (not CPHEEO): head lost in the pipes per km along the pipes from an existing OHT (min 1 m) - with a VFD pump: the trial head its pipes are designed for (the pump then as small as it can be); set to give its higher ground to a new OHT: in zoning it is not given ground it could not give 17 m on this allowance (the design then moves any node it still leaves below 17 m)"
+  },
+  "vfd_efficiency": {
+    "value": 0.65,
+    "ref": "practice (not CPHEEO): wire-to-water efficiency of a small VFD pump set, for its kW"
+  },
+  "zoning_head_loss_m_per_km": {
+    "value": 1.5,
+    "ref": "planning allowance (not CPHEEO): head lost in the pipes per km from the OHT along the pipes to the farthest node of its OZ - for the trial staging of a new OHT (the design then lowers it to what 17 m needs)"
+  },
+  "tubewell_spacing_m": {
+    "value": 100,
+    "ref": "user decision 31-Oct-2026: new tube wells suggested at least this far from each other and from the OHT (the manual gives no figure)"
+  },
+  "rising_main_economics": {
+    "value": {"interest": 0.065, "years": 30, "pump_life": 15, "pump_rs_per_kw": 21048, "standby": 0.5,
+              "efficiency": 0.72, "minor": 0.10, "specials": 0.10, "energy_rs_per_kwh": 9.245},
+    "ref": "CPHEEO 6.7 p400-402 and Annexure 6.1 p1157-1159: economical size = least of pipe (+10 % specials) + pump sets (+50 % standby, replaced after 15 years, present worth) + capitalised energy, 30 years, MAAR 6.5 %, minor losses 10 % (the Annexure's example values); pump set Rs 21,048 / kW (UPJN Riverside R3 dt 29.1.2026 'pp oht BOOSTER' B30: submersible pump set 1200-1500 LPM, 37 m head, SITC Rs 2,35,523 for its 11.19 kW - F31; the nearest to a new tube well of 1500 LPM, 34-43 m); pump efficiency 72 % (Elmwood 'T3'); energy Rs 8.60 / kWh + 7.5 % duty (UPJN R3, dpr_water.json em)"
+  },
+  "rising_main_velocity": {
+    "value": [0.6, 2.0],
+    "ref": "candidate sizes of a rising main: velocity 0.6 - 2.0 m/s (planning range around Lea's 0.97 - 1.22 x sqrt(Q), CPHEEO 6.7.2 p401)"
+  },
+  "rising_main_material": {
+    "value": ["DI"],
+    "ref": "materials of the rising mains of the tube wells (user decision 7-Nov-2026): DI only, as the Riverside water DPR p197 (every TW / CWR rising main D.I.); IS 4984 (Amendment 2, 2022) gives the PE pipe no surge allowance - its PN-6 0.6 MPa holds the head with the surge, which a tube well's head (52-57 m) + surge (~34 m in HDPE 160) exceeds"
+  },
+  "surge": {
+    "value": {"k": 2.07e8, "E": {"HDPE": 9e7, "DI": 1.7e10}, "aop_m": {"HDPE": 61.2, "DI": 81.6}, "mop_m": {"HDPE": 61.2, "DI": 127.5}},
+    "ref": "CPHEEO 6.16.4 p428: surge h = c V / g, c = 1425 / sqrt(1 + k d / (E t)), k = 2.07e8 kg/m2, E of hard polyethylene 9e7, ductile iron 1.7e10 kg/m2 (Table 6.9). DI K-7 DN 80-750 (IS 8329:2000 Amendment 1, Annex E): allowable operating pressure (without surge) AOP 0.8 MPa = 81.6 m, allowable maximum operating pressure (with surge) MOP 1.25 MPa = 127.5 m; HDPE PN-6 0.6 MPa = 61.2 m both - IS 4984 (Amendment 2, 2022) gives the PE pipe no surge allowance, so HDPE is not a rising main (rising_main_material, user decision 7-Nov-2026)"
+  },
+  "di_k9": {
+    "value": {"wall_mm": {"200": 6.3, "250": 6.8, "300": 7.2, "350": 7.7, "400": 8.1, "450": 8.6, "500": 9.0, "600": 9.9},
+              "aop_mpa": {"200": 6.2, "250": 5.4, "300": 4.9, "350": 4.5, "400": 4.2, "450": 4.0, "500": 3.8, "600": 3.6},
+              "mop_mpa": {"200": 7.4, "250": 6.5, "300": 5.9, "350": 5.4, "400": 5.1, "450": 4.8, "500": 4.6, "600": 4.3}},
+    "ref": "IS 8329:2000 Table 2 (barrel wall thickness K9) and Amendment 1 Annex E (K9 AOP without surge / MOP with surge, MPa; 1 MPa = 101.97 m): a DI rising main whose K-7 AOP / MOP its head / head + surge exceeds is laid in K9 (user decision 31-Oct-2026)"
+  },
+  "ward_growth": {
+    "value": {"Saturated (Core)": [1.02, 1.25, 1.50], "High (Proximal Developed)": [1.04, 1.40, 1.85],
+              "Medium (Proximal Developing)": [1.06, 1.63, 2.45], "Low (Far-open)": [1.0932, 1.9183, 3.3282]},
+    "ref": "Riverside water DPR (U.P. Jal Nigam 2026) p76 'Defining ward characteristics': growth of a ward's present population by its character (current density, road network, master plan, adjacent wards) - named as CPHEEO Manual on Water Supply 2024 Part A Annexure 2.7 p974 (low / medium / high / saturated; the cores of the city at saturation) with the DPR's word in brackets, densest first (user decision 9-Nov-2026: the DPR's Proximal Developed / Core / Proximal Developing / Far-open in that order of density) - base year, middle year (+15), design year (+30); Far-open = the balancing value of the example technical.xlsx 'T' rows 465-478 (the town's wards add up to the census' geometrical projection; user decision 7-Nov-2026); user decision 6-Nov-2026: a ward given a character on the map grows so, in place of the one ratio of the page / projection; 7-Nov-2026: the ward table's character column, these factors yellow on the page"
+  },
+  "ward_town_population": {
+    "value": {"Saturated (Core)": 698311, "High (Proximal Developed)": 673088, "Medium (Proximal Developing)": 720858,
+              "Low (Far-open)": 587585},
+    "ref": "the whole town's population of the ward table's year (2025) by the character of its wards - Springfield City Council, 100 wards (example technical.xlsx 'T' AD347:AG347, by density 585 / 310 / 170 per ha); Far-open's factors balance them to the adopted projection (user decision 7-Nov-2026); another town: its own, on the page"
+  },
+  "ward_saturation_density": {
+    "value": 1880,
+    "ref": "CPHEEO Manual on Water Supply 2024 Part A, Annexure 2.7 p974: the developed core's density has practically reached saturation - the saturation density is decided very close to its present density and is the upper limit of every ward's future density; default the example's densest Springfield ward 1,710 per ha (technical.xlsx 'T' V column, on the equivalent area) x 1.10 (user decision 8-Nov-2026: a ward above it only warned of); another town: its own, on the page"
+  }
+}

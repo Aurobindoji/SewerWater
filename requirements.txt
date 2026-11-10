@@ -1,0 +1,11 @@
+# the app
+openpyxl
+ezdxf
+matplotlib
+numpy
+scipy
+pyproj
+pywebview>=6
+# tests and the setup build
+pytest
+pyinstaller

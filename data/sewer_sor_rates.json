@@ -1,0 +1,684 @@
+{
+  "_readme": "Sewer rates for sewer_design.py (Cost sheet). Generated from the SOR file by script - do not retype. Every rate keeps its SOR item code. A null value = project decision still to be made (that item is then quantity-only, not priced).",
+  "_source": "SOR 2025-26 (sewer_sor.xlsx, sheet 'sor', 'SCHEDULE OF RATES FOR YEAR 2025-26')",
+  "depth_bands_m": {
+    "value": [
+      1.5,
+      3.0,
+      4.5,
+      6.0,
+      7.5,
+      9.0,
+      10.5,
+      12.0
+    ],
+    "note": "Upper limits of the SOR depth slices below GL (0-1.5, 1.5-3.0 ... 10.5-12.0 m)."
+  },
+  "excavation_ordinary_soil": {
+    "codes": [
+      "3001",
+      "3002",
+      "3003",
+      "3004",
+      "3005",
+      "3006",
+      "3006.i.",
+      "3006.ii."
+    ],
+    "rates": [
+      307.02,
+      387.46,
+      487.56,
+      570.12,
+      747.0,
+      980.55,
+      1402.59,
+      1786.89
+    ],
+    "unit": "CUM",
+    "desc": "Excavation for depth up to 1.5 m below G.L. for laying sewers, manholes, gully pits, chambers, sumps etc. in ordinary soil (earth, sand, loam & clay) including cutting of Joints pits, trimming, dressing, leveling, refilling of trenches in 20cm layers watering and ramming the same including removal of surplus earth or other dismantled material up to a distance of 50m from the centre of trenches.",
+    "measure": "Each 1.5 m slice of the trench volume (GL down to invert) at the rate of its slice - as in the Riverside SPS BOQ (BOQ SPS1, items 3001-3006 by slice).",
+    "_source": "SOR 2025-26 (sewer_sor.xlsx, sheet 'sor', 'SCHEDULE OF RATES FOR YEAR 2025-26'), items 3001-3006.ii."
+  },
+  "laying_rcc_np3": {
+    "by_nominal_mm": {
+      "100": {
+        "codes": [
+          "3196.i.",
+          "3196.ii.",
+          "3196.iii.",
+          "3196.iv.",
+          "3196.v.",
+          "3196.vi.",
+          "3196.vii.",
+          "3196.viii."
+        ],
+        "rates": [
+          348.9,
+          371.4,
+          394.43,
+          421.3,
+          458.98,
+          509.92,
+          558.24,
+          610.57
+        ]
+      },
+      "150": {
+        "codes": [
+          "3197.i.",
+          "3197.ii.",
+          "3197.iii.",
+          "3197.iv.",
+          "3197.v.",
+          "3197.vi.",
+          "3197.vii.",
+          "3197.viii."
+        ],
+        "rates": [
+          441.84,
+          470.34,
+          499.5,
+          533.52,
+          581.24,
+          645.75,
+          706.94,
+          773.22
+        ]
+      },
+      "200": {
+        "codes": [
+          "3198.i.",
+          "3198.ii.",
+          "3198.iii.",
+          "3198.iv.",
+          "3198.v.",
+          "3198.vi.",
+          "3198.vii.",
+          "3198.viii."
+        ],
+        "rates": [
+          569.57,
+          606.31,
+          643.9,
+          687.76,
+          749.27,
+          832.43,
+          911.31,
+          996.75
+        ]
+      },
+      "250": {
+        "codes": [
+          "3199.i.",
+          "3199.ii.",
+          "3199.iii.",
+          "3199.iv.",
+          "3199.v.",
+          "3199.vi.",
+          "3199.vii.",
+          "3199.viii."
+        ],
+        "rates": [
+          591.78,
+          629.95,
+          669.01,
+          714.57,
+          778.49,
+          864.89,
+          946.85,
+          1035.62
+        ]
+      },
+      "300": {
+        "codes": [
+          "3200.i.",
+          "3200.ii.",
+          "3200.iii.",
+          "3200.iv.",
+          "3200.v.",
+          "3200.vi.",
+          "3200.vii.",
+          "3200.viii."
+        ],
+        "rates": [
+          730.21,
+          777.31,
+          825.5,
+          881.73,
+          960.59,
+          1067.2,
+          1168.34,
+          1277.87
+        ]
+      },
+      "350": {
+        "codes": [
+          "3201.i.",
+          "3201.ii.",
+          "3201.iii.",
+          "3201.iv.",
+          "3201.v.",
+          "3201.vi.",
+          "3201.vii.",
+          "3201.viii."
+        ],
+        "rates": [
+          885.4,
+          942.51,
+          1000.94,
+          1069.12,
+          1164.74,
+          1294.01,
+          1416.64,
+          1549.45
+        ]
+      },
+      "400": {
+        "codes": [
+          "3202.i.",
+          "3202.ii.",
+          "3202.iii.",
+          "3202.iv.",
+          "3202.v.",
+          "3202.vi.",
+          "3202.vii.",
+          "3202.viii."
+        ],
+        "rates": [
+          966.49,
+          1028.83,
+          1092.62,
+          1167.04,
+          1271.42,
+          1412.53,
+          1546.38,
+          1691.36
+        ]
+      },
+      "450": {
+        "codes": [
+          "3203.i.",
+          "3203.ii.",
+          "3203.iii.",
+          "3203.iv.",
+          "3203.v.",
+          "3203.vi.",
+          "3203.vii.",
+          "3203.viii."
+        ],
+        "rates": [
+          1150.94,
+          1225.18,
+          1301.14,
+          1389.76,
+          1514.06,
+          1682.1,
+          1841.5,
+          2014.14
+        ]
+      },
+      "500": {
+        "codes": [
+          "3204.i.",
+          "3204.ii.",
+          "3204.iii.",
+          "3204.iv.",
+          "3204.v.",
+          "3204.vi.",
+          "3204.vii.",
+          "3204.viii."
+        ],
+        "rates": [
+          1283.68,
+          1366.48,
+          1451.2,
+          1550.04,
+          1688.68,
+          1876.1,
+          2053.89,
+          2246.44
+        ]
+      },
+      "600": {
+        "codes": [
+          "3205.i.",
+          "3205.ii.",
+          "3205.iii.",
+          "3205.iv.",
+          "3205.v.",
+          "3205.vi.",
+          "3205.vii.",
+          "3205.viii."
+        ],
+        "rates": [
+          1476.19,
+          1571.4,
+          1668.83,
+          1782.5,
+          1941.93,
+          2157.45,
+          2361.9,
+          2583.33
+        ]
+      },
+      "700": {
+        "codes": [
+          "3206.i.",
+          "3206.ii.",
+          "3206.iii.",
+          "3206.iv.",
+          "3206.v.",
+          "3206.vi.",
+          "3206.vii.",
+          "3206.viii."
+        ],
+        "rates": [
+          1640.39,
+          1746.2,
+          1854.46,
+          1980.77,
+          2157.93,
+          2397.43,
+          2624.62,
+          2870.68
+        ]
+      },
+      "800": {
+        "codes": [
+          "3207.i.",
+          "3207.ii.",
+          "3207.iii.",
+          "3207.iv.",
+          "3207.v.",
+          "3207.vi.",
+          "3207.vii.",
+          "3207.viii."
+        ],
+        "rates": [
+          2539.49,
+          2703.29,
+          2870.89,
+          3066.43,
+          3340.7,
+          3711.46,
+          4063.18,
+          4444.11
+        ]
+      },
+      "900": {
+        "codes": [
+          "3208.i.",
+          "3208.ii.",
+          "3208.iii.",
+          "3208.iv.",
+          "3208.v.",
+          "3208.vi.",
+          "3208.vii.",
+          "3208.viii."
+        ],
+        "rates": [
+          2915.36,
+          3103.4,
+          3295.81,
+          3520.3,
+          3835.16,
+          4260.8,
+          4664.58,
+          5101.88
+        ]
+      },
+      "1000": {
+        "codes": [
+          "3209.i.",
+          "3209.ii.",
+          "3209.iii.",
+          "3209.iv.",
+          "3209.v.",
+          "3209.vi.",
+          "3209.vii.",
+          "3209.viii."
+        ],
+        "rates": [
+          3343.25,
+          3558.89,
+          3779.54,
+          4036.97,
+          4398.05,
+          4886.16,
+          5349.2,
+          5850.69
+        ]
+      },
+      "1100": {
+        "codes": [
+          "3210.i.",
+          "3210.ii.",
+          "3210.iii.",
+          "3210.iv.",
+          "3210.v.",
+          "3210.vi.",
+          "3210.vii.",
+          "3210.viii."
+        ],
+        "rates": [
+          3920.19,
+          4173.04,
+          4431.77,
+          4733.63,
+          5157.01,
+          5729.36,
+          6272.3,
+          6860.33
+        ]
+      },
+      "1200": {
+        "codes": [
+          "3211.i.",
+          "3211.ii.",
+          "3211.iii.",
+          "3211.iv.",
+          "3211.v.",
+          "3211.vi.",
+          "3211.vii.",
+          "3211.viii."
+        ],
+        "rates": [
+          4515.01,
+          4806.23,
+          5104.22,
+          5451.87,
+          5939.5,
+          6598.69,
+          7224.02,
+          7901.27
+        ]
+      },
+      "1400": {
+        "codes": [
+          "3212.i.",
+          "3212.ii.",
+          "3212.iii.",
+          "3212.iv.",
+          "3212.v.",
+          "3212.vi.",
+          "3212.vii.",
+          "3212.viii."
+        ],
+        "rates": [
+          5647.51,
+          6011.77,
+          6384.51,
+          6819.37,
+          7429.3,
+          8253.84,
+          9036.02,
+          9883.14
+        ]
+      },
+      "1600": {
+        "codes": [
+          "3213.i.",
+          "3213.ii.",
+          "3213.iii.",
+          "3213.iv.",
+          "3213.v.",
+          "3213.vi.",
+          "3213.vii.",
+          "3213.viii."
+        ],
+        "rates": [
+          6961.18,
+          7410.18,
+          7869.61,
+          8405.62,
+          9157.43,
+          10173.76,
+          11137.89,
+          12182.07
+        ]
+      },
+      "1800": {
+        "codes": [
+          "3214.i.",
+          "3214.ii.",
+          "3214.iii.",
+          "3214.iv.",
+          "3214.v.",
+          "3214.vi.",
+          "3214.vii.",
+          "3214.viii."
+        ],
+        "rates": [
+          8644.91,
+          9202.51,
+          9773.07,
+          10438.73,
+          11372.38,
+          12634.54,
+          13831.86,
+          15128.59
+        ]
+      }
+    },
+    "unit": "RM",
+    "desc": "Cartage of 200 mm dia RCC hume pipe NP3 class and specials from store to the site of work. laying of the same pipe in to the trenches in depth up to 0.00 to 1.50 m below the ground level, true to alignment chocking the point laying sewer pipe with rubber ring and Jointing materials including excavation of the below invert level of pipe and testing of laid pipe line complete excluding the cost of excavation of earth and refilling of trenches from ground level to invert level of pipe.",
+    "measure": "Running metre of sewer in the depth slice of its invert (depth GL to invert). Includes carting, laying, rubber-ring S/S jointing, excavation BELOW invert and testing; excludes excavation and refilling from GL to invert (items 3001-).",
+    "_source": "SOR 2025-26 (sewer_sor.xlsx, sheet 'sor', 'SCHEDULE OF RATES FOR YEAR 2025-26'), items 3196-3214 with depth sub-items i.-viii."
+  },
+  "pipe_supply_rcc_np3_src_quotation": {
+    "by_internal_mm": {
+      "150": {
+        "code": "QR-1.1",
+        "rate": 920.0
+      },
+      "200": {
+        "code": "QR-1.2",
+        "rate": 1120.0
+      },
+      "250": {
+        "code": "QR-1.3",
+        "rate": 1780.0
+      },
+      "300": {
+        "code": "QR-1.4",
+        "rate": 2360.0
+      },
+      "350": {
+        "code": "QR-1.5",
+        "rate": 4190.0
+      },
+      "400": {
+        "code": "QR-1.6",
+        "rate": 4540.0
+      },
+      "450": {
+        "code": "QR-1.7",
+        "rate": 4980.0
+      },
+      "500": {
+        "code": "QR-1.8",
+        "rate": 5350.0
+      },
+      "600": {
+        "code": "QR-1.9",
+        "rate": 6785.0
+      },
+      "700": {
+        "code": "QR-1.10",
+        "rate": 8100.0
+      },
+      "800": {
+        "code": "QR-1.11",
+        "rate": 9720.0
+      },
+      "900": {
+        "code": "QR-1.12",
+        "rate": 11845.0
+      }
+    },
+    "unit": "m",
+    "desc": "Providing and conveying to site RCC pipes with sulphate resistant cement of NP3 Class (with s/s ends) and diameter as per IS: 458 - 2003 (Amended up to date) including all taxes (Central and Local) with Rubber gaskets as per  (EPDM/SBR) for sewer lines as per IS: 5382-1985 or (Amended up to date), including cost of Rubber gaskets, labour required, transportation, loading, unloading & stacking etc.The pipe shall be ISI marked.",
+    "_source": "SOR 2025-26 (sewer_sor.xlsx, sheet 'sor', 'SCHEDULE OF RATES FOR YEAR 2025-26'), 'QUATATION RATE' section QR-1 (quotation rates, not SOR items) - REFERENCE ONLY: the pipe supply rate used is the one in sewer_catalog.json (Rate_2025-26.pdf M.187)."
+  },
+  "dewatering": {
+    "code": "3031",
+    "rate": 140.26,
+    "unit": "CUM",
+    "desc": "Bailing out or Pumping out subsoil water.",
+    "_source": "SOR 2025-26 (sewer_sor.xlsx, sheet 'sor', 'SCHEDULE OF RATES FOR YEAR 2025-26')"
+  },
+  "timbering_close": {
+    "codes": [
+      "3032",
+      "3033",
+      "3034"
+    ],
+    "rates": [
+      601.39,
+      776.8,
+      934.94
+    ],
+    "upto_depth_m": [
+      3.0,
+      6.0,
+      9.0
+    ],
+    "unit": "SQM",
+    "_source": "SOR 2025-26 (sewer_sor.xlsx, sheet 'sor', 'SCHEDULE OF RATES FOR YEAR 2025-26')"
+  },
+  "timbering_open": {
+    "codes": [
+      "3041",
+      "3042",
+      "3043"
+    ],
+    "rates": [
+      418.1,
+      540.96,
+      682.52
+    ],
+    "upto_depth_m": [
+      3.0,
+      6.0,
+      9.0
+    ],
+    "unit": "SQM",
+    "_source": "SOR 2025-26 (sewer_sor.xlsx, sheet 'sor', 'SCHEDULE OF RATES FOR YEAR 2025-26')"
+  },
+  "granular_bedding": {
+    "codes": [
+      "106.1",
+      "106.2",
+      "106.3",
+      "106.4",
+      "106.5",
+      "106.6",
+      "106.7",
+      "106.8",
+      "106.9"
+    ],
+    "rates": [
+      2840.88,
+      2926.11,
+      3039.74,
+      3181.79,
+      3409.06,
+      3693.14,
+      4034.05,
+      4460.18,
+      4971.54
+    ],
+    "upto_depth_m": [
+      1.5,
+      3.0,
+      4.5,
+      6.0,
+      7.5,
+      9.0,
+      10.5,
+      12.0,
+      13.5
+    ],
+    "unit": "cum",
+    "desc": "Supply and laying of Granular bedding for Sewer line as per drawing and specifications complete",
+    "_source": "SOR 2025-26 (sewer_sor.xlsx, sheet 'sor', 'SCHEDULE OF RATES FOR YEAR 2025-26'), item 106 (marked 'Rate analysis' in the SOR file)"
+  },
+  "manhole_cover_sfrc": {
+    "rect_600x600": {
+      "code": "QR-5.1",
+      "rate": 2524.0,
+      "desc": "600 mm x 600 mm"
+    },
+    "rect_750x500": {
+      "code": "QR-5.2",
+      "rate": 2330.0,
+      "desc": "750 mm x 500 mm"
+    },
+    "rect_900x600": {
+      "code": "QR-5.3",
+      "rate": 4537.0,
+      "desc": "900 mm x 600 mm"
+    },
+    "circ_560": {
+      "code": "QR-6.1",
+      "rate": 1874.0,
+      "desc": "560 mm dia"
+    }
+  },
+  "manhole_footstep": {
+    "code": "QR-4.1",
+    "rate": 225.0,
+    "unit": "no",
+    "desc": "CI foot steps (PVC encapsulated)"
+  },
+  "road_reinstatement": {
+    "CC": {
+      "code": "PWD-4",
+      "rate": 2228.0
+    },
+    "BT": {
+      "code": "PWD-5",
+      "rate": 4030.0
+    },
+    "unit": "sqm",
+    "_source": "SOR 2025-26 (sewer_sor.xlsx, sheet 'sor', 'SCHEDULE OF RATES FOR YEAR 2025-26'), 'UP PWD 2020' section"
+  },
+  "trench_width_m": {
+    "value": {
+      "type": "stepped",
+      "bottom_add_m": 0.6,
+      "step_m": 0.5,
+      "slice_m": 1.5
+    },
+    "_source": "Riverside Zone Sewerage Scheme DPR (Springfield City Council), sheet 'Qty' of the sewer estimate (sewer_exc_qty.xlsx), formulas H6:S6 (earthwork), Z6:AF6 (road cutting), AL6 (timbering)",
+    "note": "Stepped trench as in the DPR: n = number of 1.5 m slices = ceil(depth/1.5); top slice width = D + 0.6 + 0.5 x (n-1); each lower slice 0.5 m narrower; bottom slice D + 0.6 (D = pipe dia in m). Slice volume = width x length x 1.5 m (last slice: the remaining depth), each slice at its own SOR rate 3001-3006.ii. The DPR formula stops at 7 slices (10.5 m); here it continues."
+  },
+  "timbering_rule": {
+    "value": {
+      "type": "open",
+      "code": "3041",
+      "upto_depth_m": 3.0,
+      "min_depth_m": 1.5,
+      "applies_to": [
+        "trench",
+        "manhole"
+      ]
+    },
+    "_source": "Riverside Zone Sewerage Scheme DPR (Springfield City Council), sheet 'Qty' of the sewer estimate (sewer_exc_qty.xlsx), formulas H6:S6 (earthwork), Z6:AF6 (road cutting), AL6 (timbering)",
+    "note": "As in the DPR: open timbering 0-3.0 m only, area = min(depth, 3.0) x length (SOR 3041, sqm); close timbering not used in the DPR. PROJECT DECISION (user, 11-Oct-2026): NO timbering for a trench or manhole whose TOTAL depth is not more than min_depth_m (1.5 m); a trench / manhole deeper than that is timbered over its full height from GL (the top 0-1.5 m included) down to min(depth, 3.0 m), as in the DPR formula. Applied to trenches now; to manholes when the manhole items are added."
+  },
+  "bedding_rule": {
+    "value": null,
+    "note": "PROJECT DECISION NEEDED: bedding type (granular 106 / saddles 3091- / RCC cradle 107-108) and its section."
+  },
+  "depth_basis": {
+    "value": "average",
+    "note": "PROJECT DECISION (Claude's reading of the Riverside DPR, 11-Oct-2026): one depth per conduit = average of the u/s and d/s depth to invert (the DPR's 'Total depth' column comes from its hydraulic design statement; its exact definition is not in the file - CO-7 gives 1.255 m, consistent with an average depth to invert). Used for the excavation slices and for the laying depth band. 'profile' = depth varying linearly along the conduit instead."
+  },
+  "road_cut_width": {
+    "value": "top_width",
+    "_source": "Riverside Zone Sewerage Scheme DPR (Springfield City Council), sheet 'Qty' of the sewer estimate (sewer_exc_qty.xlsx), formulas H6:S6 (earthwork), Z6:AF6 (road cutting), AL6 (timbering)",
+    "note": "Road cutting area = top trench width x length, by road type (Bitumen / CC / Interlocking) of each conduit - road type per conduit comes from survey (not in the model yet), so road is not priced."
+  }
+}

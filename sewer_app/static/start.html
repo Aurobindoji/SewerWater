@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sewer network design</title>
+<style>
+  :root { --bg: #f4f5f2; --card: #ffffff; --text: #1f1f1d; --muted: #6b6a66; --line: #d9d8d3; --accent: #1f6feb; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+    font: 16px/1.45 "Segoe UI", "Nirmala UI", system-ui, sans-serif; }
+  main { min-height: 100%; display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 32px 28px; width: min(520px, 100%);
+    box-shadow: 0 6px 24px rgba(0,0,0,.06); text-align: center; }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  button.big { padding: 22px 12px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--text);
+    font: 600 20px/1.2 "Segoe UI", "Nirmala UI", sans-serif; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+  button.big:hover, button.big:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(31,111,235,.15); outline: none; }
+  button.big small { display: block; margin-top: 6px; font: 400 13px/1.3 "Segoe UI", "Nirmala UI", sans-serif; color: var(--muted); }
+  .back { margin-top: 22px; background: none; border: none; color: var(--accent); font: inherit; font-size: 14px; cursor: pointer; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <div class="card" id="step1">
+    <h1>भाषा चुनें / Choose Language</h1>
+    <div class="sub">sewer_app</div>
+    <div class="choices">
+      <button class="big" data-lang="hi">हिन्दी</button>
+      <button class="big" data-lang="en">English</button>
+    </div>
+  </div>
+  <div class="card" id="step2" hidden>
+    <h1 id="t2"></h1>
+    <div class="sub" id="s2"></div>
+    <div class="choices">
+      <button class="big" id="sewer"></button>
+      <button class="big" id="water"></button>
+    </div>
+    <button class="back" id="back"></button>
+  </div>
+</main>
+<script>
+"use strict";
+// tell the server this page is open (a second start of sewer_ui.bat then opens no new tab)
+fetch("/api/ping").catch(() => { }); setInterval(() => fetch("/api/ping").catch(() => { }), 30000);
+const TXT = {
+  hi: { t2: "क्या डिज़ाइन करना है?", s2: "विषय चुनें", sewer: "सीवर<small>sewer network, zoning, design</small>",
+        water: "पेयजल<small>water supply</small>", back: "← भाषा बदलें" },
+  en: { t2: "What would you like to design?", s2: "Choose the module", sewer: "Sewer<small>sewer network, zoning, design</small>",
+        water: "Water<small>water supply</small>", back: "← Change language" },
+};
+let lang = "hi";
+function step2(l) {
+  lang = l;
+  try { localStorage.setItem("sewer_app_lang", l); } catch (e) { }
+  document.documentElement.lang = l;
+  const t = TXT[l];
+  document.getElementById("t2").textContent = t.t2;
+  document.getElementById("s2").textContent = t.s2;
+  document.getElementById("sewer").innerHTML = t.sewer;
+  document.getElementById("water").innerHTML = t.water;
+  document.getElementById("back").textContent = t.back;
+  document.getElementById("step1").hidden = true;
+  document.getElementById("step2").hidden = false;
+  document.getElementById("sewer").focus();
+}
+document.querySelectorAll("button[data-lang]").forEach(b => b.onclick = () => step2(b.dataset.lang));
+document.getElementById("sewer").onclick = () => { location.href = "/sewer?lang=" + lang + "&intro=1"; };
+// water in a tab of its own (user request 22-Oct-2026), the same one again when it is open already
+document.getElementById("water").onclick = () => { window.open("/water?lang=" + lang + "&intro=1", "water_network_design"); };
+document.getElementById("back").onclick = () => {
+  document.getElementById("step2").hidden = true; document.getElementById("step1").hidden = false;
+};
+// back from a module page (/?lang=en&step=module): straight to the choice of module
+{
+  const q = new URLSearchParams(location.search);
+  if (q.get("step") === "module" && (q.get("lang") === "hi" || q.get("lang") === "en")) step2(q.get("lang"));
+}
+</script>
+</body>
+</html>

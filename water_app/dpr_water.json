@@ -1,0 +1,296 @@
+{
+  "_readme": "Settings of the water DPR workbook (dpr.py) - user decision 26-Oct-2026: the format of the Elmwood water estimate of U.P. Jal Nigam (Elmwood_water_ Estimate.xlsx), SOR items from sor_2025_26.json (= the estimate's sheet 'sor', checked code by code), the other rates and unit estimates as in the Elmwood estimate - yellow in the workbook, to be confirmed. 'src' says where each value comes from.",
+  "pipe_supply": {
+    "value": {"HDPE 110": 282, "HDPE 140": 451, "HDPE 160": 587, "DI 200": 2127, "DI 250": 2795, "DI 300": 3589,
+              "DI 350": 4417, "DI 400": 5372, "DI 450": 6337, "DI 500": 7557, "DI 600": 9891},
+    "src": "Elmwood 'DS' I9:I20 (UPJN rate, Rs/m): HDPE PN-6 PE-100, DI K-7 - the same as items M.194 / M.193 of the UPJN (Fairview) 'Project preparation & construction rate 2025-26', Nirman Mandal Westbrook office memo 615/143 dt 22-08-2025 (Rate 2025-26.pdf) - inclusive of freight, loading, unloading and stacking at site, exclusive of GST and labour cess"
+  },
+  "pipe_text": {
+    "value": {"HDPE": "mm dia HDPE PN-6 PE-100", "DI": "mm dia DI K-7", "DI K9": "mm dia DI K-9"},
+    "src": "Elmwood 'DS' C9:C20"
+  },
+  "hdpe_carting": {
+    "value": {"HDPE 110": 92.77, "HDPE 140": 132.51, "HDPE 160": 171.28},
+    "src": "Elmwood 'DS' I48:I50 (AOR, Rs/m)"
+  },
+  "pipe_supply_k9": {
+    "value": {"DI 200": 2547, "DI 250": 3419, "DI 300": 4341, "DI 350": 5333, "DI 400": 6469, "DI 450": 7719, "DI 500": 9030, "DI 600": 11831},
+    "src": "DI K-9 pipes, Rs/m: item M.193 (x)-(ae) of the UPJN (Fairview) 'Project preparation & construction rate 2025-26', Nirman Mandal Westbrook office memo 615/143 dt 22-08-2025 (Rate 2025-26.pdf) - inclusive of freight, loading, unloading and stacking at site, exclusive of GST and labour cess; K9 where a rising main's K-7 pressure is exceeded (user decision 31-Oct-2026)"
+  },
+  "nrv_rate": {
+    "value": {"80": 20499, "100": 26483, "125": 36900, "150": 40018, "200": 69051, "250": 96514, "300": 136924, "350": 272672,
+              "400": 386448, "450": 409988, "500": 568883, "600": 921983},
+    "src": "DI DF non return valve (IS 5312 Part 1), Rs each: item M209 (c)-(n) of the UPJN (Fairview) 'Project preparation & construction rate 2025-26', Nirman Mandal Westbrook office memo 615/143 dt 22-08-2025 (Rate 2025-26.pdf) - inclusive of freight, loading, unloading and stacking at site, exclusive of GST and labour cess"
+  },
+  "di_laying_sor": {
+    "value": {"DI 200": "2201", "DI 250": "2202", "DI 300": "2203", "DI 350": "2204", "DI 400": "2205", "DI 450": "2206",
+              "DI 500": "2207", "DI 600": "2208"},
+    "src": "Elmwood 'DS' M51:M58 (SOR 2025-26 items of carting, laying and testing)"
+  },
+  "specials": {
+    "value": {"HDPE": 0.05, "DI": 0.10},
+    "src": "Elmwood 'DS' K21:K22: specials 5 % of the HDPE pipes, 10 % of the DI pipes"
+  },
+  "excavation_sor": {"value": "2001", "src": "Elmwood 'DS' M45 (excavation for pipe line, ordinary soil, lift up to 1.5 m)"},
+  "trench": {
+    "value": {"width_add_m": 0.6, "depth_add_m": 1.0},
+    "src": "Elmwood 'RC' E5: excavation = L x (D + 0.6) x (D + 1.0); road cutting width D + 0.6"
+  },
+  "road_share": {
+    "value": {"B.O.E. surface": 0.08, "Bituminous surface": 0.40, "C.C. Road": 0.30, "Interlocking Road": 0.20,
+              "Kaccha Road": 0.02},
+    "src": "Elmwood 'RC' F5:N5: shares of the pipe length under each road surface (one set for the project, change in sheet Project)"
+  },
+  "road_rates": {
+    "value": {"B.O.E. surface": ["'Dismantling of Road'!F14", "reins!F22"],
+              "Bituminous surface": ["'Dismantling of Road'!F59", "'Bituminous Reinstatement'!G49"],
+              "C.C. Road": ["'Dismantling of Road'!F41", "reins!F71"],
+              "Interlocking Road": ["'Dismantling of Road'!F26", "reins!C29"]},
+    "src": "Elmwood 'DS' I89:I97: dismantling / reinstatement rates from the unit estimates (Rs/sqm)"
+  },
+  "valve_rate_row": {
+    "value": {"50": 3, "65": 4, "80": 5, "100": 6, "125": 7, "150": 8, "200": 9, "250": 10, "300": 11, "350": 12,
+              "400": 13, "450": 14, "500": 15, "600": 16, "hydrant": 24, "air": 25},
+    "src": "Elmwood 'SV Rate': row of each valve size (C = supply, E = fixing)"
+  },
+  "valve_of_pipe": {
+    "value": {"HDPE 110": 100, "HDPE 140": 125, "HDPE 160": 150, "DI 200": 200, "DI 250": 250, "DI 300": 300,
+              "DI 350": 350, "DI 400": 400, "DI 450": 450, "DI 500": 500, "DI 600": 600},
+    "src": "sluice valve of each pipe: HDPE OD 110 / 140 / 160 -> 100 / 125 / 150 mm valve (Elmwood 'Summary DS' rows 35-46), DI the nominal size"
+  },
+  "prv_rate": {
+    "value": {"80": 75000, "100": 100000, "125": 125000, "150": 150000, "200": 225000, "250": 300000, "300": 400000,
+              "350": 500000, "400": 600000, "450": 725000, "500": 850000, "600": 1100000},
+    "src": "INDICATIVE only - the PRV valve itself (pilot operated, DI body, PN 10, with its Y-strainer and pressure gauges) of the pipe's valve size (valve_of_pipe), Rs each, a yellow quotation rate to be replaced (user decisions 30 / 31-Oct-2026). In none of the user's documents (UPJN rate 2025-26, Riverside R3, Elmwood, SOR - searched 31-Oct-2026); IndiaMART listings (31-Oct-2026) only small or steam PRVs - a 2 inch pilot operated water PRV Rs 69,083. Its two isolating sluice valves (UPJN M208) and its masonry chamber (sheet SV M) are items of their own in D2."
+  },
+  "valves_per_oz": {
+    "value": {"hydrant": 1, "scour": 1, "air": 2},
+    "src": "Elmwood 'Summary DS' rows 47-49: per zone 1 fire hydrant, 1 scour valve, 2 air valves"
+  },
+  "valves_rule": {
+    "value": "one sluice valve on every pipe closed at an OZ / DMA boundary and on every DMA inlet, of that pipe's size, and one at each OHT outlet",
+    "src": "this app (CPHEEO Table 2.7 S.No.18, 21: each OZ / DMA hydraulically discrete, one inlet) - the Elmwood estimate counted them by hand"
+  },
+  "chambers": {
+    "value": {"masonry": "'SV M'!K17", "surface_box": "'SV S'!K9", "hydrant": "'FH CHAMBER'!K20", "air": "'AV CHAMBER'!K19"},
+    "src": "Elmwood 'DS' I101:I105: chambers from the unit estimates; masonry above 125 mm, surface box up to 125 mm; scour valve chamber at the surface box rate"
+  },
+  "crossings": {
+    "value": {"culvert": ["'Culvert 3.5'!K10", 0], "drain": ["'Crossing 3.0'!G8", 0]},
+    "src": "Elmwood 'DS' rows 77-78 (rate from the unit estimates; numbers of crossings are of the project - 0 here, fill in)"
+  },
+  "thrust": {
+    "value": {"spacing_m": 200, "sheets": {"DI 200": "Thrust 200", "DI 250": "Thrust 250", "DI 300": "Thrust 300",
+              "DI 350": "Thrust 350", "DI 400": "Thrust 400", "DI 450": "Thrust 450", "DI 500": "Thrust 500",
+              "DI 600": "Thrust 600"}, "rcc_sor": "1025", "steel_sor": "1151"},
+    "src": "Elmwood 'DS' rows 106-122: one RCC thrust block per 200 m of DI pipe; volume 'Thrust <d>'!D46, steel D47"
+  },
+  "house_connection": {
+    "value": {"labour": [["Cartage of materials", "Job", null, 85], ["Fitter", "No.", 0.5, 630], ["Belder", "No.", 1, 480],
+                         ["Sundries (including bailing out of water)", "Job", null, 69.3]],
+              "profit": 0.10, "gi_labour": 225, "pit_cum": 0.9,
+              "material": [["20 mm dia HDPE pipe (PN-6 SDR-9)", "m", 3, 35], ["20 mm dia GI pipe class B", "m", 2, 191],
+                           ["GI elbow 20 mm dia class B", "Each", 4, 30], ["Clamp with saddle", "Each", 1, 245],
+                           ["Tap / stop cock (brass) 15 mm", "Each", 1, 195], ["Ferrule (brass) 15 mm with end cap (heavy duty)", "Each", 1, 295],
+                           ["20 mm PP adaptor", "Each", 1, 90], ["15 mm dia GI union", "Each", 1, 55], ["MS clamp", "Each", 5, 25]],
+              "bands": [["90 mm to 110 mm", ["HDPE 110"], 1.0], ["125 mm to 160 mm", ["HDPE 140", "HDPE 160"], 1.2],
+                        ["200 mm to 250 mm", ["DI 200", "DI 250"], 1.4], ["300 mm", ["DI 300"], 1.6],
+                        ["350 mm to 600 mm", ["DI 350", "DI 400", "DI 450", "DI 500", "DI 600"], 1.75]],
+              "road_sqm": 1.2},
+    "src": "Elmwood 'NEW HC': analysis of rate per connection (rows 134-165), material x 1.2 / 1.4 / 1.6 / 1.75 for bigger mains, 1.2 sqm of road per connection; connections shared by pipe length of each band"
+  },
+  "oht_ugr_rates": {
+    "value": {"capacity_kl": [200, 250, 300, 350, 400, 500, 600, 700, 800, 1000, 1200, 1500, 2000, 2500, 3000],
+              "oht_per_l": [23.50, 21.50, 21.50, 21.00, 20.50, 18.00, 17.51, 16.50, 16.00, 14.50, 14.50, 13.50, 12.50, 12.00, 12.00],
+              "ugr_per_l": [18.00, 16.50, 16.00, 16.00, 15.50, 13.50, 13.50, 12.50, 12.00, 11.00, 11.00, 10.00, 9.50, 9.50, 9.00],
+              "year": "2022-23", "escalation": 0.07, "years": 0},
+    "src": "U.P. Jal Nigam 'Standard Cost of Over Head Tank (OHT) of 25 M Staging' and 'of Under Ground Water Reservoir (UGR)' for FY 2022-23 ('Say' rows, Rs per litre; average of UPJN order 1344/2042-0026/13 dt 23.11.2013, Meerut Circle order 1710/615/13 dt 03.08.2019 and SWSM, 7 % escalation a year; UGR = 3/4 of OHT; GST and labour cess extra) - user decision 26-Oct-2026: linear interpolation between capacities (at the ends the end rate), 7 % a year to 2025-26 (3 years); user decision 6-Nov-2026: as the Riverside water DPR (p213-272: e.g. 750 KL CWR Rs 12.25 / litre = the table's FY 2022-23 rate) no escalation - years 0, the escalation cells kept (yellow) to change"
+  },
+  "oht": {
+    "value": {"staging_base_m": 25, "per_25m": 0.15, "soil_testing": 0, "theme_painting": 0},
+    "src": "Elmwood 'OHT Z-7' row 10: the rate at 25 m staging, +/- 15 % for every 25 m more / less (user decision 26-Oct-2026)"
+  },
+  "cwr": {
+    "value": {"soil_testing": 50000},
+    "src": "Elmwood 'CWR': Rs 50,000 soil testing per CWR; the rate per litre: oht_ugr_rates (UGR)"
+  },
+  "swd": {
+    "value": [[100, 3], [1000, 4], [null, 5]],
+    "src": "CPHEEO Table 2.7 S.No.12 p175: side water depth up to 1 lakh litres 3 m, up to 10 lakh 4 m, above 5 m"
+  },
+  "pump": {
+    "value": {"efficiency": 0.72, "friction_m": 5,
+              "motor_margin": [[1.5, 0.50], [3.7, 0.40], [7.5, 0.30], [15, 0.20], [75, 0.15], [null, 0.10]],
+              "terminal_m": 1, "water_below_gl_m": 15, "seasonal_m": 5, "depression_m": 4.5,
+              "chlorine_ppm": 0.5, "hypo_strength": 0.10, "cwr_water_above_gl_m": 0, "cwr_sump_m": 7,
+              "cwr_main_hf_m": 0.5},
+    "src": "Elmwood 'T3 (1)' rows 39-185 (pumping hours and tube well discharges: criteria.json): pump efficiency 72 %, terminal head 1 m, chlorine 0.5 ppm as 10 % sodium hypochlorite; friction 5 m an allowance until the rising main is designed. User decisions 6-Nov-2026 (as the Riverside water DPR): the tube well's water 15 m below GL + seasonal variation 5 m + depression during pumping 4.5 m (DPR p130-196 'Calculation of static head', most zones; zone 1 28 + 3 + 3.5) in place of Elmwood's 6 m; the motor margin by its kW as the CPHEEO table of DPR p360 (up to 1.5 kW 50 %, 3.7 40 %, 7.5 30 %, 15 20 %, 75 15 %, above 10 %) in place of 20 % on every motor. A tube well filling a CWR lifts to the ground level (cwr_water_above_gl_m 0): Riverside water DPR p136-195 'Calculation of static head', TW to CWR - staging 0, depth of water in tank 0 (user decision 6-Nov-2026, in place of the CWR's full side water depth above ground). The CWR pumps (CWR to OHT, the same DPR pages): staging + depth of water in the OHT + terminal head + depth of the sump at the CWR 7 m + the friction of the short CWR - OHT main (DPR 0.08-0.11 m on 50 m of 350-400 mm; 0.5 m here, the main not designed) - user decision 6-Nov-2026, in place of a 5 m allowance for the losses"
+  },
+  "demand_factors": {
+    "value": {"Pumping Main from WTP / TW to OHT (11 %)": 1.11, "Water Treatment Plant (14 %)": 1.14, "Raw Water Rising Main (15 %)": 1.15},
+    "src": "Elmwood 'T1' AU:BC: demand of the distribution network x 1.11 / 1.14 / 1.15 (losses 10 % + 1 % / 4 % / 5 %)"
+  },
+  "lump_sums": {
+    "value": {"civil": ["Water Treatment Plant", "Feeder Main and appurtenant works"],
+              "power": "Power transmission line"},
+    "src": "Elmwood 'ABS Com': parts of the project not made from the network design - 0 lakh here, fill in (phase 1, user decision 26-Oct-2026); the E&M works and the power connections: sheet EM (dpr_em.py, user decision 26-Oct-2026); the civil works of the Riverside water DPR (pump houses, site development, staff quarters, GW recharge, MCS, panel rooms, repairs of OHTs) from their estimates (dpr_civil.py, user decision 6-Nov-2026)"
+  },
+  "em": {
+    "value": {
+      "tables": {
+        "tw_pp":    {"text": "TW pumping plant (submersible pump set, soft starter, servo stabiliser, MOV valves, flow meter, panels, instruments, chlorination system)", "size": "motor HP", "unit": "Rs lakh / plant",
+                     "points": [[20, 14.77], [35, 16.44], [40, 16.50]], "src": "R3 'pp oht BOOSTER' B (20 HP, F52), A / D (35 HP, F26 / F102), C (40 HP, F77)"},
+        "oht_auto": {"text": "OHT automation (radar level sensor, sluice valve with actuator, flow meter, dismantling joints, UPS, cabling)", "size": "outlet mm", "unit": "Rs lakh / OHT",
+                     "points": [[300, 8.76], [450, 15.11], [500, 16.59], [600, 22.60]], "src": "R3 'pp oht BOOSTER' OHT automation 300 / 450 / 500 / 600 mm (F128, F116, F142, F154)"},
+        "cwr_pump": {"text": "VT / HSC clear water pump with motor", "size": "motor HP", "unit": "Rs lakh / pump",
+                     "points": [[40, 9.60], [50, 12.17692]], "src": "R3 'CWR PP ' B7 (40 HP 960000) and B59 (50 HP 1217692)"},
+        "booster":  {"text": "Booster pump set with VFD panel (supply, lowering, fixing)", "size": "motor HP", "unit": "Rs lakh / set",
+                     "points": [[20, 6.528]], "exp": 0.6, "src": "R3 'pp oht BOOSTER' booster B164 + B166 (350000 + 302800, 20 HP sets); exponent assumed"},
+        "dma_auto": {"text": "DMA site equipment (sluice valve, CE / UL electromagnetic flow meter, C.I. dismantling joint PN 1.6, wiring and cabling) - one a DMA, of its line size", "size": "line mm", "unit": "Rs lakh / DMA",
+                     "points": [[200, 2.76], [250, 3.45651], [300, 4.17487], [350, 6.03197], [400, 7.40962], [450, 8.80375]],
+                     "src": "Riverside water DPR (U.P. Jal Nigam 2026) p55 'DMA equipment details in all zone 1 to 15' and p329-331 (estimates for automation for DMA site equipments, 200-450 mm) - user decision 6-Nov-2026"},
+        "transformer": {"text": "11 / 0.4 kV transformer of a CWR sub-station", "size": "kVA", "unit": "Rs lakh / transformer",
+                     "points": [[160, 5.13146]], "exp": 0.6, "src": "Riverside water DPR p342 (R3 'CWR LT Panel & sub sta'): 160 kVA Rs 513146; other ratings by the exponent - assumed (user decision 6-Nov-2026: the design gives the cost)"}
+      },
+      "fixed": {
+        "tw_scada":    [3.05, "SCADA automation of a TW (PLC / RTU, GSM modem)", "R3 'pp oht BOOSTER' F160"],
+        "rebore_cable": [1.25, "Connection, laying & replacement of old LT cable incl. accessories and labour for a rebored TW, submersible cable from it to the existing pump house (the shifting of its power connection: R3 'Report' A21)", "R3 'Gen Abs' B25 / B97"],
+        "cwr_pp_rest": [41.73, "CWR pumping plant except the pumps (valves with actuators, specials, 5 T gantry crane, flow meter, dewatering pump, solar, cable, erection)", "R3 'CWR PP ' B (80.13 - 4 x 9.60 lakh)"],
+        "cwr_scada":   [16.50, "SCADA automation of a CWR pumping plant", "R3 'SCADa cwr' F21"],
+        "cwr_sub":     [76.16, "LT / HT panels with sub-station for a CWR except its transformers (APFC, soft starters, HT panel, cables)", "R3 'CWR LT Panel & sub sta' F40: 86.42 less 2 x 160 kVA transformers 2 x 5.13146 (Riverside water DPR p342)"],
+        "booster_lot": [5.25, "Booster: main piping, specials (2.75), integration with SCADA (1.50), main switch and cabling (0.75), LT cable replacement (1.25 - R3 Gen Abs)", "R3 'pp oht BOOSTER' booster B167-B170, 'Gen Abs' E25"],
+        "booster_pt":  [0.50, "Pressure transmitter (one a pump set)", "R3 'pp oht BOOSTER' B168"],
+        "lcs":         [27.32, "Local control station (LED wall, servers, UPS, printer, solar) - one for the scheme", "R3 'LCS' F22"]
+      },
+      "rules": {"booster_lps_per_pump": 40, "cwr_working": 2,
+                "cwr_efficiency": 0.72, "lcs": 1},
+      "om": {"staff": [["Electrician", 2, 18000], ["Fitter", 1, 15000], ["SCADA operator", 3, 25000], ["Helper", 2, 15000]],
+             "fixed_rs_per_kva_month": 375, "tariff": 8.60, "duty": 0.075, "pf": 0.8, "tw_aux_kw": 2, "cwr_aux_kw": 5,
+             "booster_hours": 8, "lcs_kw": 5, "chlorine_rs_per_tw_month": 6831, "repair": 0.03, "repair_from_year": 3,
+             "inflation": 0.05, "gst": 0.18, "labour_cess": 0.01, "centage": 0.07}
+    },
+    "src": "U.P. Jal Nigam E&M estimate 'Riverside R3 dt 29.1.2026' (Construction Division E&M, Springfield; Riverside extended area sub zone 1-15, AMRUT 2.0) - user decisions 26-Oct-2026: E&M and its O&M in this format for every OZ from the design, new tube wells from the +15 years pumping main demand (sheet TW), a size between two of R3: linear between them, beyond: by the size ratio (exponent of the end pair). Booster pumps: R3 1 W + 1 S up to 37.5 LPS, 2 W + 1 S from 42.5 LPS (40 LPS a pump). Standby pumps (booster, CWR) and standby tube wells by the working ones as CPHEEO water manual Part A (2024) 5.7.5 p245-246: criteria.json standby_pumps (user decisions 7-Nov-2026). A rebored tube well (R3 'Gen Abs' B19-B27, B91-B98): its boring, pumping plant, SCADA and trial run as a new one, the LT cable to the existing pump house (rebore_cable), no new power connection. O&M: R3 '5year O&M revise' (staff, fixed charges Rs 375 / kVA / month, Rs 8.60 / kWh, duty 7.5 %, chlorination Rs 6831 a TW a month, repair 3 % of the E&M cost from the 3rd year, 5 % a year, GST 18 %)"
+  },
+  "em_design": {
+    "value": {
+      "tw": {
+        "max_vertical_v": 1.2, "small_screen_upto_lpm": 1000, "pipe_sizes": [150, 200, 300],
+        "open_area": 0.2, "contraction": 0.5, "entrance_v": 0.015, "entrance_v_max": 0.03,
+        "plain_ends_m": 3.9, "pipe_length_m": 6, "od_add_mm": 14.2, "shroud_mm": 140, "bore_round_mm": 50,
+        "pump_od_mm": 143, "op_bowl_mm": 183, "verticality_mm": 100, "column_pipe_mm": 150,
+        "housing_m": 60, "assembly_m": 190, "drill_extra": 0.1, "drill_round_m": 10, "upper_bore_extra_m": 5,
+        "caving": 0.5, "development_gravel_m3": 10, "slotted_max_share": 0.5
+      },
+      "tw_rates": {
+        "pipe": {"150": 2808, "200": 3726, "300": 5386.5},
+        "drill": {"upto 100 m": {"450": 1750, "500": 1930, "600": 2290}, "below 100 m": {"450": 2080, "500": 2260, "600": 2620}},
+        "lower": {"upto 100 m": {"150": 190, "200": 250, "300": 370}, "below 100 m": {"150": 240, "200": 310, "300": 430}},
+        "band_m": 100, "gravel": 7000,
+        "items": [
+          ["1", "TRANSPORTATION", "1.1", "Transportation of rig machine including loading, unloading, dismantling & labour etc. complete in all respect", "Job", 1, 32680],
+          ["2", "CONSTRUCTION OF TUBE WELL (DRILLING)", "2.1.4", "Sodium hexametaphosphate", "Kg", 60, 405],
+          ["2", "CONSTRUCTION OF TUBE WELL (DRILLING)", "2.1.5", "Barricading around the site work area during construction work", "Job", 1, 30000],
+          ["2.2", "LOWERING OF TUBE WELL ASSEMBLY AND SHROUDING BY GRAVEL", "2.2.4", "Other required extra work like site levelling, dressing, pipe shifting etc.", "Job", 1, 60000],
+          ["4.1", "DEVELOPMENT OF TUBE WELL BY 350 PSI AIR COMPRESSOR", "4.1.1", "Transportation, installation, dismantling of compressor including levelling & dressing of site and camp equipage", "Job", 1, 28320],
+          ["4.1", "DEVELOPMENT OF TUBE WELL BY 350 PSI AIR COMPRESSOR", "4.1.2", "Dressing, levelling & cleaning of site after development work", "Job", 1, 50000],
+          ["4.1", "DEVELOPMENT OF TUBE WELL BY 350 PSI AIR COMPRESSOR", "4.1.3", "Cutting of T.W. cover by gas cutter, re-welding of T.W. cover by electric welding after complete development of work", "Job", 1, 6000],
+          ["4.1", "DEVELOPMENT OF TUBE WELL BY 350 PSI AIR COMPRESSOR", "4.1.4", "Development of tube well by 350 PSI air compressor", "Hr.", 60, 3020],
+          ["4.2", "DEVELOPMENT OF TUBE WELL BY 3 CUSEC O.P. UNIT", "4.2.1", "Transportation, installation & dismantling of O.P. unit including levelling & dressing of site and camp equipage", "Job", 1, 44880],
+          ["4.2", "DEVELOPMENT OF TUBE WELL BY 3 CUSEC O.P. UNIT", "4.2.2", "Cutting of T.W. cover by gas cutter, re-welding of tube well cover by electric welding after complete development by O.P. unit", "Job", 1, 6000],
+          ["4.2", "DEVELOPMENT OF TUBE WELL BY 3 CUSEC O.P. UNIT", "4.2.3", "Development of tube well by 3 cusec O.P. unit", "Hr.", 100, 780],
+          ["5", "TEST", "5.1", "Chemical and bacteriological test", "Job", 2, 5100],
+          ["5", "TEST", "5.2", "Yield and verticality test of tube well", "Job", 1, 8712],
+          ["5", "TEST", "5.3", "Logging of tube well", "Job", 1, 18000]
+        ]
+      },
+      "load": {"light_fan_kw": 2, "pf": 0.8, "margin": 0.2, "ratings": [25, 63, 100, 160, 200, 250, 315, 400, 500, 630, 1000]},
+      "pc": {
+        "tw_transformer": 298167, "tw_processing": 119, "security_per_kva": 4500, "tw_meter": 37500, "line_per_m": 2461.68,
+        "tw_line_m": 550, "booster_line_m": 550, "cwr_processing": 5950, "cwr_meter": 45000, "cwr_line_m": 600, "cwr_round_kva": 10
+      },
+      "cwr_el": {
+        "motor_eff": 0.9, "pf": 0.8, "misc_kva": 10, "flc_eff": 0.95, "lt_kv": 0.4, "ht_kv": 11, "start_factor": 2.5,
+        "overload": 0.5, "sc_factor": 10, "breaker_factor": 1.25, "transformers": 2, "derate": 0.87,
+        "acb": [100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000, 1250, 1600],
+        "mccb": [32, 40, 63, 80, 100, 125, 160, 200, 250, 315, 400, 630],
+        "al_cable": [[25, 105], [35, 125], [50, 150], [70, 185], [95, 225], [120, 260], [150, 300], [185, 340], [240, 400], [300, 460]],
+        "cu_cable": [[4, 40], [6, 52], [10, 70], [16, 95], [25, 125], [35, 150], [50, 180], [70, 225], [95, 275], [120, 320]],
+        "cu_min_sqmm": 25
+      },
+      "cwr_pipe": {"suction_v": 1.8, "delivery_v": 2.0, "header_v": 1.8,
+                   "sizes": [80, 100, 125, 150, 200, 250, 300, 350, 400, 450, 500, 600, 700, 750, 800]},
+      "trial": {
+        "months": 3, "days": 30, "chlorine_ppm": 0.5, "hypo_g_per_l": 120, "hypo_rs_per_l": 55, "rate_kwh": 8.3,
+        "fixed_rs_per_kw_month": 350, "tw_light_kw": 2, "cwr_light_kw": 10, "booster_other_kw": 0.5, "booster_hours": 12,
+        "operators": 3, "operator_rs_month": 12000
+      }
+    },
+    "src": "Riverside water DPR (U.P. Jal Nigam 2026) E&M design and estimates - user decision 6-Nov-2026 (the E&M design sheets give the cost): tw = p357 'Calculation of pea gravel' (caving 50 % for fine sand, 10 m3 for development) and p358-359 'Design of drilling and size of pipes' (vertical velocity 0.6-1.2 m/s, 200 mm for 1200-1500 LPM and 150 mm for 1000 LPM, slot 3/64 x 3 in: 20 % opening area x contraction 0.5, entrance velocity 0.015 m/s (max 0.03), 0.30 m plain at both ends of 7 pipes of 6 m: 3.90 m as written, pipe O.D. + 14.2 mm, gravel shroud 140 mm, housing pipe: pump O.D. 143 + verticality 100 mm, O.P. unit bowl 183 mm, column pipe 150 mm; drilling 10 % deeper than the assembly), lengths as the quantities of p319-320 (housing 60 m, assembly 60 + 130 = 190 m, drilling 65 + 35 + 110 = 210 m; the p319 text says 180 / 200 m). tw_rates = p319-320 unit estimate (= SOR p362-364 of the CE (E/M) U.P. Jal Nigam: drilling 1.2 / 1.3, lowering 5.1 / 5.2, pea gravel 12.10 Springfield Rs 7000, development 6.2 / 6.2.2 / 6.4 / 6.4.2; the M.S. assembly at SOR 4.2-4.4 (2080 / 2760 / 3990) x 1.35 as p319: 300 mm 5386.5, 200 mm 3726; 150 mm 2808 by the same ratio). load = p356 'Calculation for capacity of transformer' (light & fan 2 kW, pf 0.8, 20 % additional, the next departmental rating). pc = p345-349 'Estimate for power connection transmission line' (TW: 25 / 63 kVA transformer with D.P. sub-station Rs 298167, processing Rs 119, security Rs 4500 / kVA of the load, energy meter Rs 37500, 11 kV underground double circuit line Rs 2461.68 / m, 540-575 m; CWR: processing Rs 5950, meter Rs 45000, 560-720 m, load 140 kVA for 136.80). cwr_el = p350-351 (motor efficiency 90 %, misc load 10 kVA, full load current at pf 0.8 and 95 %, starting 2.5 x, 50 % short overload, short circuit 10 x, breakers 1.25 x, derating 0.87, 2 transformers 1 W + 1 S); the cable ampacities are indicative (3.5 core XLPE armoured, in air) - to be confirmed. cwr_pipe = p361 'Main piping & valves including common header' (column / suction 1.8 m/s, delivery 2.0 m/s, header 1.8 m/s; p351 1.6). trial = p352-353 'Three month trial & run cost' (0.5 ppm, sodium hypochlorite 120 g / L at Rs 55 / L (SOR p364 11.7), Rs 8.30 / kWh, fixed Rs 350 / kW a month, light & fan 2 kW (TW) / 10 kW (CWR), booster 0.5 kW and 12 h, operator Rs 12000 x 3 a month)."
+  },
+  "civil": {
+    "value": {"campus_wall_m": [40, 40], "tw_wall_m": [10, 10], "gate_m": 3.6, "wall_repair_m": 160,
+              "approach_road": [[35, 3.6], [25, 3.0]], "earth_fill": [40, 40, 0.5], "drain_m": 160,
+              "arboriculture": 25000, "rm_bypass_m": 10,
+              "units": {"pump_house": "'PH 3.6x3.0'!K182", "bypass": "ByPass!K17", "ph_repair": "'PH Repaire'!K181*100000",
+                        "wall": "'BW (7)'!K29", "wall_repair": "'BW Repaire'!G27", "gate": "Gate!K26",
+                        "interlocking": "interlocking!G19", "earth": "Earth!G7", "drain": "'U Drain'!K15",
+                        "staff_quarter": "'SQ (6)'!K308*100000", "mcs": "'MCS (2)'!K274*100000",
+                        "gwr": "'Ground water'!F7*100000", "ht_room": "HT!G17", "lt_room": "LT!G17",
+                        "booster_room": "'booster room'!G17", "girder_pillar": "'Girder pillar (2)'!G17"}},
+    "src": "Riverside water DPR (U.P. Jal Nigam, AMRUT 2.0, 2026; user decision 6-Nov-2026: the DPR export as that DPR): p203-204 pump house cum chlorination room - one a new tube well with a bypass chamber, a repair of the pump house of each existing tube well; p301-315 site development - water works campus wall 2 x 40 + 2 x 40 m (new OHT), each tube well site 2 x 10 + 2 x 10 m, less a 3.6 m gate each, repairs of the existing campus wall, interlocking approach road 35 x 3.6 + 25 x 3.0 m, earth filling 40 x 40 x 0.5 m (user: each new OHT campus, yellow), semi-circular drain 160 m and arboriculture Rs 25,000 a campus; p316 staff quarters (single room); p317 ground water recharge, one a zone; p273-276 HT / LT panel rooms (each CWR) and booster pump room (each booster); p205-209 rising mains: a 10 m bye pass at the OHT and a masonry chamber for each sluice valve. Rates: the unit estimates (p382 = Elmwood 'Summary (2)')"
+  },
+  "oht_repair": {
+    "value": {
+      "750": {"title": "750 KL / 20 m", "pipes": [["Inlet 200 mm", 30, 3500], ["Outlet 350 mm", 35, 6200], ["Overflow 400 mm", 30, 6500]],
+              "scaffold": [["For staging", 1, 18.0, null, 20.6], ["For tank wall inner", 1, 5.0, null, 4.5], ["For tank wall outer", 1, 6.5, null, 5.0]],
+              "joints": [["Bottom dome", 3.14, 16.5, null, null], ["Conical wall", 3.14, 18.1, null, null], ["", 3.14, 20.1, null, null], ["Tank wall", 1, 20.1, 3.14, null]],
+              "plaster": [["Tank wall inner side", 2, 3.14, 5.0, 5.0], ["Bottom dome", 1, 3.14, 9.5, null], ["Conical wall", 1, 3.14, 9.5, 2.5]],
+              "grout_kg": [35, 25, 20],
+              "slurry_v": [["Cone wall", 1, 3.14, 8.5, 4.43, 311.50], ["Wall inner", 1, 3.14, 4.0, 5.55, 218.30], ["Column inner", 14, 3.14, 0.5, 20, 218.30]],
+              "slurry_h": [["Bottom dome", 1, 3.14, 11.62, 3.26, 406.25]],
+              "ladder_qtl": 2.2,
+              "scrape": [["Top dome", 2, 3.14, 10.2, 3.26], ["Top balcony", 0.25, 3.14, 14.0, 22.3], ["Wall outer", 1, 3.14, 15.0, 5.55],
+                         ["Cone wall", 1, 3.14, 11.2, 4.43], ["Balcony", 1, 3.14, 6.5, 0.3], ["Ring beam", 2, 3.14, 5.5, 0.6],
+                         ["Column", 14, 3.14, 0.5, 20], ["Brace", 42, 2.0, 0.4, 3.25], ["", 42, 2.0, 0.25, 3.25]]},
+      "1500": {"title": "1500 KL / 20 m", "pipes": [["Inlet 200 mm", 30, 3500], ["Outlet 400 mm", 35, 6200], ["Overflow 450 mm", 30, 6500]],
+               "scaffold": [["For staging", 1, 15.0, null, 20.6], ["For tank wall inner", 1, 12.0, null, 5.5], ["For tank wall outer", 1, 12.5, null, 5.0]],
+               "joints": [["Bottom dome", 3.14, 16.5, null, null], ["Conical wall", 3.14, 18.1, null, null], ["", 3.14, 20.1, null, null], ["Tank wall", 1, 20.1, 3.14, null]],
+               "plaster": [["Tank wall inner side", 2, 3.14, 7.5, 5.5], ["Bottom dome", 1, 3.14, 12.5, null], ["Conical wall", 1, 3.14, 12.5, 2.5]],
+               "grout_kg": [40, 28, 22],
+               "slurry_v": [["Cone wall", 1, 3.14, 9.5, 4.43, 311.50], ["Wall inner", 1, 3.14, 5.0, 5.55, 218.30], ["Column inner", 14, 3.14, 0.5, 20, 218.30]],
+               "slurry_h": [["Bottom dome", 1, 3.14, 11.82, 3.26, 406.25]],
+               "ladder_qtl": 2.15,
+               "scrape": [["Top dome", 2, 3.14, 15.2, 3.26], ["Top balcony", 0.25, 3.14, 17.0, 22.3], ["Wall outer", 1, 3.14, 16.0, 5.55],
+                          ["Cone wall", 1, 3.14, 11.8, 5.64], ["Balcony", 1, 3.14, 8.0, 4.5], ["Ring beam", 2, 3.14, 7.5, 0.6],
+                          ["Column", 14, 3.14, 0.5, 20], ["Brace", 42, 2.0, 0.4, 3.25], ["", 42, 2.0, 0.25, 3.25]]},
+      "split_kl": 1125,
+      "rates": {"scaffold": 285.00, "joints": 469.65, "plaster": 442.75, "grout": [102.85, 106.70, 793.25], "ladder": 8000,
+                "balcony": 17410, "railing": 15300, "ventilator": 9000, "wli": 19650, "manhole": 4800, "sv_chamber_repair": 8700,
+                "sv_chamber": 27000, "cleaning": 19380, "scrape": 20.85, "paint": 166.85, "pipe_paint": 12500}},
+    "src": "Riverside water DPR p256-272: 'Detailed measurement and estimate for repair of R.C.C. over head tank' 750 KL / 20 m (zones 2, 13: Rs 16.32 lakh) and 1500 KL / 20 m (zones 8, 14: Rs 17.71 lakh), CPWD DSR 2023 vol. 2 items 14.72, 22.25.1, 13.11, 26.35.1-3, 22.23.1-2, 13.91, 13.47.1 and job rates as typed there; an existing OHT takes the measurements of the nearer of the two (up to 1125 KL the 750 KL one) - user decision 6-Nov-2026: as that DPR, in place of 10 % of a new OHT"
+  },
+  "house_connection_shift": {
+    "value": {"pit_cum": 0.45,
+              "material": [["20 mm dia HDPE pipe (PN-6 SDR-9)", "m", 2, 35], ["20 mm dia GI pipe class B", "m", 1, 191],
+                           ["GI elbow 20 mm dia class B", "Each", 2, 30], ["Clamp with saddle", "Each", 1, 245],
+                           ["Tap / stop cock (brass) 15 mm", "Each", 1, 195], ["Ferrule (brass) 15 mm with end cap (heavy duty)", "Each", 1, 295],
+                           ["20 mm PP adaptor", "Each", 1, 90], ["20 mm dia GI socket", "Each", 2, 35]]},
+    "src": "Elmwood 'Shif. HC' rows 126-161 = Riverside water DPR p295-300 (estimate for shifting of house connection): labour as a new connection, pit 2.0 x 0.30 x 0.75 m, its own material list, x 1.2 / 1.4 / 1.6 / 1.75 for bigger mains, 1.2 sqm of road a connection"
+  },
+  "form_j": {
+    "value": {"contingency_lakh": 50, "efficiency_less": 0.05, "labour_cess": 0.01, "gst": 0.18, "em_centage": 0.08,
+              "centage": [[2500, 0.10], [5000, 0.08], [10000, 0.07], [null, 0.05]],
+              "shares": [["Govt. of India", 0.25], ["Govt. of U.P.", 0.67], ["U.L.B", 0.08]]},
+    "src": "Elmwood 'Form J Com.': less 5 % efficiency, labour cess 1 %, GST 18 %, centage 10 / 8 / 7 / 5 % by slab (Rs lakh), shares 25 / 67 / 8 %; Form J (E&M works) of the Riverside water DPR p48: departmental proficiency 5 % (efficiency_less), centage 8 % on the work cost (em_centage), labour cess 1 % and GST 18 % on the work cost, the power connections, the 5 year O&M without and with electricity. Contingency: a lump sum, Rs 50 lakh as the Riverside water DPR p44 / p46 (Form J Com and Form J Civil) - user decision 6-Nov-2026, in place of Elmwood's 2 % (yellow, change to the project's)"
+  },
+  "om": {
+    "value": {"inflation": 0.05, "gst": 0.18, "labour_cess": 0.01, "centage": 0.07,
+              "repair": {"OHT/Reservoir": [0.01, 0.015, 0.02], "Pipeline works": [0.0025, 0.005, 0.0075],
+                         "Building works": [0.01, 0.015, 0.02], "Machinery works": [0.02, 0.03, 0.04]},
+              "staff": [["Valve man / plumber (fitter)", 19175], ["Assistant (beldar)", 14610]], "staff_per_connections": 2000,
+              "staff_rise": 0.2,
+              "hypo_rate": [55, 75, 100], "hypo_strength": 0.12, "testing": [2400, 4200, 6000],
+              "cess_per_kl": 0.01, "monthly_charge": [130, 150, 175]},
+    "src": "Elmwood 'Repair on Works', 'A.Ex. Staff', 'Chemical', 'Cess', 'Income', '5 Yr O&M Civil' (5 % a year); the O&M for 5 years with labour cess 1 %, GST 18 % and centage 7 % as the Riverside water DPR p57 (its civil line says 'Centage@10%' but its amount 49.81 is 7 % of 711.51 - user decision 7-Nov-2026: 7 %); staff: CPHEEO Water Manual Part C Table 3.5 p32 - valve men / plumber with assistant 1 per 2000 connections (Part B 2.5.1 (a) p18: staffing site-specific), pay of the Elmwood fitter / beldar; E&M O&M: sheet EM O&M (dpr_em.py)"
+  }
+}

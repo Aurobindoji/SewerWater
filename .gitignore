@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+output/
+projects/
+build/
+dist/
+installer/redist/
+# the handover notes and the hash map stay on this PC, not in git (user decision 10-Nov-2026)
+HANDOVER_*.md
+COMMIT_MAP_*.md

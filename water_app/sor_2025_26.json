@@ -1,0 +1,9019 @@
+{
+"_readme": "Schedule of rates for sheet 'sor' of the water DPR workbook (water_app/dpr.py) - a copy of data/sor_2025_26.json (the sewer side's, from the Riverside estimate), which is the same as sheet 'sor' of the Elmwood water estimate (1437 codes, every rate equal - checked 26-Oct-2026). items = [Item No., Description, Unit, Rate]; a heading row has no code or no rate.",
+"_source": "Copy of Riverside SewerEstimate.xlsx, sheet 'sor' (SCHEDULE OF RATES FOR YEAR 2025-26)",
+"title": "SCHEDULE OF RATES FOR YEAR 2025-26",
+"items": [
+[
+"",
+"BUILDING WORKS",
+"",
+null
+],
+[
+"",
+"EARTH WORKS",
+"",
+null
+],
+[
+"1001",
+"Excavation in foundation in ordinary soil (loam, clay or sand) including lift upto 1.5 m and lead upto 50 m filling, watering and ramming of excavated earth into the trenches or into the space between the building and the sides of foundation trenches or into the plinth and disposal of surplus earth upto a distance of 50 m from the centre of the foundation trenches.",
+"CUM.",
+239.77
+],
+[
+"1002",
+"Excavation in foundation in soil mixed with mooram, shingle, kankar requireing the use of special T&P such as pickaxes, sabbals, etc. including lift upto 1.5 m and lead upto 50 m filling, watering and ramming of excavated earth into the trenches or into the space between the building and the sides of foundation trenches or into the plinth and disposal of surplus earth upto a distance of 50 m from the centre of the foundation trenches.",
+"CUM.",
+279.11
+],
+[
+"1003",
+"Banking with excavated earth in layers not exeeding 15 cm in depth breaking clods, watering ramming each layer with wooden or iron hammers and thapies and dressing up in embankments such as for road, flood banks,marginan bunds, guide bank and sewage farm channel etc. including 1.5m lift and 50m lead (excluding Excavation).",
+"CUM",
+88.13
+],
+[
+"1004",
+"Sand filling in plinth including supply of necessary quantity of sand from a distance not exeeding 10km. from the site of work and including watering, dressing, etc. rate to include the cost of all materials, labour, T&P etc. required for proper completion of work.",
+"CUM",
+1209.61
+],
+[
+"1004.i.",
+"Same as above but 0.0-1.5 m BGL",
+"CUM",
+1209.61
+],
+[
+"1004.ii.",
+"Same as above but 1.5-3.0 m BGL",
+"CUM",
+1245.8983
+],
+[
+"1004.iii.",
+"Same as above but 3.0-4.5 m BGL",
+"CUM",
+1294.2827
+],
+[
+"1004.iv.",
+"Same as above but 4.5-6.0 m BGL",
+"CUM",
+1354.7632
+],
+[
+"1004.v.",
+"Same as above but 6.0-7.5 m BGL",
+"CUM",
+1451.532
+],
+[
+"1004.vi.",
+"Same as above but 7.5-9.0 m BGL",
+"CUM",
+1572.493
+],
+[
+"1004.vii.",
+"Same as above but 9-10.5 m BGL",
+"CUM",
+1693.454
+],
+[
+"1004.viii.",
+"Same as above but 10.5-12.0 m BGL",
+"CUM",
+1814.415
+],
+[
+"1005",
+"Filling, dressing and raamming earth or sand or bajri or ballast or kankar or single etc. excluding cost of materials.",
+"CUM",
+156.21
+],
+[
+"1006",
+"Extra over items 1001 to 1005 above for every additional 50 m lead or part of it or for every addtional1.5 m lift or part of it.",
+"CUM",
+42.07
+],
+[
+"",
+"CONCRETE WORKS",
+"",
+null
+],
+[
+"1007",
+"Concrete with 40 mm gauge brick ballast, white lime & sand mortar (1:2) in foundations and floors including supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+2711.66
+],
+[
+"1008",
+"Concrete with 40 mm gauge brick ballast, white lime & surkhi in foundations and floors in proportion of 100:16:32 including supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+2569.13
+],
+[
+"1009",
+"Concrete with 40 mm gauge brick ballast, local sand and cement in proportion of (12:6:1) in foundations and floors including supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+3650.61
+],
+[
+"1010",
+"Concrete with 40 mm gauge brick ballast, local sand and cement in proportion of (10:5:1) in foundations and floors including supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+3830.71
+],
+[
+"1011",
+"Concrete with 40 mm gauge brick ballast, local sand and cement in proportion of (8:4:1) in foundations and floors including supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+4102.4
+],
+[
+"1012",
+"Concrete with 40 mm gauge brick ballast, white lime and sand mortar in proportion of 1:2 in haunch filling including supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+3714.18
+],
+[
+"1013",
+"Concrete with 40 mm gauge brick ballast & kankar lime in roof terracing including supply of all materials, labour, T&P etc. required for proper completion of the work including Making shallow drain if required.",
+"CUM",
+4918.22
+],
+[
+"1014",
+"Concrete with 25 mm gauge brick ballast, white lime and surkhi in proportion of 100:18:36 in roof terracing including supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+4932.74
+],
+[
+"1015",
+"Cement concrete with 40 mm gauge approved stone ballast, coarse sand and cement in the proportion of 4:2:1 including supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+7092.44
+],
+[
+"1015.A",
+"Cement concrete with 20 mm gauge approved stone ballast, coarse sand and cement in the proportion of 4:2:1 including supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+7092.44
+],
+[
+"1015.A.i.",
+"Same as above but 0.0-1.5 m BGL",
+"CUM",
+7092.44
+],
+[
+"1015.A.ii.",
+"Same as above but 1.5-3.0 m BGL",
+"CUM",
+7305.2132
+],
+[
+"1015.A.iii.",
+"Same as above but 3.0-4.5 m BGL",
+"CUM",
+7588.9108
+],
+[
+"1015.A.iv.",
+"Same as above but 4.5-6.0 m BGL",
+"CUM",
+7943.5328
+],
+[
+"1015.A.v.",
+"Same as above but 6.0-7.5 m BGL",
+"CUM",
+8510.928
+],
+[
+"1015.A.vi.",
+"Same as above but 7.5-9.0 m BGL",
+"CUM",
+9220.172
+],
+[
+"1015.A.vii.",
+"Same as above but 9-10.5 m BGL",
+"CUM",
+9929.416
+],
+[
+"1015.A.viii.",
+"Same as above but 10.5-12.0 m BGL",
+"CUM",
+10638.66
+],
+[
+"1015.B",
+"Cement concrete with 20 mm gauge approved stone ballast, coarse sand and cement in the proportion of 3:1.5:1 including supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+7940.67
+],
+[
+"1015.B.i.",
+"Same as above but 0.0-1.5 m BGL",
+"CUM",
+7940.67
+],
+[
+"1015.B.ii.",
+"Same as above but 1.5-3.0 m BGL",
+"CUM",
+8178.8901
+],
+[
+"1015.B.iii.",
+"Same as above but 3.0-4.5 m BGL",
+"CUM",
+8496.5169
+],
+[
+"1015.B.iv.",
+"Same as above but 4.5-6.0 m BGL",
+"CUM",
+8893.5504
+],
+[
+"1015.B.v.",
+"Same as above but 6.0-7.5 m BGL",
+"CUM",
+9528.804
+],
+[
+"1015.B.vi.",
+"Same as above but 7.5-9.0 m BGL",
+"CUM",
+10322.871
+],
+[
+"1015.B.vii.",
+"Same as above but 9-10.5 m BGL",
+"CUM",
+11116.938
+],
+[
+"1015.B.viii.",
+"Same as above but 10.5-12.0 m BGL",
+"CUM",
+11911.005
+],
+[
+"1016",
+"Cement concrete with 40 mm gauge approved stone ballast, coarse sand and cement in the proportion of 6:3:1 including supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+6319.36
+],
+[
+"1017",
+"Cement concrete with 40 mm gauge approved stone ballast, coarse sand and cement in the proportion of 8:4:1 including supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+6045.42
+],
+[
+"1017.i.",
+"Same as above but 0.0-1.5 m BGL",
+"CUM",
+6045.42
+],
+[
+"1017.ii.",
+"Same as above but 1.5-3.0 m BGL",
+"CUM",
+6226.7826
+],
+[
+"1017.iii.",
+"Same as above but 3.0-4.5 m BGL",
+"CUM",
+6468.5994
+],
+[
+"1017.iv.",
+"Same as above but 4.5-6.0 m BGL",
+"CUM",
+6770.8704
+],
+[
+"1017.v.",
+"Same as above but 6.0-7.5 m BGL",
+"CUM",
+7254.504
+],
+[
+"1017.vi.",
+"Same as above but 7.5-9.0 m BGL",
+"CUM",
+7859.046
+],
+[
+"1017.vii.",
+"Same as above but 9-10.5 m BGL",
+"CUM",
+8463.588
+],
+[
+"1017.viii.",
+"Same as above but 10.5-12.0 m BGL",
+"CUM",
+9068.13
+],
+[
+"1018",
+"Cost of reinforced cement concrete door sills, chaukhats, boundary posts, shelves and similar small works with cement, coarse sand and 20 mm gauge approved stone ballast in the proportion of 1:2:4 excluding supply of reinforcement and its bending but including its fixing and binding the same with 0.50 mm thick binding wire and the cost of binding wire and the moulds and all other materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+8713.56
+],
+[
+"1019",
+"R.C.C. work with cement, coarse sand and 20 mm gauge approved stone ballast in proportion of 1:2:4 in lintels of doors and windows excluding supply of reinforcement and its bending but including its fixing and binding the same with 0.50 mm thick binding wire ( to be supplied by the contractor)  and including necessary materials, labour, T&P etc. with necessary centering and shuttering required for proper completion of the work.",
+"CUM",
+8794.44
+],
+[
+"1020",
+"R.C.C. work with cement, coarse sand and 20 mm gauge approved stone ballast in proportion of 1:2:4 in slabs excluding supply of reinforcement and its bending but including its fixing and binding the same with 0.50 mm thick binding wire ( to be supplied by the contractor)  and including necessary materials, labour, T&P etc. with necessary centering and shuttering required for proper completion of the work.",
+"CUM",
+9654.78
+],
+[
+"1021",
+"R.C.C. work with cement, coarse sand and 20 mm gauge approved stone ballast in proportion of 1:2:4 in the lighter beam, i.e., having spans upto 6.0 m excluding supply of reinforcement and its bending but including its fixing and binding the same with 0.50 mm thick binding wire ( to be supplied by the contractor)  and including necessary materials, labour, T&P etc. with necessary centering and shuttering required for proper completion of the work.",
+"CUM",
+9949.75
+],
+[
+"1022",
+"R.C.C. work with cement, coarse sand and 20 mm gauge approved stone ballast in proportion of 1:2:4 in heavier beam, i.e., having spans above 6.0 m. excluding supply of reinforcement and its bending but including its fixing and binding the same with 0.50 mm thick binding wire ( to be supplied by the contractor)  and including necessary materials, labour, T&P etc. with necessary centering and shuttering required for proper completion of the work.",
+"CUM",
+11333.42
+],
+[
+"1023",
+"R.C.C. with cement, coarse sand and 40 mm gauge approved stone ballast in proportion of 1:2:4 in raft foundations & footings, excluding supply of reinforcement and its bending but including its fixing and binding the same with 0.50 mm thick binding wire ( to be supplied by the contractor)  and including necessary centering and shuttering, supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+8402.73
+],
+[
+"1024",
+"R.C.C. work with cement, coarse sand and 20 mm gauge approved stone ballast in proportion of 1:2:4 in t- beams, slabs, columns excluding supply of reinforcement and its bending but including its fixing and binding the same with 0.50 mm thick binding wire ( to be supplied by the contractor)  including necessary centering and shuttering, supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+10487.36
+],
+[
+"1025",
+"R.C.C. work with cement, coarse sand and 20 mm gauge approved stone ballast in proportion of 1:1.5:3 in columns excluding supply of reinforcement and its bending but including its fixing and binding the same with 0.50 mm thick binding wire (to be supplied by the contractor)  including necessary centering and shuttering, supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+11260.02
+],
+[
+"1025.i.",
+"Same as above but 0.0-1.5 m BGL",
+"CUM",
+11260.02
+],
+[
+"1025.ii.",
+"Same as above but 1.5-3.0 m BGL",
+"CUM",
+11597.8206
+],
+[
+"1025.iii.",
+"Same as above but 3.0-4.5 m BGL",
+"CUM",
+12048.2214
+],
+[
+"1025.iv.",
+"Same as above but 4.5-6.0 m BGL",
+"CUM",
+12611.2224
+],
+[
+"1025.v.",
+"Same as above but 6.0-7.5 m BGL",
+"CUM",
+13512.024
+],
+[
+"1025.vi.",
+"Same as above but 7.5-9.0 m BGL",
+"CUM",
+14638.026
+],
+[
+"1025.vii.",
+"Same as above but 9-10.5 m BGL",
+"CUM",
+15764.028
+],
+[
+"1025.viii.",
+"Same as above but 10.5-12.0 m BGL",
+"CUM",
+16890.03
+],
+[
+"1026",
+"Same as items 1018 to 1024 but when shingles are used (deduct from items 1018 to 1024).",
+"CUM",
+2053.71
+],
+[
+"",
+"BRICK WORKS",
+"",
+null
+],
+[
+"1027",
+"1st class brick-work in kankar lime in foundation and plinth including supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+6187.3
+],
+[
+"1028",
+"1st class brick-work in white lime and surkhi 1:2, in foundation and plinth including supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+5716.15
+],
+[
+"1029",
+"1st class brick-work in 1:6 cement and local sand mortar in foundation & plinth including supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+6260.86
+],
+[
+"1029.A",
+"1st class brick-work in 1:6 cement and Coarse sand mortar in foundation & plinth including supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+6798.02
+],
+[
+"1031",
+"1st class brick-work in 1:4 cement and local sand mortar in foundation & plinth including supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+6404.84
+],
+[
+"1031A",
+"1st class brick-work in 1:4 cement and coarse sand mortar in foundation & plinth including supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+6882.18
+],
+[
+"1031A.i.",
+"Same as above but 0.0-1.5 m BGL",
+"CUM",
+6882.18
+],
+[
+"1031A.ii.",
+"Same as above but 1.5-3.0 m BGL",
+"CUM",
+7088.6454
+],
+[
+"1031A.iii.",
+"Same as above but 3.0-4.5 m BGL",
+"CUM",
+7363.9326
+],
+[
+"1031A.iv.",
+"Same as above but 4.5-6.0 m BGL",
+"CUM",
+7708.0416
+],
+[
+"1031A.v.",
+"Same as above but 6.0-7.5 m BGL",
+"CUM",
+8258.616
+],
+[
+"1031A.vi.",
+"Same as above but 7.5-9.0 m BGL",
+"CUM",
+8946.834
+],
+[
+"1031A.vii.",
+"Same as above but 9-10.5 m BGL",
+"CUM",
+9635.052
+],
+[
+"1031A.viii.",
+"Same as above but 10.5-12.0 m BGL",
+"CUM",
+10323.27
+],
+[
+"1032",
+"1st class brick-work in 1:3 cement and local sand mortar in foundation & plinth including supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+6565.31
+],
+[
+"1033",
+"1st class brick-work in 1:3 cement and coarse sand mortar in foundation & plinth including supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+7009.19
+],
+[
+"1034",
+"1st class brick work in mud mortar in foundation and plinth including supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+5559.55
+],
+[
+"1035",
+"Same as items 1027 to 1034 above but in super structure including necessary cutting & moulding of bricks as required and also including honey comb brick work, thickness of wall not to be less than 1.5 brick (extra on items 1027 to 1034).",
+"CUM",
+423.09
+],
+[
+"1036",
+"Same as items 1027 to 1034 above but for one-brick thick wall (extra on item 1035).",
+"CUM",
+423.09
+],
+[
+"1037",
+"Same as items 1027 to 1034 above but for for walls up to half brick thick (extra on item 1036).",
+"CUM",
+423.09
+],
+[
+"1038",
+"For second class brick work (deduct from items 1027 to 1036).",
+"CUM",
+258.5
+],
+[
+"1039",
+"For third class brick work in mud (deduct from items 1034 to 1036).",
+"CUM",
+232.65
+],
+[
+"1040",
+"Sundried brick work in mud mortar in foundation and plinth including supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+2733.19
+],
+[
+"1041",
+"1st class brick work in arches (extra on items 1027 to 1036).",
+"CUM",
+1028.3
+],
+[
+"1042",
+"Same as item 1041 but in jack arches (extra on items 1027 to 1033).",
+"CUM",
+1140.85
+],
+[
+"1043",
+"Same as item 1041 but in well steining with ordinary bricks (extra on items 1027 to 1033).",
+"CUM",
+1352.5
+],
+[
+"1044",
+"Same as item 1043 but with specially moulded bricks (extra on item 1043).",
+"CUM",
+2306.7
+],
+[
+"1045",
+"11.5 cm string or drip course of 1st class brick in kankar lime including lime plastering, cutting, drip notch as required and supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"RM",
+481.09
+],
+[
+"1046",
+"11.5 cm string or drip course of 1st class brick in 1:6 cement and local sand including plastering, cutting, drip notch as required and supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"RM",
+454.95
+],
+[
+"1047",
+"Same as item 1045 but in 23 cm cornice in kankar lime with lime plaster.",
+"RM",
+326.91
+],
+[
+"1048",
+"Same as item 1047 but in 1:6 cement and local sand including plastering in 1:6 cement and sand mortar.",
+"RM",
+343.57
+],
+[
+"1049",
+"Extra for cutting of bricks for moulding as required for cornice etc. including rubbed finish not exceeding 100 mm width (labour only).",
+"RM",
+137.65
+],
+[
+"1050",
+"Making opening through walls in lime or cement mortar for doors and windows or enlarging existing opening or cutting out brick work for under pinning including necessary supports staging, cleaning site and stacking the dismantled materials at the place within a distance of 50 m.",
+"CUM",
+3235.24
+],
+[
+"1051",
+"Reinforced brick work in sun shade with 1st class bricks laid in cement & coarse-sand mortar 1:3 excluding supply of reinforcement and its bending but including its fixing in position with centering, shuttering, curing, supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+10057.9
+],
+[
+"1052",
+"Reinforced brick work in lintels with 1st class bricks laid in cement & coarse-sand mortar 1:3 excluding supply of reinforcement and its bending but including its fixing in position with centering, shuttering, curing, supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+8906.71
+],
+[
+"1053",
+"Encasing rolled steel section as in beams and columns in 1:3 brick work in cement & coarse sand including supply of wire netting of required gauge  and its fixing where necessary, supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"RM",
+1385.75
+],
+[
+"",
+"DPC WORKS",
+"",
+null
+],
+[
+"1054",
+"20 mm thick damp proof course with cement & approved coarse sand in 1:2 including 5 % water proofing materials or in proportion as specified by the manufacturers including supply of all materials, labour, T&P etc. required for proper completion of the work, and including curing and shuttering as necessary.",
+"SQM",
+306.68
+],
+[
+"1055",
+"Same as item 1054 but 25 mm thick cement concrete consisting of cement, coarse sand and 12 mm graded approved stone grit 1:1.5:3 and including 3 % water proofing materials.",
+"SQM",
+415.6
+],
+[
+"",
+"STONE WORKS",
+"",
+null
+],
+[
+"1056",
+"Supply & fix Mirzapur or other approved fine dressed stone in door sills, chaukhats etc. laid in cement mortar consisting of cement & local sand 1:6 including supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+38752.4
+],
+[
+"1057",
+"Supply & fix Mirzapur or other approved stone slabs 40 mm thick with plain mouldings on edge and fine dressed  on all exposed surfaces as in steps & shelves laid in cement & local sand mortar in proportion of 1:6 including supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"SQM",
+1272.41
+],
+[
+"1058",
+"Supply & fix Mirzapur or other approved stone chajjas 40 mm thick with butt Joints and with exposed surfaces fine dressed set in cement mortar consisting of cement & local sand 1:6 including supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"SQM",
+1272.41
+],
+[
+"1059",
+"Supply & fix Mirzapur or other approved stone sun shade upto 40 mm thick over doors & windows including two brackets of same stone 50 mm thick with plain moulding on edge of brackets. all exposed surfaces to be fine dressed and stone to be projected up to 600 mm and set well into walls to a depth of 150 mm minimum with cement mortar consisting of cement & local sand mortar in proportion of 1:6 including supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"SQM",
+953.37
+],
+[
+"1060",
+"Supply & fix pierced tracery panels of Mirzapur or other approved stone 50 mm to 60 mm thick  fixed in cement mortar consisting of cement & coarse sand 1:3 including supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"SQM",
+6630.59
+],
+[
+"",
+"WOOD WORKS",
+"",
+null
+],
+[
+"1061",
+"C.P. Teak-Wood wrought, framed & fixed including simple moulding, straight work as in chaukhats and also supply of all materials, labour, T&P etc. required for proper completion of the work.",
+"CUM",
+136129.2
+],
+[
+"1062",
+"Same as item 1061 but with sheesham wood.",
+"CUM",
+72360.6
+],
+[
+"1063",
+"Same as item 1061 but with indian sal wood.",
+"CUM",
+94594
+],
+[
+"1064",
+"Same as item 1061 but with deodar wood.",
+"CUM",
+108031.8
+],
+[
+"1065",
+"Same as item 1061 but with kail wood.",
+"CUM",
+73948.8
+],
+[
+"1066",
+"Same as item 1061 but with country wood.",
+"CUM",
+56724
+],
+[
+"1067",
+"Same as item 1061 to 1066 but for curved work (extra on respective items from 1061 to 1066).",
+"25%",
+null
+],
+[
+"1068",
+"wood work wrought, framed & fixed in plain work as in roof trusses, purlins, ceilings, Joints etc.  including supply of all materials, labour, T&P etc. required for proper completion of the work. (deduct from items 1061 to 1066).",
+"CUM",
+261.58
+],
+[
+"1069",
+"Supply & fix 40 mm thick C. P. Teak Wood part panneled and part glazed doors & windows, shutters including supply and fixing of wooden cleats and stop cock and fixing and adjustment of hinges, bolts. locks, handles, springs and other fittings, supply and fixing the glass panes with putty and brad, glass to be 2.50 mm thick, but excluding painting and supply of fittings.",
+"SQM",
+6249.08
+],
+[
+"1070",
+"Additional cost for fixing glass-panes with C.P. teak wood beading and felt, instead of with putty and brad including cost of all materials, labour, T&P etc. required for proper completion of the work.",
+"SQM",
+608.32
+],
+[
+"1071",
+"Supply & fix 40 mm thick sheesham wood fully panelled in doors & windows, shutters including supply and fixing of wooden cleats and stop cock and fixing and adjustment of hinges, bolts. locks, handles, springs and other fittings, but excluding painting and supply of fittings.",
+"SQM",
+6723.14
+],
+[
+"1072",
+"Same as item 1069 but for C.P. teak wood fully glazed (40 mm thick).",
+"SQM",
+6764.77
+],
+[
+"1073",
+"Same as item 1069 but for C.P. teak wood 35 mm thick.",
+"SQM",
+5750.74
+],
+[
+"1074",
+"Same as item 1071 but for C.P. teak wood 35 mm thick.",
+"SQM",
+6224.91
+],
+[
+"1075",
+"Same as item 1072 but for C.P. teak wood 35 mm thick.",
+"SQM",
+6478.77
+],
+[
+"1076",
+"Same as item 1069 but for C.P. teak wood 25 mm thick.",
+"SQM",
+4954.81
+],
+[
+"1077",
+"Same as item 1071 but for C.P. teak wood 25 mm thick.",
+"SQM",
+4879.26
+],
+[
+"1078",
+"Same as item 1072 but for C.P. teak wood 25 mm thick.",
+"SQM",
+5836.03
+],
+[
+"1079",
+"Same as item 1069 but for sheesham wood 40 mm thick.",
+"SQM",
+4386.41
+],
+[
+"1080",
+"Supply & fix 40 mm thick sheesham wood fully panelled in doors & windows, shutters including supply and fixing of wooden cleats and stop cock and fixing and adjustment of hinges, bolts. locks, handles, springs and other fittings, but excluding painting and supply of fittings.",
+"SQM",
+4061.76
+],
+[
+"1081",
+"Supply & fix 40 mm thick sheesham wood fully glazed in doors & windows, shutters including supply and fixing of wooden cleats and stop cock and fixing and adjustment of hinges, bolts. locks, handles, springs and other fittings, supply and fixing the glass panes with putty and brad, glass to be 2.50 mm thick, but excluding painting and supply of fittings.",
+"SQM",
+5423.51
+],
+[
+"1082",
+"Same as item 1079 but for sheesham wood 35 mm thick.",
+"SQM",
+4154.73
+],
+[
+"1083",
+"Same as item 1080 but for sheesham wood 35 mm thick.",
+"SQM",
+3828.95
+],
+[
+"1084",
+"Same as item 1081 but for sheesham wood 35 mm thick.",
+"SQM",
+5290.95
+],
+[
+"1085",
+"Same as item 1069 but for sal wool 40 mm thick.",
+"SQM",
+5043.88
+],
+[
+"1086",
+"Same as item 1071 but for sal wood 40 mm thick.",
+"SQM",
+4998.4
+],
+[
+"1087",
+"Same as item 1072 but for sal wood 40 mm thick.",
+"SQM",
+5902.95
+],
+[
+"1088",
+"Same as item 1085 but for sal wood 35 mm thick.",
+"SQM",
+4719.06
+],
+[
+"1089",
+"Same as item 1076 but for sal wood 35 mm thick.",
+"SQM",
+4672.92
+],
+[
+"1090",
+"Same as item 1087 but for sal wood 35 mm thick.",
+"SQM",
+5716.47
+],
+[
+"1091",
+"Same as item 1069 but for deodar wood 40 mm thick.",
+"SQM",
+5430.53
+],
+[
+"1092",
+"Same as item 1071 but for deodar wood 40 mm thick.",
+"SQM",
+5552.98
+],
+[
+"1093",
+"Same as item 1072 but for deodar wood 40 mm thick.",
+"SQM",
+6176.88
+],
+[
+"1094",
+"Same as item 1091 but for deodar wood 35 mm thick.",
+"SQM",
+5049.62
+],
+[
+"1095",
+"Same as item 1092 but for deodar wood 35 mm thick.",
+"SQM",
+5171.5
+],
+[
+"1096",
+"Same as item 1093 but for deodar wood 35 mm thick.",
+"SQM",
+5951.25
+],
+[
+"1097",
+"Same as item 1091 but for deodar wood 25 mm thick.",
+"SQM",
+4440.71
+],
+[
+"1098",
+"Same as item 1092 but for deodar wood 25 mm thick.",
+"SQM",
+4142.11
+],
+[
+"1099",
+"Same as item 1093 but for deodar wood 25 mm thick.",
+"SQM",
+5461.57
+],
+[
+"1100",
+"Same as item 1069 but for chir wood 40 mm thick.",
+"SQM",
+4348.42
+],
+[
+"1101",
+"Same as item 1071 but for chir wood 40 mm thick.",
+"SQM",
+4003.99
+],
+[
+"1102",
+"Same as item 1072 but for chir wood 40 mm thick.",
+"SQM",
+5402.09
+],
+[
+"1103",
+"Same as item 1100 but for chir wood 35 mm thick.",
+"SQM",
+4122.51
+],
+[
+"1104",
+"Same as item 1101 but for chir wood 35 mm thick.",
+"SQM",
+3777.69
+],
+[
+"1105",
+"Same as item 1102 but for chir wood 35 mm thick.",
+"SQM",
+5251.71
+],
+[
+"1106",
+"Same as item 1100 but for chir wood 25 mm thick.",
+"SQM",
+3762.14
+],
+[
+"1107",
+"Same as item 1101 but for chir wood 25 mm thick.",
+"SQM",
+3167.57
+],
+[
+"1108",
+"Same as item 1102 but for chir wood 25 mm thick.",
+"SQM",
+4963.75
+],
+[
+"1109",
+"Same as item 1069 but for kail wood 40 mm thick.",
+"SQM",
+4426.85
+],
+[
+"1110",
+"Same as item 1071 but for kail wood 40 mm thick.",
+"SQM",
+4133.61
+],
+[
+"1111",
+"Same as item 1072 but for kail wood 40 mm thick.",
+"SQM",
+5464.78
+],
+[
+"1112",
+"Same as item 1109 but for kail wood 35 mm thick.",
+"SQM",
+4199.28
+],
+[
+"1113",
+"Same as item 1110 but for kail wood 35 mm thick.",
+"SQM",
+3894.25
+],
+[
+"1114",
+"Same as item 1111 but for kail wood 35 mm thick.",
+"SQM",
+5328.19
+],
+[
+"1115",
+"Same as item 1109 but for kail wood 25 mm thick.",
+"SQM",
+3817.94
+],
+[
+"1116",
+"Same as item 1110 but for kail wood 25 mm thick.",
+"SQM",
+4445.88
+],
+[
+"1117",
+"Same as item 1111 but for kail wood 25 mm thick.",
+"SQM",
+5021.99
+],
+[
+"1118",
+"supply of 1 mm thick sheet iron panelled door & window shutters in 40 mm thick salwood frame including supply and fixing of wooden cleats and stops and fixing hinges, bolts, locks, handles, springs, and/ or other fittings but excluding supply of fittings.",
+"SQM",
+3735.77
+],
+[
+"1119",
+"supply & fixing of 40 mm thick C.P. teak wood door & window shutters with panels of heavy quality galvanized iron wire gauge 2.5 mm or 2.0 mm or 1.5 mm mesh or any other size with necessary beadings including supply and fixing of wooden cleats and stops and including fixing and adjustments of hinges, bolts, locks, handles, springs, and/ or other fittings but excluding supply of fittings.",
+"SQM",
+4768.59
+],
+[
+"1120",
+"Same as item 1119 but in sheesham wood 40 mm thick.",
+"SQM",
+3095.39
+],
+[
+"1121",
+"Same as item 1119 but in sal wood 40 mm thick.",
+"SQM",
+3678.77
+],
+[
+"1122",
+"Same as item 1119 but in deodar wood 40 mm thick.",
+"SQM",
+4031.36
+],
+[
+"1123",
+"Same as item 1119 but in chir wood 40 mm thick.",
+"SQM",
+3053.72
+],
+[
+"1124",
+"Same as item 1119 but in kail wood 40 mm thick.",
+"SQM",
+3137.06
+],
+[
+"1125",
+"supply of galvanized mosquitoe proof heavy quality iron wire gauge 2.5 mm or 2.0 mm or 1.5 mm mesh or any other size, over windows including supply of C.P. teak wood battens of 50 mm x 12 mm and necessary screws, all materials, labour, T&P etc. required for proper completion of the work.",
+"SQM",
+1092.69
+],
+[
+"1126",
+"Same as item 1125 but with sheesham wood battens of 50 mm x 12 mm.",
+"SQM",
+915.1
+],
+[
+"1127",
+"Same as item 1125 but with deodar wood battens of 50 mm x 12 mm.",
+"SQM",
+1018.02
+],
+[
+"1128",
+"Same as item 1125 but with sal wood battens of 50 mm x 12 mm.",
+"SQM",
+988.63
+],
+[
+"1129",
+"Supply & fix braced & battened 40 mm thick sheesham wood doors & windows, shutters including supply and fixing of wooden cleats and stop cock and fixing and adjustment of hinges, bolts. locks, handles, springs and other fittings, supply and fixing the glass panes with putty and brad, glass to be 2.50 mm thick, but excluding painting and supply of fittings, area of 200 cm x 66 cm = 1.32 sqm.",
+"SQM",
+4999.72
+],
+[
+"1130",
+"Same as item 1129 but in sal wood 40 mm thick.",
+"SQM",
+6430.45
+],
+[
+"1131",
+"Same as item 1129 but in country wood 40 mm thick.",
+"SQM",
+4006.42
+],
+[
+"1132",
+"Same as item 1129 but in deodar wood 40 mm thick.",
+"SQM",
+7265.7
+],
+[
+"1133",
+"Same as item 1129 but in kail wood 40 mm thick.",
+"SQM",
+5100.6
+],
+[
+"1134",
+"Same as item 1129 but in chir wood 40 mm thick.",
+"SQM",
+4898.83
+],
+[
+"1135",
+"supply of 40mm thick C.P. teak wood door & window shutters with 9mm thick 5 nos. plywood or pressed wood panels and fixing C.P. teak wood cleats, stops, hinges, locks, bolts, handles, springs etc. & for other fittings (excluding supply of all fittings).",
+"SQM",
+4982.78
+],
+[
+"1136",
+"Same as item 1135 but in deodar wood 40 mm thick.",
+"SQM",
+4246.92
+],
+[
+"1137",
+"Same as item 1135 but in sheesham wood 40 mm thick.",
+"SQM",
+3302.23
+],
+[
+"1138",
+"Same as item 1135 but in sal wood 40 mm thick.",
+"SQM",
+3904.93
+],
+[
+"1139",
+"Same as item 1135 but in kail wood 40 mm thick.",
+"SQM",
+3354.73
+],
+[
+"1140",
+"Same as item 1135 but in chir wood 40 mm thick.",
+"SQM",
+3276.33
+],
+[
+"1141",
+"Same as item 1135 but in country wood 40 mm thick.",
+"SQM",
+2920.89
+],
+[
+"1142",
+"Approximate cost of iron fittings for doors & windows.",
+"LS",
+null
+],
+[
+"1143",
+"Approximate cost of oxidized iron fittings for doors & windows.",
+"LS",
+null
+],
+[
+"1144",
+"Approximate cost of brass fittings for doors & windows.",
+"LS",
+null
+],
+[
+"1145",
+"Approximate cost of oxidised brass fittings for doors & windows.",
+"LS",
+null
+],
+[
+"",
+"MILD STEEL WORKS",
+"",
+null
+],
+[
+"1146",
+"Rolled steel joists fixed in position including cost of joists but including all labour in handling and hoisting etc complete, light section 0.0 - 7.5m high.",
+"QTL",
+1884.38
+],
+[
+"1147",
+"Same as in item 1146 , but for heavy section, i.e., exceeding 300 kg. in weight and up to 7.5m in height.",
+"QTL",
+3689.54
+],
+[
+"1148",
+"Extra on items 1146 & 1147 for more than 7.5m height.",
+"QTL",
+1161.64
+],
+[
+"1149",
+"Mild steel or iron work of small size & sections such as holding down bolts, hold fasts, tie rods, clamps, gratings etc. (when not included in over all rate) wrought to required form including supply of steel, bolts, nuts and their fixing required for proper completion of the work.",
+"QTL",
+11663.04
+],
+[
+"1150",
+"Mild steel or iron work in heavy sizes such as trusses, build up gates, door frames, record racks, roof work, gates etc. wrought to required form  including drilling holes, revetting or welding, where necessary and also including supply of steel, bolts, nuts and their fixing required for proper completion of the work.",
+"QTL",
+12447.24
+],
+[
+"1151",
+"Mild steel or iron work in plain work such as R.C.C. or R.B. work (when not included in over all rates), wrought to required shape, as necessary including bending for proper completion of work including supply of steel and wastage.",
+"KG",
+106.0084
+],
+[
+"1152",
+"Cutting rolled steel joists upto 225mm x 100mm.",
+"CUT",
+342.62
+],
+[
+"1153",
+"Cutting rolled steel joists above 225mm x 100mm.",
+"CUT",
+685.23
+],
+[
+"1154",
+"Cutting of plates & angles upto 20mm thick.",
+"SQM",
+149.88
+],
+[
+"1155",
+"Cutting rounds upto 15 mm dia.",
+"CUT",
+8.56
+],
+[
+"1156",
+"Boring holes in mild steel or iron not exceeding 10 mm dia. & thickness of plate not exceeding 6 mm .",
+"HOLE",
+46.15
+],
+[
+"1157",
+"Same as item 1156 but holes exceeding 10 mm dia. but not exceeding 20 mm dia. & thickness exceeding 6 mm but not exceeding 13 mm.",
+"HOLE",
+71.51
+],
+[
+"1158",
+"Provide & fix 100 mm dia. C.I. down pipe complete with rose, heads, bends with eye hole and gratings etc. fixed to walls with suitable clamps.",
+"RM",
+666.08
+],
+[
+"1159",
+"Fix barbed iron wire fencing to posts after stretching it including labour and T&P etc. required for proper completion of the work but excluding supply of posts and wire.",
+"RM",
+81.43
+],
+[
+"1160",
+"Supply & fix single allahabad tiles with hips, ridges and caves and including laying them for roof work and setting in white lime and surkhi (1:2) or pure kankar lime and also including supply and laying of wooden battens and white washing two coats in bottom surface of tiles.",
+"SQM",
+775.96
+],
+[
+"",
+"ROOF WORKS",
+"",
+null
+],
+[
+"1161",
+"Same as item 1160 but for double allahabad tiles roof.",
+"SQM",
+1241.54
+],
+[
+"1162",
+"Supply & fix large country tiles roofing on bamboo frames.",
+"SQM",
+804.21
+],
+[
+"1163",
+"Same as item 1162 but small size country tiles.",
+"SQM",
+979.77
+],
+[
+"1164",
+"Laying of R.B. slab with 1st class bricks laid in cement mortar with approved coarse sand (1:3).",
+"CUM",
+11962.57
+],
+[
+"1165",
+"Supply & fix galvanised corrugated iron roofing 0.63mm thick.",
+"SQM",
+1109.14
+],
+[
+"1166",
+"Supply & fix 0.63mm thick ridges, valley & gutters for g.c. iron roofing.",
+"SQM",
+1097.68
+],
+[
+"1167",
+"Supply & lay 40mm thick insulation layer of sand & clay over roof.",
+"SQM",
+61.82
+],
+[
+"",
+"CEILING",
+"",
+null
+],
+[
+"1168",
+"Supply & lay 25mm thick deodar wood plank ceiling.",
+"SQM",
+3287.88
+],
+[
+"1169",
+"Same as item 1168 but for C.P. teak wood.",
+"SQM",
+4244.47
+],
+[
+"1170",
+"Same as item 1168 but for kail wood.",
+"SQM",
+2131.31
+],
+[
+"1171",
+"Supply & fix 6mm thick A.C. plane sheets ceiling with 25mm x 40mm deodar wood beadings.",
+"SQM",
+298.21
+],
+[
+"1172",
+"Same as item 1171 but with C.P. teak wood beading.",
+"SQM",
+349.07
+],
+[
+"1173",
+"Same as item 1171 but of masonite or celotax with deodar beading.",
+"SQM",
+298
+],
+[
+"1174",
+"Same as item 1173 but with C.P. teak wood beading.",
+"SQM",
+916.83
+],
+[
+"",
+"PLASTER & POINTING WORKS",
+"",
+null
+],
+[
+"1175",
+"Struck pointing with kankar lime on brick-work, including supply of all materials, labour and T&P etc. required for proper completion of work.",
+"SQM",
+243.91
+],
+[
+"1176",
+"Flush pointing with kankar lime on brick-work, including supply of all materials, labour and T&P etc. required for proper completion of work.",
+"SQM",
+197.31
+],
+[
+"1177",
+"Rubbing with kankar lime or with white lime & surkhi on brick-work, including supply of all materials, labour and T&P etc. required for proper completion of work.",
+"SQM",
+98.19
+],
+[
+"1178",
+"Struck pointing with cement mortar consisting cement & local sand (1:2), including supply of all materials, labour and T&P etc. required for proper completion of work.",
+"SQM",
+264.93
+],
+[
+"1179",
+"Same as item 1178 but flush pointing (deduct from item 1178).",
+"SQM",
+39.57
+],
+[
+"1180",
+"Same as item 1178 & 1179 but in floors (deduct from items 1178 & 1179).",
+"SQM",
+48.12
+],
+[
+"1181",
+"Raised pointing with cement & local sand mortar (1:2) on brick work, including supply of all materials, labour and T&P etc. required for proper completion of work.",
+"SQM",
+288.93
+],
+[
+"1182",
+"Struck cement pointing in cement mortar (1:2) with colouring materials to match with the brick work colour, including supply of all materials, labour and T&P etc. required for proper completion of work.",
+"SQM",
+283.09
+],
+[
+"1183",
+"12mm thick plaster with kankar lime over brick-work minimum thickness not to be less than 10mm, including supply of all materials, labour and T&P etc. required for proper completion of work.",
+"SQM",
+153.86
+],
+[
+"1184",
+"12mm thick plaster with cement mortar in proportion (1:2) cement & local sand over brick-work minimum thickness not to be less than 10mm, including supply of all materials, labour and T&P etc. required for proper completion of work.",
+"SQM",
+235.7
+],
+[
+"1185",
+"12mm thick plaster with cement mortar in proportion (1:2) cement & coarse sand over brick-work minimum thickness not to be less than 10mm, including supply of all materials, labour and T&P etc. required for proper completion of work.",
+"SQM",
+271.95
+],
+[
+"1186",
+"12mm thick plaster with cement mortar in proportion (1:3) cement & local sand over brick-work minimum thickness not to be less than 10mm, including supply of all materials, labour and T&P etc. required for proper completion of work.",
+"SQM",
+214.17
+],
+[
+"1187",
+"12mm thick plaster with cement mortar in proportion (1:3) cement & coarse sand over brick-work minimum thickness not to be less than 10mm, including supply of all materials, labour and T&P etc. required for proper completion of work.",
+"SQM",
+243.67
+],
+[
+"1187.i.",
+"Same as above but 0.0-1.5 m BGL",
+"SQM",
+243.67
+],
+[
+"1187.ii.",
+"Same as above but 1.5-3.0 m BGL",
+"SQM",
+250.9801
+],
+[
+"1187.iii.",
+"Same as above but 3.0-4.5 m BGL",
+"SQM",
+260.7269
+],
+[
+"1187.iv.",
+"Same as above but 4.5-6.0 m BGL",
+"SQM",
+272.9104
+],
+[
+"1187.v.",
+"Same as above but 6.0-7.5 m BGL",
+"SQM",
+292.404
+],
+[
+"1187.vi.",
+"Same as above but 7.5-9.0 m BGL",
+"SQM",
+316.771
+],
+[
+"1187.vii.",
+"Same as above but 9-10.5 m BGL",
+"SQM",
+341.138
+],
+[
+"1187.viii.",
+"Same as above but 10.5-12.0 m BGL",
+"SQM",
+365.505
+],
+[
+"1188",
+"12mm thick plaster with cement mortar in proportion (1:4) cement & local sand over brick-work minimum thickness not to be less than 10mm, including supply of all materials, labour and T&P etc. required for proper completion of work.",
+"SQM",
+205.39
+],
+[
+"1188.i.",
+"12mm thick plaster with cement mortar in proportion (1:4) cement & coarse sand over brick-work minimum thickness not to be less than 10mm, including supply of all materials, labour and T&P etc. required for proper completion of work.",
+"SQM",
+237.37
+],
+[
+"1189",
+"12mm thick plaster with cement mortar in proportion (1:5) cement & local sand over brick-work minimum thickness not to be less than 10mm, including supply of all materials, labour and T&P etc. required for proper completion of work.",
+"SQM",
+202.85
+],
+[
+"1189.i.",
+"12mm thick plaster with cement mortar in proportion (1:5) cement & coarse sand over brick-work minimum thickness not to be less than 10mm, including supply of all materials, labour and T&P etc. required for proper completion of work.",
+"SQM",
+240.84
+],
+[
+"1190",
+"12mm thick plaster with cement mortar in proportion (1:6) cement & local sand over brick-work minimum thickness not to be less than 10mm, including supply of all materials, labour and T&P etc. required for proper completion of work.",
+"SQM",
+195.95
+],
+[
+"1190.i.",
+"12mm thick plaster with cement mortar in proportion (1:6) cement & coarse sand over brick-work minimum thickness not to be less than 10mm, including supply of all materials, labour and T&P etc. required for proper completion of work.",
+"SQM",
+231.99
+],
+[
+"1191",
+"Extra on all item of plaster if done on ceiling.",
+"SQM",
+28.71
+],
+[
+"1192",
+"12mm thick plaster with cement, white lime & local sand (1:1:6) over brick-work minimum thickness not to be less than 10mm, including supply of all materials, labour and T&P etc. required for proper completion of work.",
+"SQM",
+198.7
+],
+[
+"1193",
+"Mud-plaster over brick wall, including supply of all materials, labour and T&P etc. required for proper completion of work.",
+"SQM",
+99.64
+],
+[
+"1194",
+"Stucco plaster resembling marble finish Ist coat 10 mm thick with (1:4) cement and coarse sand, intermediate coat 5 mm thick with  cement and marble dust in proportion (1:1) final coat 5 mm thick rich lime thoroughly slacked and passed through fine sieve and mixed and grinded with white marble dust or gypsum alongwith required quantity of metalic oxide to give desired tint in ratio (1:1), including supply of all materials, labour and T&P etc. required for proper completion of work.",
+"SQM",
+1007.16
+],
+[
+"1195",
+"20 mm thick plaster, finished with marble chips on walls, pillars, steps, etc. rubbed and polished to granolithic finish. Base coat to be 15 mm thick with cement and coarse sand mortar (1:2) and top coat 5 mm thick with  cement and marble chips in proportion (1:2) or required colour, including supply of all materials, labour and T&P etc. required for proper completion of work.",
+"SQM",
+1278.73
+],
+[
+"1196",
+"20 mm thick plaster, finished with marble chips on walls, pillars, steps, etc. rubbed and polished to granolithic finish. Base coat to be 15 mm thick with cement and coarse sand mortar (1:2) and top coat 5 mm thick with  white cement and marble chips in proportion (1:2) or required colour, including supply of all materials, labour and T&P etc. required for proper completion of work.",
+"SQM",
+1337.05
+],
+[
+"1197",
+"20 mm thick plaster, finished with marble chips on walls, pillars, steps, etc. rubbed and polished to granolithic finish. Base coat to be 15 mm thick with cement and coarse sand mortar (1:2) and top coat 5 mm thick with  white cement and marble chips in proportion (1:2) with required colour, including supply of all materials, labour and T&P etc. required for proper completion of work.",
+"SQM",
+1383.31
+],
+[
+"1198",
+"20mm thick pebble-dash plaster.",
+"SQM",
+502.59
+],
+[
+"1199",
+"Rough cast finish to plaster of different mortars (extra to plaster items).",
+"SQM",
+100.34
+],
+[
+"1200",
+"Plaster over rough face of one brick wall (extra to plaster items).",
+"SQM",
+38.24
+],
+[
+"1201",
+"20mm thick cement plaster in dado or skirting.",
+"SQM",
+620.68
+],
+[
+"1201A",
+"20mm thick plaster with cement mortar in proportion (1:3) cement & carse sand over brick-work minimum thickness not to be less than 18mm, including supply of all materials, labour and T&P etc. required for proper completion of work.",
+"SQM",
+314.11
+],
+[
+"1201A.i.",
+"Same as above but 0.0-1.5 m BGL",
+"SQM",
+314.11
+],
+[
+"1201A.ii.",
+"Same as above but 1.5-3.0 m BGL",
+"SQM",
+323.5333
+],
+[
+"1201A.iii.",
+"Same as above but 3.0-4.5 m BGL",
+"SQM",
+336.0977
+],
+[
+"1201A.iv.",
+"Same as above but 4.5-6.0 m BGL",
+"SQM",
+351.8032
+],
+[
+"1201A.v.",
+"Same as above but 6.0-7.5 m BGL",
+"SQM",
+376.932
+],
+[
+"1201A.vi.",
+"Same as above but 7.5-9.0 m BGL",
+"SQM",
+408.343
+],
+[
+"1201A.vii.",
+"Same as above but 9-10.5 m BGL",
+"SQM",
+439.754
+],
+[
+"1201A.viii.",
+"Same as above but 10.5-12.0 m BGL",
+"SQM",
+471.165
+],
+[
+"",
+"FLOORING WORKS",
+"",
+null
+],
+[
+"1202",
+"25mm thick 1:2:4 p.C.C. floor with cement, coarse sand and 20mm gauge stone ballast with base concrete (75mm thick) 1:4:8 cement, local sand & brick ballast 40mm gauge.",
+"SQM",
+586.68
+],
+[
+"1203",
+"Same as item 1202 but with base concrete consisting of brick ballast, white lime & surkhi 100:16:32.",
+"SQM",
+471.15
+],
+[
+"1204",
+"Same as item 1202 but with base concrete consisting of brick ballast, white lime & sand mortar (1:2).",
+"SQM",
+482.52
+],
+[
+"1205",
+"Same as item 1202 but with 50mm thick 1:1.5:3 p.C.C. floor.",
+"SQM",
+848.81
+],
+[
+"1206",
+"40mm thick 1:2:4 p.C.C. floor with cement, coarse sand and 20mm gauge stone ballast without base concrete.",
+"SQM",
+415.3
+],
+[
+"1207",
+"extra on items 1202, 1205 & 1206 when floors are polished.",
+"SQM",
+482.4
+],
+[
+"1208",
+"extra on items 1202, 1205 & 1206 when coloured, polished floors are laid.",
+"SQM",
+482.15
+],
+[
+"1209",
+"stone floors 40mm thick of Mirzapur or other approved stone flags, set in white lime & sand.",
+"SQM",
+1997.84
+],
+[
+"1210",
+"Same as item 1209 but stone flags laid in (1:4) cement & local sand mortar.",
+"SQM",
+2088.68
+],
+[
+"1211",
+"Same as item 1209 but stone flags laid in white lime & surkhi 1:2 & base concrete with brick ballast, white lime & surkhi (1:2).",
+"SQM",
+1934.33
+],
+[
+"1212",
+"Same as items 1209, 1210, 1211 but upper surface & edges chiesel dressed & Joint upto 6mm thick in white lime & sand.",
+"SQM",
+2018.13
+],
+[
+"1213",
+"Same as item 1212 but in cement & sand.",
+"SQM",
+2142.2
+],
+[
+"1214",
+"Same as item 1212 but base concrete in white lime & surkhi.",
+"SQM",
+1948.46
+],
+[
+"1215",
+"1st class brick floor laid in cement & local sand mortar (1:6) & pointed with (1:2) cement mortar over 75mm thick base concrete with kankar lime.",
+"SQM",
+1110.66
+],
+[
+"1216",
+"Same as item 1215 but with 75mm base concrete with (1:2) white lime & surkhi.",
+"SQM",
+1086.05
+],
+[
+"1217",
+"Same as item 1215 but with 75mm base concrete in (1:4:8) cement, local sand & brick ballast.",
+"SQM",
+1168.04
+],
+[
+"1218",
+"1st class bricks floor laid dry, Joints sand filled.",
+"SQM",
+619.85
+],
+[
+"1219",
+"granolythic marble flooring 25mm thick with 20mm thick layer of cement & coarse sand & 12 mm gauge stone chips with surface coat of ordinary cement including 75mm thick base concrete with white lime & sand.",
+"SQM",
+1470.86
+],
+[
+"1220",
+"Same as item 1219 but with white cement in top layer.",
+"SQM",
+1544.61
+],
+[
+"1221",
+"Same as item 1219 but with coloured floor.",
+"SQM",
+1526.62
+],
+[
+"1222",
+"Same as item 1219 but base concrete in (1:4:8) cement, local sand and brick ballast.",
+"SQM",
+1591.36
+],
+[
+"1223",
+"Same as item 1220 but base concrete in (1:4:8) cement, local sand and brick ballast.",
+"SQM",
+1651.08
+],
+[
+"1224",
+"Same as item 1221 but base concrete in (1:4:8) cement, local sand and brick ballast.",
+"SQM",
+1634.67
+],
+[
+"1225",
+"Same as item 1219 but base concrete in white lime & surkhi (1:2) (extra on item 1219).",
+"SQM",
+1477.28
+],
+[
+"1226",
+"Same as item 1220 but base concrete in white lime & surkhi (1:2) (extra on item 1220).",
+"SQM",
+1518.36
+],
+[
+"1227",
+"Same as item 1221 but base concrete in white lime & surkhi (1:2) (extra on item 1221).",
+"SQM",
+1501.54
+],
+[
+"1228",
+"granolythic marble dado 20mm thick with 14mm thick layer of cement & coarse sand (1:2) with 6mm thick surface coat of ordinary cement.",
+"SQM",
+1384.58
+],
+[
+"1229",
+"Same as item 1228 but with white cement in top coat.",
+"SQM",
+1447.98
+],
+[
+"1230",
+"Same as item 1228 but with coloured dado.",
+"SQM",
+1431.91
+],
+[
+"1231",
+"Supply and fixing of 15x15cm china white glazed tiles 6mm thick in flooring or in skirting or dado laid with (1:3) cement & coarse sand.",
+"SQM",
+2371.61
+],
+[
+"",
+"PAINTING & DISTEMPERING WORKS",
+"",
+null
+],
+[
+"1232",
+"Painting or varnishing on new iron work in small areas or new wood work with one coat priming & one coat paint or varnish.",
+"SQM",
+116.67
+],
+[
+"1233",
+"Same as item 1232 but for every coat after first coat.",
+"SQM",
+69.59
+],
+[
+"1234",
+"Same as item 1233 but for every coat on previously painted surface.",
+"SQM",
+75.56
+],
+[
+"1235",
+"painting roof or other iron work in large area with one coat priming & one coat paint or varnish.",
+"SQM",
+125.32
+],
+[
+"1236",
+"Same as item 1235 but for every coat after first coat.",
+"SQM",
+69.59
+],
+[
+"1237",
+"Same as item 1236 but for every coat over previously painted surface.",
+"SQM",
+69.59
+],
+[
+"1238",
+"painting or varnishing with valsper or high grade enamel or varnish one coat over previously painted surface.",
+"SQM",
+108.84
+],
+[
+"1239",
+"Same as item 1238 but for every subsequent coat on previously treated surface with enamel or varnish.",
+"SQM",
+92.27
+],
+[
+"1240",
+"one priming & one oil distemper coat on new work.",
+"SQM",
+90.24
+],
+[
+"1241",
+"Same as item 1240 but for every coat after 1st coat.",
+"SQM",
+50.57
+],
+[
+"1242",
+"Same as item 1241 but for every coat on previously distempered surface.",
+"SQM",
+56.28
+],
+[
+"1243",
+"one coat of hot coaltar on new surface.",
+"SQM",
+35.2
+],
+[
+"1244",
+"Same as item 1243 but for every coat after 1st coat.",
+"SQM",
+21.11
+],
+[
+"1245",
+"one coat solignum or other preservative on new wood work.",
+"SQM",
+44.72
+],
+[
+"1246",
+"Same as item 1245 but for every coat after first coat on previously treated surface.",
+"SQM",
+29.04
+],
+[
+"1247",
+"oiling wood work with double boiled linseed oil.",
+"SQM",
+17.83
+],
+[
+"1248",
+"removing paint or varnishing with paint remover or caustic soda.",
+"SQM",
+42.8
+],
+[
+"1249",
+"wax polishing over new wood work wuth ready made polish after rubbing down with sand paper.",
+"SQM",
+50.61
+],
+[
+"1250",
+"Same as item 1249 but repolishing wood work already wax polished with ready made wax polish.",
+"SQM",
+31.54
+],
+[
+"",
+"WHITE WASHING & COLOUR WASHING WORKS",
+"",
+null
+],
+[
+"1251",
+"white washing one coat.",
+"SQM",
+11.91
+],
+[
+"1252",
+"Same as item 1251 but two coats.",
+"SQM",
+17.88
+],
+[
+"1253",
+"Same as item 1251 but three coats.",
+"SQM",
+28.06
+],
+[
+"1254",
+"colour washing one coat using coloring materials of buff blue, brown shade.",
+"SQM",
+11.82
+],
+[
+"1255",
+"Same as item 1254 but two coats.",
+"SQM",
+20.12
+],
+[
+"1256",
+"Same as item 1254 but using colouring materials of pink, green or yellow shade.",
+"SQM",
+13.75
+],
+[
+"1257",
+"Same as item 1256 but two coats.",
+"SQM",
+22.68
+],
+[
+"1258",
+"colour washing one coat using copper or iron sulphate.",
+"SQM",
+14.24
+],
+[
+"1259",
+"Same as item 1258 but two coats.",
+"SQM",
+26.81
+],
+[
+"1260",
+"cement washing.",
+"SQM",
+15.53
+],
+[
+"1261",
+"one priming coat & one coat of dry distemper on new work.",
+"SQM",
+58.07
+],
+[
+"1262",
+"Same as item 1261 but for each coat of distemper after first coat.",
+"SQM",
+31.88
+],
+[
+"",
+"DEMOLITION AND DISMANTLING WORK",
+"",
+null
+],
+[
+"1263",
+"Dismantling sundried brick work including stacking of dismantled materials with in distance of 50 m.",
+"CUM",
+19.36
+],
+[
+"1264",
+"Dismantling brick work or stone work in lime or cement mortar.",
+"SQM",
+228.69
+],
+[
+"1265",
+"Same as item 1264 but in mud mortar.",
+"CUM",
+432.3
+],
+[
+"1266",
+"Dismantling R.C.C. or R.B. work.",
+"CUM",
+1737.05
+],
+[
+"1267",
+"Dismantling jack arched or wooden beam & barja roofs including beams & roof concrete.",
+"CUM",
+762.3
+],
+[
+"1268",
+"Same as item 1269 but only roof concrete.",
+"CUM",
+544.5
+],
+[
+"1269",
+"Dismantling cement concrete or bricks or granolythic floors including base concrete.",
+"SQM",
+108.9
+],
+[
+"1270",
+"Same as item 1269 but stone flag or tiled floor.",
+"SQM",
+108.9
+],
+[
+"1271",
+"Dismantling single tiled roof including purlines & battens.",
+"SQM",
+115.83
+],
+[
+"1272",
+"Same as item 1271 but double tiled roof.",
+"SQM",
+196.68
+],
+[
+"1273",
+"Dismantling corrugated iron roofs, walls or partitions including purlins, battens & vertical supports.",
+"SQM",
+89.93
+],
+[
+"1274",
+"Dismantling of girders, trusses & other steel work.",
+"QTL",
+2737.68
+],
+[
+"1275",
+"Dismantling doors & windows including chaukhats with holdfasts.",
+"SQM",
+94.38
+],
+[
+"1276",
+"Dismantling doors & windows leaves.",
+"SQM",
+46.17
+],
+[
+"1277",
+"Dismantling doors & windows including chaukhats but excluding holdfasts.",
+"SQM",
+84.09
+],
+[
+"1278",
+"Dismantling existing plaster.",
+"SQM",
+116.6
+],
+[
+"1279",
+"racking out Joints of brick work in cement & lime mortar to a depth of 10mm.",
+"SQM",
+52.8
+],
+[
+"1280",
+"scraping old white or colour washing.",
+"SQM",
+26.4
+],
+[
+"",
+"MISCELLANEOUS",
+"",
+null
+],
+[
+"1281",
+"Supply & fix block of C.P. teak wood 75x75x120mm in wall with (1:3) (cement & coarse sand mortar.",
+"NO.",
+94.95
+],
+[
+"1282",
+"Supply & fix brass cleats for clerestory window cords to teak wood plate 100x100x10mm over blocks of C.P. teak wood.",
+"NO.",
+66.69
+],
+[
+"1283",
+"Same as item 1282 but with oxidised iron cleats.",
+"NO.",
+133.55
+],
+[
+"1284",
+"Supply & fix cotton cord for clerestory window.",
+"KG",
+184.39
+],
+[
+"1285",
+"Supply & fix C.P. teak wood cleats 100x75x50 mm to C.P. teak doors & windows with brass hings 50mm.",
+"NO.",
+244.9
+],
+[
+"1286",
+"Supply & fix 100mm dia. A.C. down pipes complete with rose, heads, bends & gratings with M.S. clamp 25x3mm fixed to walls & supply of 150mm long, 6mm dia. nails, repairs of plaster, painting etc. complete.",
+"RM",
+525.27
+],
+[
+"1287",
+"Supply & fix C.P. teak wood pag rack 900x75x25mm with three brass pegs on 75x75x120mm teak wood block.",
+"NO.",
+846.16
+],
+[
+"1288",
+"Supply & fix 40mm thick C.P. teak wood pannelled partition with teak wood frames 100x80mm top, bottom & side verticals at 1.5m apart.",
+"SQM",
+7532.4
+],
+[
+"1289",
+"Supply & fix plain asbestos sheet partition with 50x10mm deodar or sheesham wood beading, erection & fixing.",
+"SQM",
+2273.79
+],
+[
+"1290",
+"Same as item 1289 but with masonite partitions.",
+"SQM",
+2347.43
+],
+[
+"",
+"ROAD WORK",
+"",
+null
+],
+[
+"1291",
+"Consolidation of 30 to 40mm guage kankar by hand rammer, sorting kankar into three sizes repairing patches in existing road surface with kankar, picking up old surface, spreading kankar, Making medis to retain water & ramming with carriage of matel & water and maintenance of barriers, caution posts, lights etc. (excluding supply of kankar).",
+"CUM",
+762.55
+],
+[
+"1292",
+"Same as item 1291 but for consolidation by road roller.",
+"CUM",
+762.55
+],
+[
+"1293",
+"Same as item 1291 but for 120mm thick coat of brick ballast.",
+"CUM",
+730.37
+],
+[
+"1294",
+"Same as item 1292 but for 80mm thick coat of brick ballast.",
+"CUM",
+747.47
+],
+[
+"1295",
+"Same as item 1292 but for 12mm thick coat of brick ballast.",
+"CUM",
+849.95
+],
+[
+"1296",
+"Same as item 1292 but 80mm thick stone ballast over existing kankar road surface.",
+"CUM",
+982.46
+],
+[
+"1297",
+"Water allowance on item 1291 to 1296.",
+"CUM",
+132
+],
+[
+"1298",
+"Digging kankar including breaking, cleaning & rolling and the cost of boring to find kankar strata.",
+"CUM",
+1774.63
+],
+[
+"1299",
+"Making mud tree guards im (i.d) & 1m high above g.l.",
+"NO.",
+1017.41
+],
+[
+"1300",
+"dug belling 150mm deep in one line aligned with flags & jhandies.",
+"KM",
+3432
+],
+[
+"1301",
+"painting white traffic lines 75mm wide in three coats with approved white paint.",
+"SQM",
+792.64
+],
+[
+"1302",
+"Brick soling with straight over burnt bricks & dry with brick edging laid vertical on either side, filling the Joints with local earth.",
+"SQM",
+521.78
+],
+[
+"1302A",
+"Brick soling with straight over burnt bricks & dry with brick edging laid vertical on either side, filling the Joints with local earth.",
+"CUM",
+2268.6
+],
+[
+"1303",
+"renewing parties 3m wide, dressing surface, filling up to 8 cm depth & Making profiles of every 15m apart.",
+"RM",
+78.29
+],
+[
+"1304",
+"brick edging of 1st class bricks laid vertical with mud mortar.",
+"RM",
+229.04
+],
+[
+"1305",
+"stacking of road metal to the required template after screening at road side.",
+"CUM",
+195.67
+],
+[
+"1306",
+"bitumen painting (labour only) over water bound surface (1st coat) excluding supply of paint & grit.",
+"SQM",
+59.36
+],
+[
+"1307",
+"Same as item 1306 but subsequent coats of painting over previously painted surface.",
+"SQM",
+29.68
+],
+[
+"1308",
+"Same as item 1306 but with cold emulsion in 2nd coat.",
+"SQM",
+51.89
+],
+[
+"1309",
+"Same as item 1306 but with tar in one coat.",
+"SQM",
+52.09
+],
+[
+"1310",
+"Same as item 1306 but with tar in 2nd coat or other subsequent coats of painting over previously painted surface.",
+"SQM",
+26.04
+],
+[
+"1311",
+"scrapping of old painted surface (road surface).",
+"SQM",
+115.1
+],
+[
+"1312",
+"laying C.C. road slab 100mm thick in (1:2:4) cement, coarse sand & stone ballast over prepared surface.",
+"CUM",
+12506.83
+],
+[
+"1313",
+"Same as item 1312 but excluding supply of cement, coarse sand & stone ballast.",
+"CUM",
+7803.64
+],
+[
+"1314",
+"blending of water bound stone or kankar road surface with local earth or sand in 15mm deep layers.",
+"RM",
+18.75
+],
+[
+"1315",
+"earth work in edging of the painted or C.C. road in a width of 0.5m on either side & 100mm deep.",
+"RM",
+35.72
+],
+[
+"1316",
+"Joint filling in C.C. roads & removing the old tar or other materials (labour only).",
+"RM",
+2.66
+],
+[
+"1317",
+"consolidation of kankar in patch repairing by hand rammer, picking out old surface upto 100mm depth in a rectangular form Making 50mm wide drain around the patch.",
+"CUM",
+1776.13
+],
+[
+"1318",
+"patch repair of surface painted with bitumen including heating the paint etc. (labour only).",
+"CUM",
+6105
+],
+[
+"1319",
+"cleaning of the existing painted surface & laying premix 20mm thick over a tack coat with graded grit & bitumen (labour only).",
+"SQM",
+72.68
+],
+[
+"1320",
+"Same as item 1319 but in patches.",
+"CUM",
+2945.62
+],
+[
+"1321",
+"cleaning the premix surface & laying seal coat with 6mm graded grit & bitumen including heating of paint (labour only).",
+"SQM",
+21.34
+],
+[
+"1322",
+"Same as item 1319 but on water bound surface.",
+"SQM",
+88.74
+],
+[
+"1323",
+"provide all materials, labour,t & p etc. & construct 100mm thick (1:2:4:) cement concrete road for reinstatement of patch & trench cuts in cement concrete road.",
+"SQM",
+2308.73
+],
+[
+"1324",
+"Same as item 1323 but two coats of bitumen painting instead of 100mm thick cement concrete concrete layer.",
+"SQM",
+1305.6
+],
+[
+"1325",
+"Same as item 1323 but two excluding the cement concrete slab.",
+"SQM",
+888.2
+],
+[
+"",
+"ANNUAL REPAIRS",
+"",
+null
+],
+[
+"1326",
+"Maintenance of terraced roofs, filling up cracks before rains with bituminous filler.",
+"SQM",
+129.59
+],
+[
+"1327",
+"Repair of plaster or pointing in patches including removal of old plaster.",
+"25%",
+null
+],
+[
+"1328",
+"Repairs of flooring in patches including digging upto existing thickness of floors, renewing the same.",
+"25%",
+null
+],
+[
+"1329",
+"Cleaning of well & throwing out the silt to the place as directd by the engineer in charge.",
+"RM",
+2139.05
+],
+[
+"1330",
+"Blending panes of glass.",
+"SQM",
+145.83
+],
+[
+"1331",
+"Renewing panes of glass 2.5mm thick with putty & beads.",
+"SQM",
+581.65
+],
+[
+"1332",
+"Cleaning doors & windows with ordinary oil & water.",
+"SQM",
+18.81
+],
+[
+"1333",
+"Fixing panes & glass including putty & beads (excluding cost of glass).",
+"SQM",
+340.05
+],
+[
+"1334",
+"Cleaning panes of glass with sprit or caustic soda.",
+"SQM",
+114.81
+],
+[
+"1335",
+"Labour for fixing door bolts or hinges or tower bolts or hasp & straples or handles etc. to doors & windows.",
+"EACH",
+25.52
+],
+[
+"1336",
+"Opening & refixing 100mm dia. rain water down pipe after cleaning.",
+"RM",
+100.49
+],
+[
+"1337",
+"varnishing or polishing furniture with high grade varnish or polish after sand papering.",
+"NO.",
+132.2
+],
+[
+"",
+"WATER SUPPLY WORKS",
+"",
+null
+],
+[
+"",
+"TRENCHING",
+"",
+null
+],
+[
+"2001",
+"Excavation for pipe line in ordinary soil (loam, clay, sand) with lift up to 1.5 m and lead up to 50 m and including filling back, watering and ramming of excavated earth into the trenches and removal and disposal of surplus earth within 50 meters.",
+"CUM",
+291.62
+],
+[
+"2002",
+"Same as item 2001 but in soil mixed with moorum/shingle/kankar.",
+"CUM",
+339.84
+],
+[
+"2003",
+"Extra on items 2001 and 2002 for additional lead and lift.",
+"CUM",
+74.05
+],
+[
+"",
+"LAYING & JOINTING",
+"",
+null
+],
+[
+"2004",
+"Carting from store, laying, Jointing, fixing & testing of 15mm dia. (nominal) M.S. galvanized screwed & socketted pipes (light & medium quality), specials & fittings (inside houses).",
+"RM",
+120.89
+],
+[
+"2005",
+"Same as item 2004 but for 20mm dia.",
+"RM",
+134.68
+],
+[
+"2006",
+"Same as item 2004 but for 25mm dia.",
+"RM",
+176.1
+],
+[
+"2007",
+"Same as item 2004 but for 32mm dia.",
+"RM",
+205.79
+],
+[
+"2008",
+"Same as item 2004 but for 40mm dia.",
+"RM",
+248.22
+],
+[
+"2009",
+"Carting from store, laying, Jointing, fixing & testing of 15mm dia. (nominal) M.S. galvanized screwed & socketted pipes (medium quality),specials & fittings (in trenches outside houses).",
+"RM",
+31.21
+],
+[
+"2010",
+"Same as item 2009 but for 20mm dia.",
+"RM",
+45.14
+],
+[
+"2011",
+"Same as item 2009 but for 25mm dia.",
+"RM",
+62.21
+],
+[
+"2012",
+"Same as item 2009 but for 32mm dia.",
+"RM",
+75.07
+],
+[
+"2013",
+"Same as item 2009 but for 40mm dia.",
+"RM",
+83.18
+],
+[
+"2014",
+"Same as item 2009 but for 50mm dia.",
+"RM",
+97.13
+],
+[
+"2015",
+"Same as item 2009 but for 65mm dia.",
+"RM",
+116.62
+],
+[
+"2016",
+"Same as item 2009 but for 80mm dia.",
+"RM",
+141.91
+],
+[
+"2017",
+"Same as item 2009 but for 100mm dia.",
+"RM",
+167.71
+],
+[
+"2018",
+"Same as item 2009 but for 125mm dia.",
+"RM",
+184.66
+],
+[
+"2019",
+"Same as item 2009 but for 150mm dia.",
+"RM",
+208.84
+],
+[
+"2020",
+"Carting from store, laying, Jointing & testing 50 mm dia. Class I & II A.C. presure pipe with fitting etc.",
+"RM",
+31.81
+],
+[
+"2021",
+"Same as item 2020 but 65 mm dia.",
+"RM",
+39.46
+],
+[
+"2022",
+"Same as item 2020 but 80 mm dia.",
+"RM",
+42.02
+],
+[
+"2023",
+"Same as item 2020 but 100mm dia.",
+"RM",
+50.97
+],
+[
+"2024",
+"Same as item 2020 but 125mm dia.",
+"RM",
+64.27
+],
+[
+"2025",
+"Carting from store, laying, Jointing & testing 150 mm dia. Class I & II A.C. presure pipe with fitting etc.",
+"RM",
+73.24
+],
+[
+"2026",
+"Carting from store, laying, Jointing & testing 200 mm dia. Class I & II A.C. presure pipe with fitting etc.",
+"RM",
+88.38
+],
+[
+"2027",
+"Same as item 2026 but 250mm dia.",
+"RM",
+105.64
+],
+[
+"2028",
+"Same as item 2026 but 300mm dia.",
+"RM",
+123.19
+],
+[
+"2029",
+"Same as item 2026 but 350mm dia.",
+"RM",
+185.11
+],
+[
+"2030",
+"Same as item 2026 but 400mm dia.",
+"RM",
+230.96
+],
+[
+"2031",
+"Same as item 2026 but 450mm dia.",
+"RM",
+277.84
+],
+[
+"2032",
+"Same as item 2026 but 500mm dia.",
+"RM",
+343.34
+],
+[
+"2033",
+"Same as item 2026 but 600mm dia.",
+"RM",
+479.29
+],
+[
+"2034",
+"Same as item 2020 to 2033 but class III A.C. pipe (extra on items 2020 to 2033).",
+"5%",
+null
+],
+[
+"2035",
+"Carting from store, laying, Jointing, fixing & testing 15 mm dia. (I.D.) P.V.C pipes & specials.",
+"RM",
+9.51
+],
+[
+"2036",
+"Same as item 2035 but 20mm dia.",
+"RM",
+11.59
+],
+[
+"2037",
+"Same as item 2035 but 25mm dia.",
+"RM",
+12.69
+],
+[
+"2038",
+"Same as item 2035 but 32mm dia.",
+"RM",
+15.36
+],
+[
+"2039",
+"Same as item 2035 but 40mm dia.",
+"RM",
+17.46
+],
+[
+"2040",
+"Same as item 2035 but 50mm dia.",
+"RM",
+26.28
+],
+[
+"2041",
+"Same as item 2035 but 65mm dia.",
+"RM",
+35.65
+],
+[
+"2042",
+"Carting from store, laying, Jointing, fixing & testing 80 mm dia. (I.D.) P.V.C pipes & specials.",
+"RM",
+44.01
+],
+[
+"2043",
+"Carting from store, laying, Jointing, fixing & testing 100 mm dia. (I.D.) P.V.C pipes & specials.",
+"RM",
+48.89
+],
+[
+"2044",
+"Same as item 2043 but 125 mm dia.",
+"RM",
+53.33
+],
+[
+"2045",
+"Same as item 2043 but 150 mm dia.",
+"RM",
+68.58
+],
+[
+"2046",
+"Same as item 2043 but 180 mm dia.",
+"RM",
+76.6
+],
+[
+"2047",
+"Same as item 2043 but 200 mm dia.",
+"RM",
+79.43
+],
+[
+"2048",
+"Carting from store P1 quality R.C.C. pressure pipes & specials 80mm dia., laying Jointing, & testing with (1:1.5) cement & sand mortar Joints.",
+"RM",
+147.97
+],
+[
+"2049",
+"Same as item 2048 but 100 mm dia.",
+"RM",
+178.36
+],
+[
+"2050",
+"Same as item 2048 but 150 mm dia.",
+"RM",
+217.99
+],
+[
+"2051",
+"Same as item 2048 but 250 mm dia.",
+"RM",
+275.28
+],
+[
+"2052",
+"Same as item 2048 but 300 mm dia.",
+"RM",
+311.45
+],
+[
+"2053",
+"Same as item 2048 but P2 quality 80 mm dia. pipes.",
+"RM",
+147.14
+],
+[
+"2054",
+"Same as item 2049 but P2 quality 100mm dia. pipes.",
+"RM",
+177.42
+],
+[
+"2055",
+"Same as item 2050 but P2 quality 150mm dia. pipes.",
+"RM",
+216.61
+],
+[
+"2056",
+"Same as item 2055 but P2 quality 250mm dia. pipes.",
+"RM",
+283.8
+],
+[
+"2057",
+"Same as item 2055 but P2 quality 300mm dia. pipes.",
+"RM",
+334.58
+],
+[
+"2058",
+"Same as item 2055 but P2 quality 350mm dia. pipes.",
+"RM",
+447.03
+],
+[
+"2059",
+"Same as item 2055 but P2 quality 400mm dia. pipes.",
+"RM",
+520.58
+],
+[
+"2060",
+"Same as item 2055 but P2 quality 450mm dia. pipes.",
+"RM",
+578.48
+],
+[
+"2061",
+"Same as item 2055 but P2 quality 500mm dia. pipes.",
+"RM",
+685.64
+],
+[
+"2062",
+"Same as item 2055 but P2 quality 600mm dia. pipes.",
+"RM",
+859.21
+],
+[
+"2063",
+"Same as item 2048 but P3 quality 80 mm dia. pipes.",
+"RM",
+147.5
+],
+[
+"2064",
+"Same as item 2049 but P3 quality 100mm dia. pipes.",
+"RM",
+177.81
+],
+[
+"2065",
+"Same as item 2050 but P3 quality 150mm dia. pipes.",
+"RM",
+217.21
+],
+[
+"2066",
+"Same as item 2065 but 250mm dia. pipes.",
+"RM",
+297.31
+],
+[
+"2067",
+"Same as item 2065 but 300mm dia. pipes.",
+"RM",
+350.35
+],
+[
+"2068",
+"Same as item 2065 but 350mm dia. pipes.",
+"RM",
+467.23
+],
+[
+"2069",
+"Same as item 2065 but 400mm dia. pipes.",
+"RM",
+539.32
+],
+[
+"2070",
+"Carting of C.I. S&S and flanged (class `LA' and `A') pipes & specials from store, laying, Jointing & testing etc. 80mm dia.",
+"RM",
+44.49
+],
+[
+"2071",
+"Same as 2070 but 100mm dia. pipes.",
+"RM",
+56.58
+],
+[
+"2072",
+"Same as 2070 but 125mm dia. pipes.",
+"RM",
+73.12
+],
+[
+"2073",
+"Same as 2070 but 150mm dia. pipes.",
+"RM",
+91.23
+],
+[
+"2074",
+"Same as 2070 but 200mm dia. pipes.",
+"RM",
+133.41
+],
+[
+"2075",
+"Same as 2070 but 250mm dia. pipes.",
+"RM",
+179.57
+],
+[
+"2076",
+"Same as 2070 but 300mm dia. pipes.",
+"RM",
+232.15
+],
+[
+"2077",
+"Same as 2070 but C.I. screwed flanged pipes (class 'A') 80 mm dia.",
+"RM",
+50.45
+],
+[
+"2078",
+"Same as 2077 but 100 mm dia.",
+"RM",
+63.73
+],
+[
+"2079",
+"Same as 2077 but 125 mm dia.",
+"RM",
+82.4
+],
+[
+"2080",
+"Same as 2077 but 150 mm dia.",
+"RM",
+103.2
+],
+[
+"2081",
+"Same as 2077 but 200 mm dia.",
+"RM",
+148.82
+],
+[
+"2082",
+"Same as 2077 but 250 mm dia.",
+"RM",
+199.82
+],
+[
+"2083",
+"Same as 2077 but 300 mm dia.",
+"RM",
+256.95
+],
+[
+"2084",
+"C.I. flanged pipes vertically cast (class 'A') - same rates as for items 2077 to 2083.",
+"RM",
+null
+],
+[
+"2085",
+"Same as item 2070 but 350 mm dia.",
+"RM",
+283.7
+],
+[
+"2086",
+"Same as item 2070 but 400 mm dia.",
+"RM",
+344.92
+],
+[
+"2087",
+"Same as item 2070 but 450 mm dia.",
+"RM",
+415.77
+],
+[
+"2088",
+"Same as item 2070 but 500 mm dia.",
+"RM",
+487.64
+],
+[
+"2089",
+"Same as item 2070 but 600 mm dia.",
+"RM",
+649.26
+],
+[
+"2090",
+"Same as item 2070 but 700 mm dia.",
+"RM",
+838.27
+],
+[
+"2091",
+"Same as item 2070 but 750 mm dia.",
+"RM",
+938.86
+],
+[
+"2092",
+"Same as item 2085 but C.I. flanged pipes (vertically cast class - A) 350 mm dia.",
+"RM",
+315.5
+],
+[
+"2093",
+"Same as item 2085 but for 400 mm dia.",
+"RM",
+387.11
+],
+[
+"2094",
+"Same as item 2085 but for 450 mm dia.",
+"RM",
+465.71
+],
+[
+"2095",
+"Same as item 2085 but for 500 mm dia.",
+"RM",
+542.84
+],
+[
+"2096",
+"Same as item 2085 but for 600 mm dia.",
+"RM",
+726.2
+],
+[
+"2097",
+"Same as item 2085 but for 700 mm dia.",
+"RM",
+942.45
+],
+[
+"2098",
+"Same as item 2085 but for 750 mm dia.",
+"RM",
+1060.61
+],
+[
+"2099",
+"Same as item 2070 but C.I. S&S pipes (vertically cast class A) 800 mm dia.",
+"RM",
+1073.66
+],
+[
+"2100",
+"Same as item 2070 but C.I. S&S pipes (vertically cast class A) 900 mm dia.",
+"RM",
+1310.1
+],
+[
+"2101",
+"Same as item 2070 but C.I. S&S pipes (vertically cast class A) 1000mm dia.",
+"RM",
+1575.86
+],
+[
+"2102",
+"Same as item 2099 but C.I. S&S pipes (vertically cast class A) 800 mm dia.",
+"RM",
+1136.08
+],
+[
+"2103",
+"Same as item 2099 but C.I. S&S pipes (vertically cast class A) 900 mm dia.",
+"RM",
+1378.11
+],
+[
+"2104",
+"Same as item 2099 but C.I. S&S pipes (vertically cast class A) 1000mm dia.",
+"RM",
+1666.98
+],
+[
+"2105",
+"Same as item 2070 but C.I. S&S pipes (vertically cast class A) 1100mm dia.",
+"RM",
+1733.46
+],
+[
+"2106",
+"Same as item 2070 but C.I. S&S pipes (vertically cast class A) 1200mm dia.",
+"RM",
+2020.44
+],
+[
+"2107",
+"Carting from store class 'a' C.I. serewed flanged spun pipes & class 'a' vertically cast pipes, specials & fittings, hoisting & erecting in vertical position (upto 8 m hight) 80 mm dia.",
+"RM",
+174.64
+],
+[
+"2108",
+"Same as item 2107 but 100 dia.",
+"RM",
+216.81
+],
+[
+"2109",
+"Same as item 2107 but 125 dia.",
+"RM",
+284.09
+],
+[
+"2110",
+"Same as ietm 2107 but 150 dia.",
+"RM",
+356.56
+],
+[
+"2111",
+"Same as ietm 2107 but 200 dia.",
+"RM",
+513.7
+],
+[
+"2112",
+"Same as item 2107 but 250 dia.",
+"RM",
+690.36
+],
+[
+"2113",
+"Same as ietm 2107 but 300 dia.",
+"RM",
+891.8
+],
+[
+"2114",
+"Same as ietm 2107 but 8.0 - 16.0 high 80 mm dia.",
+"RM",
+291.88
+],
+[
+"2115",
+"Same as item 2107 but 8.0 - 16.0 high 100mm dia.",
+"RM",
+368.1
+],
+[
+"2116",
+"Same as item 2107 but 8.0 - 16.0 high 125mm dia.",
+"RM",
+474.3
+],
+[
+"2117",
+"Same as item 2107 but 8.0 - 16.0 high 150mm dia.",
+"RM",
+594.47
+],
+[
+"2118",
+"Same as item 2107 but 8.0 - 16.0 high 200mm dia.",
+"RM",
+858.53
+],
+[
+"2119",
+"Same as item 2107 but 8.0 - 16.0 high 250mm dia.",
+"RM",
+1152.58
+],
+[
+"2120",
+"Same as item 2107 but 8.0 - 16.0 high 300mm dia.",
+"RM",
+1488.4
+],
+[
+"2121",
+"Same as item 2107 but 16.0 - 24.0 high 80 mm dia.",
+"RM",
+469.54
+],
+[
+"2122",
+"Same as item 2107 but 16.0 - 24.0 high 100mm dia.",
+"RM",
+585.82
+],
+[
+"2123",
+"Same as item 2107 but 16.0 - 24.0 high 125mm dia.",
+"RM",
+765.37
+],
+[
+"2124",
+"Same as item 2107 but 16.0 - 24.0 high 150mm dia.",
+"RM",
+957.66
+],
+[
+"2125",
+"Same as item 2107 but 16.0 - 24.0 high 200mm dia.",
+"RM",
+1381.08
+],
+[
+"2126",
+"Same as item 2107 but 16.0 - 24.0 high 250mm dia.",
+"RM",
+1856.47
+],
+[
+"2127",
+"Same as item 2107 but 16.0 - 24.0 high 300mm dia.",
+"RM",
+2396.17
+],
+[
+"2128",
+"Same as item 2107 but vertically cast pipes 350 mm dia.",
+"RM",
+1193.22
+],
+[
+"2129",
+"Same as item 2107 but vertically cast pipes 400 mm dia.",
+"RM",
+1479.06
+],
+[
+"2130",
+"Same as item 2107 but vertically cast pipes 450 mm dia.",
+"RM",
+1778.32
+],
+[
+"2131",
+"Same as item 2107 but vertically cast pipes 500 mm dia.",
+"RM",
+2072.36
+],
+[
+"2132",
+"Same as item 2107 but vertically cast pipes 600 mm dia.",
+"RM",
+2769.13
+],
+[
+"2133",
+"Same as item 2107 but vertically cast pipes 700 mm dia.",
+"RM",
+3595.59
+],
+[
+"2134",
+"Same as item 2107 but vertically cast pipes 750 mm dia.",
+"RM",
+4047.57
+],
+[
+"2135",
+"Same as item 2128 but 8.0 - 16.0 high for 350 mm dia.",
+"RM",
+1616.13
+],
+[
+"2136",
+"Same as item 2128 but 8.0 - 16.0 high for 400 mm dia.",
+"RM",
+1984.97
+],
+[
+"2137",
+"Same as item 2128 but 8.0 - 16.0 high for 450 mm dia.",
+"RM",
+2387.57
+],
+[
+"2138",
+"Same as item 2128 but 8.0 - 16.0 high for 500 mm dia.",
+"RM",
+2783.22
+],
+[
+"2139",
+"Same as item 2128 but 8.0 - 16.0 high for 600 mm dia.",
+"RM",
+3721.83
+],
+[
+"2140",
+"Same as item 2128 but 8.0 - 16.0 high for 700 mm dia.",
+"RM",
+4830.91
+],
+[
+"2141",
+"Same as item 2128 but 8.0 - 16.0 high for 750 mm dia.",
+"RM",
+5436.46
+],
+[
+"2142",
+"Same as item 2128 but 16.0 - 24.0 high for 350 mm dia.",
+"RM",
+2544.66
+],
+[
+"2143",
+"Same as item 2128 but 16.0 - 24.0 high for 400 mm dia.",
+"RM",
+3104.9
+],
+[
+"2144",
+"Same as item 2128 but 16.0 - 24.0 high for 450 mm dia.",
+"RM",
+3735.35
+],
+[
+"2145",
+"Same as item 2128 but 16.0 - 24.0 high for 500 mm dia.",
+"RM",
+4356.12
+],
+[
+"2146",
+"Same as item 2128 but 16.0 - 24.0 high for 600 mm dia.",
+"RM",
+5821.43
+],
+[
+"2147",
+"Same as item 2128 but 16.0 - 24.0 high for 700 mm dia.",
+"RM",
+7557.91
+],
+[
+"2148",
+"Same as item 2128 but 16.0 - 24.0 high for 750 mm dia.",
+"RM",
+8505.31
+],
+[
+"2149",
+"Carting, laying & testing of steel cylinder reinforced concrete pipes class 3 and specials 200 mm dia.",
+"RM",
+195.21
+],
+[
+"2150",
+"Same as item 2149 but 250 mm dia.",
+"RM",
+253.38
+],
+[
+"2151",
+"Same as item 2149 but 300 mm dia.",
+"RM",
+293.74
+],
+[
+"2152",
+"Same as item 2149 but 350 mm dia.",
+"RM",
+354.86
+],
+[
+"2153",
+"Same as item 2149 but 400 mm dia.",
+"RM",
+412.58
+],
+[
+"2154",
+"Same as item 2149 but 450 mm dia.",
+"RM",
+511.49
+],
+[
+"2155",
+"Same as item 2149 but 500 mm dia.",
+"RM",
+583.06
+],
+[
+"2156",
+"Same as item 2149 but 600 mm dia.",
+"RM",
+712.48
+],
+[
+"2157",
+"Same as item 2149 but 700 mm dia.",
+"RM",
+875.5
+],
+[
+"2158",
+"Same as item 2149 but 900 mm dia.",
+"RM",
+1333.03
+],
+[
+"2159",
+"Same as item 2149 but 1100 mm dia.",
+"RM",
+1752.06
+],
+[
+"2160",
+"Same as item 2149 but 1200 mm dia.",
+"RM",
+2111.21
+],
+[
+"2161",
+"Making lead & spun yarn Joints of C.I. S&S pipes & specials 80 mm dia.",
+"JNT",
+522.32
+],
+[
+"2162",
+"Same as item 2161 but 100 mm dia.",
+"JNT",
+656.88
+],
+[
+"2163",
+"Same as item 2161 but 125 mm dia.",
+"JNT",
+771.78
+],
+[
+"2164",
+"Same as item 2161 but 150 mm dia.",
+"JNT",
+956
+],
+[
+"2165",
+"Same as item 2161 but 200 mm dia.",
+"JNT",
+1353.82
+],
+[
+"2166",
+"Same as item 2161 but 250 mm dia.",
+"JNT",
+1632.07
+],
+[
+"2167",
+"Same as item 2161 but 300 mm dia.",
+"JNT",
+1835.56
+],
+[
+"2168",
+"Same as item 2161 but 350 mm dia.",
+"JNT",
+2161.64
+],
+[
+"2169",
+"Same as item 2161 but 400 mm dia.",
+"JNT",
+2588.02
+],
+[
+"2170",
+"Same as item 2161 but 450 mm dia.",
+"JNT",
+3380.68
+],
+[
+"2171",
+"Same as item 2161 but 500 mm dia.",
+"JNT",
+3672.02
+],
+[
+"2172",
+"Same as item 2161 but 600 mm dia.",
+"JNT",
+4663.3
+],
+[
+"2173",
+"Same as item 2161 but 700 mm dia.",
+"JNT",
+5512.79
+],
+[
+"2174",
+"Same as item 2161 but 750 mm dia.",
+"JNT",
+6358.94
+],
+[
+"2175",
+"Same as item 2161 but 800 mm dia.",
+"JNT",
+7808.29
+],
+[
+"2176",
+"Same as item 2161 but 900 mm dia.",
+"JNT",
+8843.05
+],
+[
+"2177",
+"Same as item 2161 but 1000mm dia.",
+"JNT",
+10153.39
+],
+[
+"2178",
+"Same as item 2161 but 1100mm dia.",
+"JNT",
+11420.42
+],
+[
+"2179",
+"Same as item 2161 but 1200mm dia.",
+"JNT",
+12514.58
+],
+[
+"2180",
+"Making Joints of 80mm dia. flanged pipes & specials.",
+"JNT",
+319.89
+],
+[
+"2181",
+"Same as item 2180 but 100 mm dia.",
+"JNT",
+455.92
+],
+[
+"2182",
+"Same as item 2180 but 125 mm dia.",
+"JNT",
+522.73
+],
+[
+"2183",
+"Same as item 2180 but 150 mm dia.",
+"JNT",
+690.15
+],
+[
+"2184",
+"Same as item 2180 but 200 mm dia.",
+"JNT",
+784.31
+],
+[
+"2185",
+"Same as item 2180 but 250 mm dia.",
+"JNT",
+1087.74
+],
+[
+"2186",
+"Same as item 2180 but 300 mm dia.",
+"JNT",
+1216.02
+],
+[
+"2187",
+"Same as item 2180 but 350 mm dia.",
+"JNT",
+1607.3
+],
+[
+"2188",
+"Same as item 2180 but 400 mm dia.",
+"JNT",
+2111.21
+],
+[
+"2189",
+"Same as item 2180 but 450 mm dia.",
+"JNT",
+2624.97
+],
+[
+"2190",
+"Same as item 2180 but 500 mm dia.",
+"JNT",
+2883.67
+],
+[
+"2191",
+"Same as item 2180 but 600 mm dia.",
+"JNT",
+3681.41
+],
+[
+"2192",
+"Same as item 2180 but 700 mm dia.",
+"JNT",
+4489.52
+],
+[
+"2193",
+"Same as item 2180 but 750 mm dia.",
+"JNT",
+4781.32
+],
+[
+"2194",
+"Same as item 2180 but 800 mm dia.",
+"JNT",
+6705.78
+],
+[
+"2195",
+"Same as item 2180 but 900 mm dia.",
+"JNT",
+7719.09
+],
+[
+"2196",
+"Same as item 2180 but 1000mm dia.",
+"JNT",
+9096.05
+],
+[
+"2197",
+"Carting, laying & testing of C.I. S&S class 'LA' tyton Joint & lead Joint pipes & specials 80 mm dia.",
+"RM",
+36.76
+],
+[
+"2198",
+"Same as item 2097 but 100 mm dia.",
+"RM",
+47.09
+],
+[
+"2199",
+"Same as item 2097 but 125 mm dia.",
+"RM",
+60.99
+],
+[
+"2200",
+"Same as item 2097 but 150 mm dia.",
+"RM",
+76.13
+],
+[
+"2201",
+"Carting, laying & testing of C.I. S&S class 'LA' tyton Joint & lead Joint pipes & specials 200 mm dia.",
+"RM",
+111.09
+],
+[
+"2202",
+"Same as item 2201 but 250 mm dia.",
+"RM",
+149.86
+],
+[
+"2203",
+"Same as item 2097 but 300 mm dia.",
+"RM",
+193.57
+],
+[
+"2204",
+"Same as item 2097 but 350 mm dia.",
+"RM",
+225.11
+],
+[
+"2205",
+"Same as item 2097 but 400 mm dia.",
+"RM",
+273.23
+],
+[
+"2206",
+"Same as item 2097 but 450 mm dia.",
+"RM",
+330.1
+],
+[
+"2207",
+"Same as item 2097 but 500 mm dia.",
+"RM",
+386.93
+],
+[
+"2208",
+"Same as item 2097 but 600 mm dia.",
+"RM",
+514.73
+],
+[
+"2209",
+"Same as item 2097 but 700 mm dia.",
+"RM",
+665.11
+],
+[
+"2210",
+"Same as item 2097 but 750 mm dia.",
+"RM",
+745.01
+],
+[
+"2211",
+"Make special rubber gasket tyton Joint C.I. S&S pipes & specials all classes 80 mm or 100 mm dia.",
+"JNT",
+42.9
+],
+[
+"2212",
+"Same as item 2211 but 125 or 150 mm dia.",
+"JNT",
+59.89
+],
+[
+"2213",
+"Make special rubber gasket tyton Joint C.I. S&S pipes & specials all classes 200 mm dia.",
+"JNT",
+72.75
+],
+[
+"2214",
+"Same as item 2213 but 250 mm dia.",
+"JNT",
+91.63
+],
+[
+"2215",
+"Same as item 2211 but 300 mm dia.",
+"JNT",
+123.02
+],
+[
+"2216",
+"Same as item 2211 but 350 mm dia.",
+"JNT",
+154.84
+],
+[
+"2217",
+"Same as item 2211 but 400 mm dia.",
+"JNT",
+186.13
+],
+[
+"2218",
+"Same as item 2211 but 450 mm dia.",
+"JNT",
+210.91
+],
+[
+"2219",
+"Same as item 2211 but 500 mm dia.",
+"JNT",
+244.23
+],
+[
+"2220",
+"Same as item 2211 but 600 mm dia.",
+"JNT",
+266.76
+],
+[
+"2221",
+"Same as item 2211 but 700 mm dia.",
+"JNT",
+325.01
+],
+[
+"2222",
+"Same as item 2211 but 750 mm dia.",
+"JNT",
+382.54
+],
+[
+"2223",
+"Making rubber ring flanged Joints (using C.I. detachable Joints) A.C.presure pipes & C.I. plain ended specials all classes 50, 80 or 100 mm dia.",
+"JNT",
+42.9
+],
+[
+"2224",
+"Same as item 2223 but 125 or 150 mm dia.",
+"JNT",
+59.89
+],
+[
+"2225",
+"Same as item 2223 but 200 mm dia.",
+"JNT",
+72.75
+],
+[
+"2226",
+"Same as item 2223 but 250 mm dia.",
+"JNT",
+91.63
+],
+[
+"2227",
+"Same as item 2223 but 300 mm dia.",
+"JNT",
+123.02
+],
+[
+"2228",
+"Making Joints of steel cylinder reinforced concret pipes of class III & special 200 mm dia.",
+"JNT",
+1426.19
+],
+[
+"2229",
+"Same as item 2228 but 250 mm dia.",
+"JNT",
+1928.42
+],
+[
+"2230",
+"Same as item 2228 but 300 mm dia.",
+"JNT",
+2238.66
+],
+[
+"2231",
+"Same as item 2228 but 350 mm dia.",
+"JNT",
+2838.18
+],
+[
+"2232",
+"Same as item 2228 but 400 mm dia.",
+"JNT",
+3250.11
+],
+[
+"2233",
+"Same as item 2228 but 450 mm dia.",
+"JNT",
+3797.99
+],
+[
+"2234",
+"Same as item 2228 but 500 mm dia.",
+"JNT",
+4262.63
+],
+[
+"2235",
+"Same as item 2228 but 600 mm dia.",
+"JNT",
+4957.12
+],
+[
+"2236",
+"Same as item 2228 but 700 mm dia.",
+"JNT",
+6323.54
+],
+[
+"2237",
+"Same as item 2228 but 900 mm dia.",
+"JNT",
+8472.27
+],
+[
+"2238",
+"Same as item 2228 but 1100mm dia.",
+"JNT",
+9597.11
+],
+[
+"2239",
+"Same as item 2228 but 1200mm dia.",
+"JNT",
+10964.82
+],
+[
+"2240",
+"Rate to regulate payment of excess no. 1:1.5 cement mortar Joints in 80 mm size P1 quality R.C.C. presure pipe.",
+"JNT",
+170.53
+],
+[
+"2241",
+"Same as item 2240 but for 100 mm dia.",
+"JNT",
+202.33
+],
+[
+"2242",
+"Same as item 2240 but for 150 mm dia.",
+"JNT",
+229.13
+],
+[
+"2243",
+"Same as item 2240 but for 250 mm dia.",
+"JNT",
+265
+],
+[
+"2244",
+"Same as item 2240 but for 300 mm dia.",
+"JNT",
+349.03
+],
+[
+"2245",
+"Same as item 2240 but P2 quality pipes 80 mm dia.",
+"JNT",
+170.53
+],
+[
+"2246",
+"Same as item 2241 but P2 quality pipes 100 mm dia.",
+"JNT",
+202.33
+],
+[
+"2247",
+"Same as item 2242 but P2 quality pipes 150 mm dia.",
+"JNT",
+229.13
+],
+[
+"2248",
+"Same as item 2247 but  250 mm dia.",
+"JNT",
+268.93
+],
+[
+"2249",
+"Same as item 2247 but  300 mm dia.",
+"JNT",
+360.81
+],
+[
+"2250",
+"Same as item 2247 but  350 mm dia.",
+"JNT",
+411.46
+],
+[
+"2251",
+"Same as item 2247 but  400 mm dia.",
+"JNT",
+467.9
+],
+[
+"2252",
+"Same as item 2247 but  450 mm dia.",
+"JNT",
+559.98
+],
+[
+"2253",
+"Same as item 2247 but  500 mm dia.",
+"JNT",
+609.59
+],
+[
+"2254",
+"Same as item 2247 but  600 mm dia.",
+"JNT",
+714.04
+],
+[
+"2255",
+"Same as item 2240 but for P3 quality pipes 80 mm dia.",
+"JNT",
+170.53
+],
+[
+"2256",
+"Same as item 2241 but for P3 quality pipes 100mm dia.",
+"JNT",
+202.33
+],
+[
+"2257",
+"Same as item 2242 but for P3 quality pipes 150mm dia.",
+"JNT",
+229.13
+],
+[
+"2258",
+"Same as item 2257 but for 250 mm dia.",
+"JNT",
+273.17
+],
+[
+"2259",
+"Same as item 2257 but for 300 mm dia.",
+"JNT",
+368.76
+],
+[
+"2260",
+"Same as item 2257 but for 350 mm dia.",
+"JNT",
+432.42
+],
+[
+"2261",
+"Same as item 2257 but for 400 mm dia.",
+"JNT",
+491.7
+],
+[
+"2262",
+"Rate to regulate payment for Making lead & spun yarn Joints in R.C.C. P1 quality pipes 80 mm dia.",
+"JNT",
+679.02
+],
+[
+"2263",
+"Same as item 2262 but 100 mm dia.",
+"JNT",
+821.16
+],
+[
+"2264",
+"Same as item 2262 but 150 mm dia.",
+"JNT",
+1118.85
+],
+[
+"2265",
+"Same as item 2262 but 250 mm dia.",
+"JNT",
+1827.91
+],
+[
+"2266",
+"Same as item 2262 but 300 mm dia.",
+"JNT",
+2019.11
+],
+[
+"2267",
+"Same as item 2262 but P2 quality pipes  80 mm dia.",
+"JNT",
+679.02
+],
+[
+"2268",
+"Same as item 2263 but 100  mm dia.",
+"JNT",
+821.16
+],
+[
+"2269",
+"Same as item 2264 but 150  mm dia.",
+"JNT",
+1118.85
+],
+[
+"2270",
+"Same as item 2264 but 250  mm dia.",
+"JNT",
+1844.35
+],
+[
+"2271",
+"Same as item 2264 but 300  mm dia.",
+"JNT",
+2129.25
+],
+[
+"2272",
+"Same as item 2264 but 350  mm dia.",
+"JNT",
+2485.94
+],
+[
+"2273",
+"Same as item 2264 but 400  mm dia.",
+"JNT",
+3002.1
+],
+[
+"2274",
+"Same as item 2264 but 450  mm dia.",
+"JNT",
+3854.35
+],
+[
+"2275",
+"Same as item 2264 but 500  mm dia.",
+"JNT",
+4186.28
+],
+[
+"2276",
+"Same as item 2264 but 600  mm dia.",
+"JNT",
+5362.79
+],
+[
+"2277",
+"Same as item 2262 but P3 quality pipes 80 mm dia.",
+"JNT",
+679.02
+],
+[
+"2278",
+"Same as item 2263 but 100 mm dia.",
+"JNT",
+821.16
+],
+[
+"2279",
+"Same as item 2264 but 150 mm dia.",
+"JNT",
+1118.85
+],
+[
+"2280",
+"Same as item 2264 but 250 mm dia.",
+"JNT",
+1893.12
+],
+[
+"2281",
+"Same as item 2264 but 300 mm dia.",
+"JNT",
+2202.67
+],
+[
+"2282",
+"Same as item 2264 but 350 mm dia.",
+"JNT",
+2615.63
+],
+[
+"2283",
+"Same as item 2264 but 400 mm dia.",
+"JNT",
+3183.26
+],
+[
+"2284",
+"Cutting 15-25 mm dia. M.S. galvanised pipes including threading, shaping & finishing the ends.",
+"CUT",
+28.95
+],
+[
+"2285",
+"Same as item 2284 but 32 to 50 mm dia.",
+"CUT",
+43.06
+],
+[
+"2286",
+"Same as item 2284 but 65 to 80 mm dia.",
+"CUT",
+57.56
+],
+[
+"2287",
+"Same as item 2284 but 100 to 150 mm dia.",
+"CUT",
+116.68
+],
+[
+"2288",
+"Cutting 50-100 mm dia A.C. pipe including shaping & finishing the ends.",
+"CUT",
+97.77
+],
+[
+"2289",
+"Same as item 2288 but 125 or 150 mm dia.",
+"CUT",
+130.24
+],
+[
+"2290",
+"Same as item 2288 but 200 or 250 mm dia.",
+"CUT",
+195.37
+],
+[
+"2291",
+"Same as item 2288 but 300 mm dia.",
+"CUT",
+260.49
+],
+[
+"2292",
+"Cutting C.I. (spun) pipes (class 'LA' & 'A') or specials including shaping & finishing the ends 80 to 300 mm dia.",
+"CUT",
+326.25
+],
+[
+"2293",
+"Same as item 2292 but 350 to 750 mm dia.",
+"CUT",
+1049.4
+],
+[
+"2294",
+"Same as item 2292 but 800 to 1000 mm dia.",
+"CUT",
+2425.5
+],
+[
+"2295",
+"Same as item 2292 but 1100 to 1200 mm dia.",
+"CUT",
+3924.76
+],
+[
+"2296",
+"Cutting 200 to 400 mmd dia. steel cylinder R.C.C. pipes & specials including shaping & finishing the ends.",
+"CUT",
+895.42
+],
+[
+"2297",
+"Same as 2296 but 450 to 600 mm dia.",
+"CUT",
+1872.16
+],
+[
+"2298",
+"Same as 2296 but 700 to 900 mm dia.",
+"CUT",
+3825.88
+],
+[
+"2299",
+"Same as 2296 but 1100 to 1200 mm dia.",
+"CUT",
+5697.8
+],
+[
+"2300",
+"Making connection with existing M.S. galvanised mains upto 25 mm dia.",
+"CONN",
+976.8
+],
+[
+"2301",
+"Same as item 2300 but 32 to 40 mm dia.",
+"CONN",
+1303.57
+],
+[
+"2302",
+"Same as item 2300 but 50 to 80 mm dia.",
+"CONN",
+1709.4
+],
+[
+"2303",
+"Same as item 2300 but 100 to 150 mm dia.",
+"CONN",
+3174.53
+],
+[
+"2304",
+"Cutting existing A.C. mains 50 to 125 mm dia., Making connection, bailing out of water etc.",
+"CONN",
+2628.55
+],
+[
+"2305",
+"Same as item 2304 but 150 to 300 mm dia.",
+"CONN",
+4287.11
+],
+[
+"2306",
+"Cutting of existing 80 to 150 mm dia. s & s or flanged C.I. running mains, Making connection, bailing out of water etc.",
+"CONN",
+2098.8
+],
+[
+"2307",
+"Same as item 2306 but 200 to 300 mm dia.",
+"CONN",
+4939.96
+],
+[
+"2308",
+"Same as item 2306 but 350 to 450 mm dia.",
+"CONN",
+8492.42
+],
+[
+"2309",
+"Same as item 2306 but 500 to 600 mm dia.",
+"CONN",
+10680.11
+],
+[
+"2310",
+"Same as item 2306 but 700 to 750 mm dia.",
+"CONN",
+14272.4
+],
+[
+"2311",
+"Same as item 2306 but 800 to 1000 mm dia.",
+"CONN",
+21049.04
+],
+[
+"2312",
+"Same as item 2306 but 1100 to 12000 mm dia.",
+"CONN",
+25073.92
+],
+[
+"2313",
+"Dismantling 15 mm dia. screwed & socketed M.S. galvanised pipes, specials & fittings including taken out from internal works.",
+"RM",
+65.94
+],
+[
+"2314",
+"Same as item 2313 but 20 mm dia.",
+"RM",
+92.93
+],
+[
+"2315",
+"Same as item 2313 but 25 mm dia.",
+"RM",
+139.4
+],
+[
+"2316",
+"Same as item 2313 but 32 mm dia.",
+"RM",
+176.61
+],
+[
+"2317",
+"Same as item 2313 but 40 mm dia.",
+"RM",
+195.14
+],
+[
+"2318",
+"Same as item 2313 but taken out from trenches 15 mm dia.",
+"RM",
+24.02
+],
+[
+"2319",
+"Same as item 2318 but 20 mm dia.",
+"RM",
+33.35
+],
+[
+"2320",
+"Same as item 2318 but 25 mm dia.",
+"RM",
+47.01
+],
+[
+"2321",
+"Same as item 2318 but 32 mm dia.",
+"RM",
+61.14
+],
+[
+"2322",
+"Same as item 2318 but 40 mm dia.",
+"RM",
+65.94
+],
+[
+"2323",
+"Same as item 2318 but 50 mm dia.",
+"RM",
+88.42
+],
+[
+"2324",
+"Same as item 2318 but 65 mm dia.",
+"RM",
+113.47
+],
+[
+"2325",
+"Same as item 2318 but 80 mm dia.",
+"RM",
+140.42
+],
+[
+"2326",
+"Same as item 2318 but 100 mm dia.",
+"RM",
+186.53
+],
+[
+"2327",
+"Same as item 2318 but 125 mm dia.",
+"RM",
+232.63
+],
+[
+"2328",
+"Same as item 2318 but 150 mm dia.",
+"RM",
+277.26
+],
+[
+"2329",
+"Taking out 50 or 80 mm dia. A.C. pressure pipes, specials & fittings (excluding Dismantling & removal of detachable Joints.)",
+"RM",
+25.15
+],
+[
+"2330",
+"Same as item 2329 but 100 mm dia.",
+"RM",
+30.67
+],
+[
+"2331",
+"Same as item 2329 but 125 mm dia.",
+"RM",
+36.22
+],
+[
+"2332",
+"Same as item 2329 but 150 mm dia.",
+"RM",
+42.43
+],
+[
+"2333",
+"Same as item 2329 but 200 mm dia.",
+"RM",
+48.87
+],
+[
+"2334",
+"Same as item 2329 but 250 mm dia.",
+"RM",
+60.94
+],
+[
+"2335",
+"Same as item 2329 but 300 mm dia.",
+"RM",
+73.33
+],
+[
+"2336",
+"Disanmtling of lead caulked Joints of 80 - 300 mm dia. C.I. pipes, specials and fittings.",
+"JNT",
+575.66
+],
+[
+"2337",
+"Same as item 2336 but 350 - 600 mm dia.",
+"JNT",
+1287.75
+],
+[
+"2338",
+"Same as item 2336 but 700 - 900 mm dia.",
+"JNT",
+2399.05
+],
+[
+"2339",
+"Same as item 2336 but 1000 - 1200 mm dia.",
+"JNT",
+4034.59
+],
+[
+"2340",
+"Dismantling flanged Joints of 80 mm dia. C.I. pipes, specials & fittings.",
+"JNT",
+186.52
+],
+[
+"2341",
+"Same as item 2340 but 100 - 200 mm dia.",
+"JNT",
+365.87
+],
+[
+"2342",
+"Same as item 2340 but 250 - 300 mm dia.",
+"JNT",
+538.07
+],
+[
+"2343",
+"Same as item 2340 but 350 - 400 mm dia.",
+"JNT",
+710.23
+],
+[
+"2344",
+"Same as item 2340 but 450 - 600 mm dia.",
+"JNT",
+889.6
+],
+[
+"2345",
+"Same as item 2340 but 700 - 800 mm dia.",
+"JNT",
+1068.9
+],
+[
+"2346",
+"Same as item 2340 but 900 - 1000 mm dia.",
+"JNT",
+1255.49
+],
+[
+"2347",
+"Dismantling of cement & lead caulked Joints of 200 mm dia. steel cylinder R.C.C. pipes & specials.",
+"JNT",
+600.89
+],
+[
+"2348",
+"Same as item 2347 but 250 mm dia.",
+"JNT",
+718.52
+],
+[
+"2349",
+"Same as item 2347 but 300 mm dia.",
+"JNT",
+794.98
+],
+[
+"2350",
+"Same as item 2347 but 350 mm dia.",
+"JNT",
+983.49
+],
+[
+"2351",
+"Same as item 2347 but 400 mm dia.",
+"JNT",
+1031.41
+],
+[
+"2352",
+"Same as item 2347 but 450 mm dia.",
+"JNT",
+1276.25
+],
+[
+"2353",
+"Same as item 2347 but 500 mm dia.",
+"JNT",
+1472.74
+],
+[
+"2354",
+"Same as item 2347 but 600 mm dia.",
+"JNT",
+1722.4
+],
+[
+"2355",
+"Same as item 2347 but 700 mm dia.",
+"JNT",
+2140.41
+],
+[
+"2356",
+"Same as item 2347 but 900 mm dia.",
+"JNT",
+2864.07
+],
+[
+"2357",
+"Same as item 2347 but 1100 mm dia.",
+"JNT",
+3531.99
+],
+[
+"2358",
+"Same as item 2347 but 1200 mm dia.",
+"JNT",
+4073.64
+],
+[
+"2359",
+"Taking out of C.I. S&S pipes (spun class LA lead & spun yarn Jointed or rubber ring gasket tyton Jointed) 80 mm dia.",
+"RM",
+30.93
+],
+[
+"2360",
+"Same as item 2359 but 100 mm dia.",
+"RM",
+39.37
+],
+[
+"2361",
+"Same as item 2359 but 125 mm dia.",
+"RM",
+50.92
+],
+[
+"2362",
+"Same as item 2359 but 150 mm dia.",
+"RM",
+63.5
+],
+[
+"2363",
+"Same as item 2359 but 200 mm dia.",
+"RM",
+92.77
+],
+[
+"2364",
+"Same as item 2359 but 250 mm dia.",
+"RM",
+124.93
+],
+[
+"2365",
+"Same as item 2359 but 300 mm dia.",
+"RM",
+161.63
+],
+[
+"2366",
+"Same as item 2359 but C.I. flanged pipe (class A) 80 mm dia.",
+"RM",
+35.05
+],
+[
+"2367",
+"Same as item 2366 but 100 mm dia.",
+"RM",
+44.33
+],
+[
+"2368",
+"Same as item 2366 but 125 mm dia.",
+"RM",
+57.31
+],
+[
+"2369",
+"Same as item 2366 but 150 mm dia.",
+"RM",
+71.75
+],
+[
+"2370",
+"Same as item 2366 but 200 mm dia.",
+"RM",
+103.5
+],
+[
+"2371",
+"Same as item 2366 but 250 mm dia.",
+"RM",
+138.55
+],
+[
+"2372",
+"Same as item 2366 but 300 mm dia.",
+"RM",
+179.37
+],
+[
+"2373",
+"Same as item 2359 but steel cylinder R.C.C. pipes (class III) 200 mm dia.",
+"RM",
+148.03
+],
+[
+"2374",
+"Same as item 2373 but 250 mm dia.",
+"RM",
+224.92
+],
+[
+"2375",
+"Same as item 2373 but 300 mm dia.",
+"RM",
+263.48
+],
+[
+"2376",
+"Same as item 2359 but C.I. S&S pipes (spun class 'LA' lead yarn Jointed or rubber ring gasket tyton Jointed) 350 mm dia.",
+"RM",
+209.61
+],
+[
+"2377",
+"Same as item 2376 but 400 mm dia.",
+"RM",
+254.81
+],
+[
+"2378",
+"Same as item 2376 but 450 mm dia.",
+"RM",
+307.21
+],
+[
+"2379",
+"Same as item 2376 but 500 mm dia.",
+"RM",
+360.4
+],
+[
+"2380",
+"Same as item 2376 but 600 mm dia.",
+"RM",
+479.82
+],
+[
+"2381",
+"Same as item 2376 but 700 mm dia.",
+"RM",
+619.69
+],
+[
+"2382",
+"Same as item 2376 but 750 mm dia.",
+"RM",
+693.91
+],
+[
+"2383",
+"Same as item 2376 but for C.I. flanged pipe (vertically cast class A) 350 mm dia.",
+"RM",
+233.38
+],
+[
+"2384",
+"Same as item 2383 but 400 mm dia.",
+"RM",
+286.37
+],
+[
+"2385",
+"Same as item 2383 but 450 mm dia.",
+"RM",
+344.42
+],
+[
+"2386",
+"Same as item 2383 but 500 mm dia.",
+"RM",
+401.11
+],
+[
+"2387",
+"Same as item 2383 but 600 mm dia.",
+"RM",
+536.7
+],
+[
+"2388",
+"Same as item 2383 but 700 mm dia.",
+"RM",
+697.66
+],
+[
+"2389",
+"Same as item 2383 but 750 mm dia.",
+"RM",
+783.91
+],
+[
+"2390",
+"Same as item 2376 but steel cylinder reinforced pipe (clas iii) 350 mm dia.",
+"RM",
+311.31
+],
+[
+"2391",
+"Same as item 2390 but 400 mm dia.",
+"RM",
+350.85
+],
+[
+"2392",
+"Same as item 2390 but 450 mm dia.",
+"RM",
+469.88
+],
+[
+"2393",
+"Same as item 2390 but 500 mm dia.",
+"RM",
+561.05
+],
+[
+"2394",
+"Same as item 2390 but 600 mm dia.",
+"RM",
+659.18
+],
+[
+"2395",
+"Same as item 2390 but 700 mm dia.",
+"RM",
+759.56
+],
+[
+"2396",
+"Same as item 2376 but 800 mm dia.",
+"RM",
+863.68
+],
+[
+"2397",
+"Same as item 2376 but 900 mm dia.",
+"RM",
+1054.46
+],
+[
+"2398",
+"Same as item 2376 but 1000 mm dia.",
+"RM",
+1268.48
+],
+[
+"2399",
+"Same as item 2383 but 800 mm dia.",
+"RM",
+913.49
+],
+[
+"2400",
+"Same as item 2383 but 900 mm dia.",
+"RM",
+1108.76
+],
+[
+"2401",
+"Same as item 2383 but 1000 mm dia.",
+"RM",
+1341.52
+],
+[
+"2402",
+"Same as item 2390 but 900 mm dia.",
+"RM",
+1004.87
+],
+[
+"2403",
+"Same as item 2376 but 1100 mm dia.",
+"RM",
+1585.01
+],
+[
+"2404",
+"Same as item 2376 but 1200 mm dia.",
+"RM",
+1848.43
+],
+[
+"2405",
+"Same as item 2390 but 1100 mm dia.",
+"RM",
+1529.74
+],
+[
+"2406",
+"Same as item 2390 but 1200 mm dia.",
+"RM",
+1967.04
+],
+[
+"2407",
+"Dismantling of special rubber gasket tyton Joints of C.I. S&S all class of pipes, specials & fittings 80 - 100 mm dia.",
+"JNT",
+42.46
+],
+[
+"2408",
+"Same as item 2407 but 125 - 150 mm dia.",
+"JNT",
+64.49
+],
+[
+"2409",
+"Same as item 2407 but 200 mm dia.",
+"JNT",
+80.44
+],
+[
+"2410",
+"Same as item 2407 but 250 mm dia.",
+"JNT",
+94.14
+],
+[
+"2411",
+"Same as item 2407 but 300 mm dia.",
+"JNT",
+113.77
+],
+[
+"2412",
+"Same as item 2407 but 350 mm dia.",
+"JNT",
+138.54
+],
+[
+"2413",
+"Same as item 2407 but 400 mm dia.",
+"JNT",
+163.1
+],
+[
+"2414",
+"Same as item 2407 but 450 mm dia.",
+"JNT",
+178.3
+],
+[
+"2415",
+"Same as item 2407 but 500 mm dia.",
+"JNT",
+207.13
+],
+[
+"2416",
+"Same as item 2407 but 600 mm dia.",
+"JNT",
+229.57
+],
+[
+"2417",
+"Same as item 2407 but 700 mm dia.",
+"JNT",
+254.73
+],
+[
+"2418",
+"Same as item 2407 but 750 mm dia.",
+"JNT",
+277.07
+],
+[
+"2419",
+"Dismantling of C.I. detachable Joints of A.C. pressure main 50 -100 mm dia.",
+"JNT",
+42.46
+],
+[
+"2420",
+"Same as item 2419 but 125 - 150 mm dia.",
+"JNT",
+64.49
+],
+[
+"2421",
+"Same as item 2419 but 200 mm dia.",
+"JNT",
+80.44
+],
+[
+"2422",
+"Same as item 2419 but 250 mm dia.",
+"JNT",
+94.14
+],
+[
+"2423",
+"Same as item 2419 but 300 mm dia.",
+"JNT",
+113.77
+],
+[
+"2424",
+"Dismantling of C.I. Manhole cover with frames 455 - 610 mm clear size.",
+"NO.",
+1243.77
+],
+[
+"2425",
+"Dismantling of C.I. surface box 200 - 350 mm size.",
+"NO.",
+427.11
+],
+[
+"2426",
+"Same as item 2425 but upto 150 mm size.",
+"NO.",
+218.09
+],
+[
+"2427",
+"Dismantling screwed type air valve.",
+"NO.",
+700.06
+],
+[
+"2428",
+"Making ferrule connection in 50 - 300 mm dia. A.C. existing mains with 10 or 15 mm size ferrule.",
+"CONN",
+1136.85
+],
+[
+"2429",
+"Inserting & fixing water meter or fitting such as stop cocks, wheel valve etc. upto 25 mm dia. in existing M.S. galvanised pipes.",
+"CONN",
+797.74
+],
+[
+"2430",
+"Same as item 2429 but 32 - 40 mm dia.",
+"CONN",
+1171.15
+],
+[
+"2431",
+"Same as item 2429 but 50 - 80 mm dia.",
+"CONN",
+1627.96
+],
+[
+"2432",
+"Same as item 2429 but 100-150 mm dia.",
+"CONN",
+2930.4
+],
+[
+"2433",
+"Fixing of 10 - 15 mm size brass ferrule in existing C.I. or M.S. galvanised pipe (50 mm & above).",
+"CONN",
+976.8
+],
+[
+"2434",
+"Same as item 2433 20 - 25 mm .",
+"CONN",
+1382.6
+],
+[
+"2435",
+"Same as item 2433 32 - 50 mm .",
+"CONN",
+1790.84
+],
+[
+"2436",
+"Carting & placing of C.I. Manhole heavy duty 500 - 560 mm (clear opening) size.",
+"NO.",
+1100
+],
+[
+"2437",
+"Carting & placing of C.I. Manhole medium duty size 610 x 445 mm (clear opening).",
+"NO.",
+728.42
+],
+[
+"2438",
+"Same as item 2436 but light duty rectangular.",
+"NO.",
+447.67
+],
+[
+"2439",
+"Same as item 2436 but medium or light duty for standard size (250 - 455 mm).",
+"NO.",
+377.37
+],
+[
+"2440",
+"Cartage & fixing of C.I. or M.S. surface box upto 200 mm dia.",
+"NO.",
+277.55
+],
+[
+"2441",
+"Making I.S.S. threads in 15 - 25 mm dia. galvanised M.S. pipes.",
+"END",
+43.48
+],
+[
+"2442",
+"Same as item 2441 but 32 - 50 mm dia.",
+"END",
+73.2
+],
+[
+"2443",
+"Same as item 2441 but 65 - 80 mm dia.",
+"END",
+116.68
+],
+[
+"2444",
+"Same as item 2441 but 100 - 150 mm dia.",
+"END",
+228.69
+],
+[
+"2445",
+"Cartage & fixing of sluice valve or reflux valve 50 - 125 mm dia.",
+"NO.",
+530.53
+],
+[
+"2446",
+"Same as item 2445 but 150 - 200 mm dia.",
+"NO.",
+862.82
+],
+[
+"2447",
+"Same as item 2445 but 250 - 300 mm dia.",
+"NO.",
+1661.46
+],
+[
+"2448",
+"Same as item 2445 but 350 - 400 mm dia.",
+"NO.",
+2273.7
+],
+[
+"2449",
+"Same as item 2445 but 450 - 600 mm dia.",
+"NO.",
+3235.56
+],
+[
+"2450",
+"Carting & fixing of 20 - 25 screwed down air valve in C.I. mains.",
+"NO.",
+895.42
+],
+[
+"2451",
+"Same as item 2450 but 65 - 80 mm dia. flanged air valve or fire hydrant over existing flanged tee.",
+"NO.",
+402.52
+],
+[
+"2452",
+"Boring of 150 mm dia. by palm & pressure method 0-30 m. deep.",
+"RM",
+648.27
+],
+[
+"2453",
+"Same as item 2452 but 31-50 m. deep.",
+"RM",
+718.67
+],
+[
+"2454",
+"Boring of 150 mm dia. by casing method 0-30 m. deep including extraction of casing pipe.",
+"RM",
+972.4
+],
+[
+"2455",
+"Same as item 2454 but 31-50 m. deep.",
+"RM",
+1078
+],
+[
+"2456",
+"Lowering of hand pump assembly 0-45 m. deep.",
+"RM",
+24.28
+],
+[
+"2457",
+"Installation & development of hand pump.",
+"NO.",
+3417.38
+],
+[
+"2458",
+"Hire charges of boring T&P and cartage of hand pump material by tractor trolley.",
+"L.S.",
+null
+],
+[
+"2459",
+"Filling coarse sand round the hand pump assembly (exclude cost of sand).",
+"CUM",
+352
+],
+[
+"",
+"SEWERAGE & DRAINAGE WORKS",
+"",
+null
+],
+[
+"",
+"EXCAVATION",
+"",
+null
+],
+[
+"3001",
+"Excavation for depth up to 1.5 m below G.L. for laying sewers, manholes, gully pits, chambers, sumps etc. in ordinary soil (earth, sand, loam & clay) including cutting of Joints pits, trimming, dressing, leveling, refilling of trenches in 20cm layers watering and ramming the same including removal of surplus earth or other dismantled material up to a distance of 50m from the centre of trenches.",
+"CUM",
+307.02
+],
+[
+"3002",
+"Same as item no 3001 but for 1.5 - 3.0 m below ground level.",
+"CUM",
+387.46
+],
+[
+"3003",
+"Same as item no 3001 but for 3.0 - 4.5 m below ground level.",
+"CUM",
+487.56
+],
+[
+"3004",
+"Same as item no 3001 but for 4.5 - 6.0 m below ground level.",
+"CUM",
+570.12
+],
+[
+"3005",
+"Same as item no 3001 but for 6.0 - 7.5 m below ground level.",
+"CUM",
+747
+],
+[
+"3006",
+"Same as item no 3001 but for 7.5 - 9.0 m below ground level.",
+"CUM",
+980.55
+],
+[
+"3006.i.",
+"Same as item no 3001 but for 9.0 - 10.5 m below ground level.",
+"CUM",
+1402.59
+],
+[
+"3006.ii.",
+"Same as item no 3001 but for 10.5 - 12.0 m below ground level.",
+"CUM",
+1786.89
+],
+[
+"3007",
+"Excavation 0.0-1.5m deep in soil mixed with moorum, shingle, kankar etc.",
+"CUM",
+352.19
+],
+[
+"3008",
+"Excavation 1.5-3.0m deep in soil mixed with moorum, shingle, kankar etc.",
+"CUM",
+460.98
+],
+[
+"3009",
+"Excavation 3.0-4.5m deep in soil mixed with moorum, shingle, kankar etc.",
+"CUM",
+590.55
+],
+[
+"3010",
+"Excavation 4.5-6.0m deep in soil mixed with moorum, shingle, kankar etc.",
+"CUM",
+701.43
+],
+[
+"3011",
+"Excavation 6.0-7.5m deep in soil mixed with moorum, shingle, kankar etc.",
+"CUM",
+906.7
+],
+[
+"3012",
+"Excavation 7.5-9.0m deep in soil mixed with moorum, shingle, kankar etc.",
+"CUM",
+1178.13
+],
+[
+"3013",
+"Excavation 0.0 - 1.5m deep in hard rock by chiselling.",
+"CUM",
+1811.11
+],
+[
+"3014",
+"Excavation 1.5 - 3.0m deep in hard rock by chiselling.",
+"CUM",
+1983.25
+],
+[
+"3015",
+"Excavation 3.0 - 4.5m deep in hard rock by chiselling.",
+"CUM",
+2186.73
+],
+[
+"3016",
+"Excavation 4.5 - 6.0m deep in hard rock by chiselling.",
+"CUM",
+2417.94
+],
+[
+"3017",
+"Excavation 6.0 - 7.5m deep in hard rock by chiselling.",
+"CUM",
+2740.73
+],
+[
+"3018",
+"Excavation 7.5 - 9.0m deep in hard rock by chiselling.",
+"CUM",
+3077.71
+],
+[
+"3019",
+"Excavation 0.0 - 1.5  deep in medium rock by chiselling or by mild blasting.",
+"CUM",
+1473.44
+],
+[
+"3020",
+"Excavation 1.5 - 3.0  deep in medium rock by chiselling or by mild blasting.",
+"CUM",
+1602.27
+],
+[
+"3021",
+"Excavation 3.0 - 4.5m deep in medium rock by chiselling or by mild blasting.",
+"CUM",
+1776.51
+],
+[
+"3022",
+"Excavation 4.5 - 6.0m deep in medium rock by chiselling or by mild blasting.",
+"CUM",
+1968.92
+],
+[
+"3023",
+"Excavation 6.0 - 7.5m deep in medium rock by chiselling or by mild blasting.",
+"CUM",
+2156.73
+],
+[
+"3024",
+"Excavation 7.5 - 9.0m deep in medium rock by chiselling or by mild blasting.",
+"CUM",
+2409.1
+],
+[
+"3025",
+"Excavation 0.0 - 1.5m deep in decomposed or soft rock by chiselling.",
+"CUM",
+1349.49
+],
+[
+"3026",
+"Excavation 1.5 - 3.0m deep in decomposed or soft rock by chiselling.",
+"CUM",
+1555.9
+],
+[
+"3027",
+"Excavation 3.0 - 4.5m deep in decomposed or soft rock by chiselling.",
+"CUM",
+1785.35
+],
+[
+"3028",
+"Excavation 4.5 - 6.0m deep in decomposed or soft rock by chiselling.",
+"CUM",
+2070.26
+],
+[
+"3029",
+"Excavation 6.0 - 7.5m deep in decomposed or soft rock by chiselling.",
+"CUM",
+2513.18
+],
+[
+"3030",
+"Excavation 7.5 - 9.0m deep in decomposed or soft rock by chiselling.",
+"CUM",
+3101.86
+],
+[
+"",
+"BAILING OUT WATER",
+"",
+null
+],
+[
+"3031",
+"Bailing out or Pumping out subsoil water.",
+"CUM",
+140.26
+],
+[
+"",
+"CLOSE TIMBERING",
+"",
+null
+],
+[
+"3032",
+"Close timbering in trenches 0.0 - 3.0m deep.",
+"SQM",
+601.39
+],
+[
+"3033",
+"Close timbering in trenches 3.0 - 6.0m deep.",
+"SQM",
+776.8
+],
+[
+"3034",
+"Close timbering in trenches 6.0 - 9.0m deep.",
+"SQM",
+934.94
+],
+[
+"",
+"CLOSE TIMBERING LEFT IN TRENCH (UNUSED TIMBERING)",
+"",
+null
+],
+[
+"3035",
+"Close timbering left in trenches (unused timbering) 0.0 - 3.0m deep.",
+"SQM",
+3119.45
+],
+[
+"3036",
+"Close timbering left in trenches (unused timbering) 3.0 - 6.0m deep.",
+"SQM",
+3841.15
+],
+[
+"3037",
+"Close timbering left in trenches (unused timbering) 6.0 - 9.0m deep.",
+"SQM",
+4445.97
+],
+[
+"",
+"CLOSE TIMBERING LEFT IN TRENCH (USED TIMBERING)",
+"",
+null
+],
+[
+"3038",
+"Close timbering left in trenches (used timbering) 0.0 - 3.0m deep.",
+"SQM",
+1307.2
+],
+[
+"3039",
+"Close timbering left in trenches (used timbering) 3.0 - 6.0m deep.",
+"SQM",
+1625.53
+],
+[
+"3040",
+"Close timbering left in trenches (used timbering) 6.0 - 9.0m deep.",
+"SQM",
+1896.69
+],
+[
+"",
+"OPEN TIMBERING",
+"",
+null
+],
+[
+"3041",
+"Open timbering in trenches 0.0 - 3.0m deep.",
+"SQM",
+418.1
+],
+[
+"3042",
+"Open timbering in trenches 3.0 - 6.0m deep.",
+"SQM",
+540.96
+],
+[
+"3043",
+"Open timbering in trenches 6.0 - 9.0m deep.",
+"SQM",
+682.52
+],
+[
+"",
+"OPEN TIMBERING LEFT IN TRENCH (UNUSED TIMBERING)",
+"",
+null
+],
+[
+"3044",
+"Open timbering left in trenches (unused timbering) 0.0 - 3.0m deep.",
+"SQM",
+2075.02
+],
+[
+"3045",
+"Open timbering left in trenches (unused timbering) 3.0 - 6.0m deep.",
+"SQM",
+2530.77
+],
+[
+"3046",
+"Open timbering left in trenches (unused timbering) 6.0 - 9.0m deep.",
+"SQM",
+3123.94
+],
+[
+"",
+"OPEN TIMBERING LEFT IN TRENCH (USED TIMBERING)",
+"",
+null
+],
+[
+"3047",
+"Open timbering left in trenches (used timbering) 0.0 - 3.0m deep.",
+"SQM",
+877
+],
+[
+"3048",
+"Open timbering left in trenches (used timbering) 3.0 - 6.0m deep.",
+"SQM",
+1083.11
+],
+[
+"3049",
+"Open timbering left in trenches (used timbering) 6.0 - 9.0m deep.",
+"SQM",
+1343.7
+],
+[
+"",
+"SHEET PILING",
+"",
+null
+],
+[
+"3050",
+"Sheet piling in trenches 0.0 - 3.0m deep (scrap value of sheets & angles & salvage value of timber will be deducted).",
+"SQM",
+2958.26
+],
+[
+"3051",
+"Sheet piling in trenches 3.0 - 6.0m deep (scrap value of sheets & angles & salvage value of timber will be deducted).",
+"SQM",
+4103.71
+],
+[
+"3052",
+"Sheet piling in trenches 6.0 - 9.0m deep (scrap value of sheets & angles & salvage value of timber will be deducted).",
+"SQM",
+5352.51
+],
+[
+"",
+"LAYING: STONE WARE GLAZED PIPE",
+"",
+null
+],
+[
+"3053",
+"Carting of 100 mm dia 60 cm long stone-ware glazed pipes and specials from store to the site of work lowering the same in trenches in depth 0 to 1.5 m below ground level, true to alignment caulking the Joints with necessary spun yarn soaked in bitumen and Jointing with 1:1 cement mortar in coarse sand including excavation of earth below invert level of pipecost of all Jointing materials, testing etc. complete but excavation and refilling of trenches from ground level to invert level.",
+"RM",
+380.6
+],
+[
+"3054",
+"Same as item no. 3053 but for 150mm dia.",
+"RM",
+491.87
+],
+[
+"3055",
+"Same as item no. 3053 but for 200mm dia.",
+"RM",
+574.71
+],
+[
+"3056",
+"Same as item no. 3053 but for 250mm dia.",
+"RM",
+691.71
+],
+[
+"3057",
+"Same as item no. 3053 but for 300mm dia.",
+"RM",
+854.17
+],
+[
+"3058",
+"Same as item no. 3053 but for 350mm dia",
+"RM",
+962.5
+],
+[
+"3059",
+"Same as item no. 3053 but for 400mm dia.",
+"RM",
+1076.21
+],
+[
+"",
+"LAYING: SEV. PIPE",
+"",
+null
+],
+[
+"3060",
+"Carting of 200 mm dia 75 cm long SEV. pipes and specials from store to the site of work lowering the same in trenches in depth 0 to 1.5 m below ground level, true to alignment caulking the Joints with necessary spun yarn soaked in bitumen and Jointing with 1:1 cement mortar in coarse sand including excavation of earth below invert level of pipecost of all Jointing materials, testing etc. complete but excavation and refilling of trenches from ground level to invert level.",
+"RM",
+491.41
+],
+[
+"3061",
+"Same as item no. 3060 but for 250mm dia.",
+"RM",
+585.6
+],
+[
+"3062",
+"Same as item no. 3060 but for 300mm dia.",
+"RM",
+714.34
+],
+[
+"3063",
+"Extra over items 3053 to 3062 for 1.5 - 3.0m deep .",
+"5.85%",
+null
+],
+[
+"3064",
+"Extra over items 3053 to 3062 for 3.0 - 4.5m deep .",
+"12.7%",
+null
+],
+[
+"3065",
+"Extra over items 3053 to 3062 for 4.5-6.0m deep .",
+"21.3%",
+null
+],
+[
+"3066",
+"Extra over items 3053 to 3062 for 6.0-7.5m deep .",
+"30.6%",
+null
+],
+[
+"3067",
+"Extra over items 3053 to 3062 for 7.5-9.0m deep .",
+"41.4%",
+null
+],
+[
+"",
+"LAYING: RCC HUME PIPE NP-2",
+"",
+null
+],
+[
+"3068",
+"Cartage of 100 mm dia RCC hume pipe NP-2 class And specials from store to the site of work. laying of the same pipe in to the trenches in depth up to 0.00 to 1.50 m below the ground level, true to alignment chocking the point laying sewer pipe with rubber ring and Jointing materials including excavation of the below invert level of pipe and testing of laid pipe line complete excluding the cost of excavation of earth and refilling of trenches from ground level to invert level of pipe.",
+"RM",
+279.38
+],
+[
+"3069",
+"Same as item no. 3068 but for 150mm dia.",
+"RM",
+353.71
+],
+[
+"3069(i)",
+"Same as item no. 3068 but for 200mm dia.",
+"RM",
+411.77
+],
+[
+"3070",
+"Same as item no. 3068 but for 250mm dia.",
+"RM",
+473.32
+],
+[
+"3071",
+"Same as item no. 3068 but for 300mm dia.",
+"RM",
+584.33
+],
+[
+"3072",
+"Same as item no. 3068 but for 350mm dia.",
+"RM",
+707.81
+],
+[
+"3073",
+"Same as item no. 3068 but for 400mm dia.",
+"RM",
+773.2
+],
+[
+"3074",
+"Same as item no. 3068 but for 450mm dia.",
+"RM",
+920.49
+],
+[
+"3075",
+"Same as item no. 3068 but for 500mm dia.",
+"RM",
+1026.38
+],
+[
+"3076",
+"Same as item no. 3068 but for 600mm dia.",
+"RM",
+1180.89
+],
+[
+"3077",
+"Same as item no. 3068 but for 700mm dia.",
+"RM",
+1312.06
+],
+[
+"3078",
+"Same as item no. 3068 but for 800mm dia.",
+"RM",
+2031.02
+],
+[
+"3079",
+"Same as item no. 3068 but for 900mm dia.",
+"RM",
+2332.05
+],
+[
+"3080",
+"Same as item no. 3068 but for 1000mm dia.",
+"RM",
+2674.52
+],
+[
+"3081",
+"Same as item no. 3068 but for 1100mm dia.",
+"RM",
+3135.65
+],
+[
+"3082",
+"Same as item no. 3068 but for 1200mm dia.",
+"RM",
+3611.49
+],
+[
+"3083",
+"Same as item no. 3068 but for 1400mm dia.",
+"RM",
+4517.76
+],
+[
+"3084",
+"Same as item no. 3068 but for 1600mm dia.",
+"RM",
+5568.94
+],
+[
+"3085",
+"Same as item no. 3068 but for 1800mm dia.",
+"RM",
+6915.43
+],
+[
+"3086",
+"Extra over items 3068 to 3085 for depth 1.5-3.0m.",
+"6.45%",
+null
+],
+[
+"3087",
+"Extra over items 3068 to 3085 for depth 3.0-4.5m.",
+"13.05%",
+null
+],
+[
+"3088",
+"Extra over items 3068 to 3085 for depth 4.5-6.0m.",
+"20.75%",
+null
+],
+[
+"3089",
+"Extra over items 3068 to 3085 for depth 6.0-7.5m.",
+"31.55%",
+null
+],
+[
+"3090",
+"Extra over items 3068 to 3085 for depth 7.5-9.0m.",
+"46.15%",
+null
+],
+[
+"",
+"PRECAST CEMENT CONCRETE SADDLE",
+"",
+null
+],
+[
+"3091",
+"Provide and fix in position the precast cement concrete (1:3:6) saddle with 20 mm to 40 mm gauge first class brick ballast and coarse sand as per drawing for 100mm dia. hume pipe sewer including rendering surfaces smooth and cost of frame work etc. all complete.",
+"NO.",
+123.99
+],
+[
+"3092",
+"Same as item No. 3091 but for 150 mm dia pipe",
+"NO.",
+177.89
+],
+[
+"3093",
+"Same as item No. 3091 but for 250 mm dia pipe",
+"NO.",
+266.43
+],
+[
+"3094",
+"Same as item No. 3091 but for 300 mm dia pipe",
+"NO.",
+383.03
+],
+[
+"3095",
+"Same as item No. 3091 but for 350 mm dia pipe",
+"NO.",
+431.29
+],
+[
+"3096",
+"Same as item No. 3091 but for 400 mm dia pipe",
+"NO.",
+483.96
+],
+[
+"3097",
+"Same as item No. 3091 but for 450 mm dia pipe",
+"NO.",
+521.96
+],
+[
+"3098",
+"Same as item No. 3091 but for 500 mm dia pipe",
+"NO.",
+686.68
+],
+[
+"3099",
+"Same as item No. 3091 but for 600 mm dia pipe",
+"NO.",
+813.19
+],
+[
+"3100",
+"Same as item No. 3091 but for 700 mm dia pipe",
+"NO.",
+930.69
+],
+[
+"3101",
+"Same as item No. 3091 but for 800 mm dia pipe",
+"NO.",
+1433.07
+],
+[
+"3102",
+"Same as item No. 3091 but for 900 mm dia pipe",
+"NO.",
+1847.68
+],
+[
+"3103",
+"Same as item No. 3091 but for 1000 mm dia pipe",
+"NO.",
+2293.63
+],
+[
+"3104",
+"Same as item No. 3091 but for 1100 mm dia pipe",
+"NO.",
+3008.75
+],
+[
+"3105",
+"Same as item No. 3091 but for 1200 mm dia pipe",
+"NO.",
+3642.95
+],
+[
+"3106",
+"Same as item No. 3091 but for 1400 mm dia pipe",
+"NO.",
+4503.75
+],
+[
+"3107",
+"Same as item No. 3091 but for 1600 mm dia pipe",
+"NO.",
+5223.01
+],
+[
+"3108",
+"Same as item No. 3091 but for 1800 mm dia pipe",
+"NO.",
+5967.15
+],
+[
+"",
+"DISMANTLING S.W. PIPE SEWER",
+"",
+null
+],
+[
+"3109",
+"Dismantling 100mm dia. old s.w. pipe sewers.",
+"RM",
+88.09
+],
+[
+"3110",
+"Dismantling 150mm dia. old s.w. pipe sewers.",
+"RM",
+119.71
+],
+[
+"3111",
+"Dismantling 200mm dia. old s.w. pipe sewers.",
+"RM",
+165.69
+],
+[
+"3112",
+"Dismantling 250mm dia. old s.w. pipe sewers.",
+"RM",
+211.19
+],
+[
+"3113",
+"Dismantling 300mm dia. old s.w. pipe sewers.",
+"RM",
+245.63
+],
+[
+"3114",
+"Dismantling 400mm dia. old s.w. pipe sewers.",
+"RM",
+316.21
+],
+[
+"",
+"DISMANTLING R.C.C. NP-2 PIPE SEWER",
+"",
+null
+],
+[
+"3115",
+"Dismantling 100mm dia. RCC NP2 hume pipe sewers.",
+"RM",
+98.8
+],
+[
+"3116",
+"Dismantling 150mm dia. RCC NP2 hume pipe sewers.",
+"RM",
+148.23
+],
+[
+"3117",
+"Dismantling 250mm dia. RCC NP2 hume pipe sewers.",
+"RM",
+247.03
+],
+[
+"3118",
+"Dismantling 300mm dia. RCC NP2 hume pipe sewers.",
+"RM",
+296.45
+],
+[
+"3119",
+"Dismantling 400mm dia. RCC NP2 hume pipe sewers.",
+"RM",
+458.14
+],
+[
+"3120",
+"Dismantling 450mm dia. RCC NP2 hume pipe sewers.",
+"RM",
+515.5
+],
+[
+"3121",
+"Dismantling 500mm dia. RCC NP2 hume pipe sewers.",
+"RM",
+572.86
+],
+[
+"3122",
+"Dismantling 600mm dia. RCC NP2 hume pipe sewers.",
+"RM",
+687.34
+],
+[
+"3123",
+"Dismantling 700mm dia. RCC NP2 hume pipe sewers.",
+"RM",
+1031.01
+],
+[
+"3124",
+"Dismantling 800mm dia. RCC NP2 hume pipe sewers.",
+"RM",
+1178.13
+],
+[
+"3125",
+"Dismantling 900mm dia. RCC NP2 hume pipe sewers.",
+"RM",
+1325.7
+],
+[
+"3126",
+"Dismantling 1000mm dia. RCC NP2 hume pipe sewers.",
+"RM",
+1405.81
+],
+[
+"3127",
+"Dismantling 1100mm dia. RCC NP2 hume pipe sewers.",
+"RM",
+1546.51
+],
+[
+"3128",
+"Dismantling 1200mm dia. RCC NP2 hume pipe sewers.",
+"RM",
+1687.21
+],
+[
+"",
+"DISMANTLING R.C.C. NP-3 PIPE SEWER",
+"",
+null
+],
+[
+"3115.i",
+"Dismantling 100mm dia. RCC NP3 hume pipe sewers.",
+"RM",
+98.8
+],
+[
+"3116.i",
+"Dismantling 150mm dia. RCC NP3 hume pipe sewers.",
+"RM",
+148.23
+],
+[
+"3117.i",
+"Dismantling 250mm dia. RCC NP3 hume pipe sewers.",
+"RM",
+247.03
+],
+[
+"3118.i",
+"Dismantling 300mm dia. RCC NP3 hume pipe sewers.",
+"RM",
+296.45
+],
+[
+"3119.i",
+"Dismantling 400mm dia. RCC NP3 hume pipe sewers.",
+"RM",
+458.14
+],
+[
+"3120.i",
+"Dismantling 450mm dia. RCC NP3 hume pipe sewers.",
+"RM",
+515.5
+],
+[
+"3121.i",
+"Dismantling 500mm dia. RCC NP3 hume pipe sewers.",
+"RM",
+572.86
+],
+[
+"3122.i",
+"Dismantling 600mm dia. RCC NP3 hume pipe sewers.",
+"RM",
+687.34
+],
+[
+"3123.i",
+"Dismantling 700mm dia. RCC NP3 hume pipe sewers.",
+"RM",
+1031.01
+],
+[
+"3124.i",
+"Dismantling 800mm dia. RCC NP3 hume pipe sewers.",
+"RM",
+1178.13
+],
+[
+"3125.i",
+"Dismantling 900mm dia. RCC NP3 hume pipe sewers.",
+"RM",
+1325.7
+],
+[
+"3126.i",
+"Dismantling 1000mm dia. RCC NP3 hume pipe sewers.",
+"RM",
+1405.81
+],
+[
+"3127.i",
+"Dismantling 1100mm dia. RCC NP3 hume pipe sewers.",
+"RM",
+1546.51
+],
+[
+"3128.i",
+"Dismantling 1200mm dia. RCC NP3 hume pipe sewers.",
+"RM",
+1687.21
+],
+[
+"",
+"SANITARY FITTINGS",
+"",
+null
+],
+[
+"3129",
+"Fixing indian type white glazed earthen ware closet & foot rests.",
+"NO.",
+1707.02
+],
+[
+"3130",
+"Fixing european type white glazed earthen ware closet & foot rests.",
+"NO.",
+1482.25
+],
+[
+"3131",
+"Fixing 15 litres C.I. flushing cistern.",
+"NO.",
+3195.5
+],
+[
+"3132",
+"Fixing 10 litres C.I. flushing cistern.",
+"NO.",
+2949.1
+],
+[
+"3133",
+"Fixing 5 litres C.I. flushing cistern.",
+"NO.",
+2682.17
+],
+[
+"3134",
+"Fixing low level flushing cistern.",
+"NO.",
+1933.36
+],
+[
+"3135",
+"Fixing white glazed earthenware urinals & waste pipe.",
+"NO.",
+1343.49
+],
+[
+"3136",
+"Fixing ind. urinal squatting of white glazed fireclay.",
+"NO.",
+3381.66
+],
+[
+"3137",
+"Fixing 400x400 mm size wash basin of white glazed earthenware.",
+"NO.",
+1050.28
+],
+[
+"3138",
+"Fixing 450x300 mm or 550x400 mm size wash basin of white glazed earthenware.",
+"NO.",
+1271.15
+],
+[
+"3139",
+"Fixing 600x480 mm or 630x450 mm size wash basin of white glazed earthenware.",
+"NO.",
+1474.69
+],
+[
+"3140",
+"Fixing 600 x 450 x 150 mm or 600 x 400 x 200 mm or 600 x 450 x 250 mm or 750 x 450 x 250 mm size sink.",
+"NO.",
+1392.4
+],
+[
+"3141",
+"Fixing 400x250x150 mm or 450x300x150 mm or 500x350x150 mm size sink.",
+"NO.",
+1129.83
+],
+[
+"3142",
+"Fixing teakwood, plastic or any other type of seat in european type water closet.",
+"NO.",
+367.29
+],
+[
+"3143",
+"Making 15 mm dia. lead connection.",
+"NO.",
+184.76
+],
+[
+"3144",
+"Fixing G.I.  chain with G.I.  plug.",
+"L.S.",
+null
+],
+[
+"3145",
+"Fixing brass chain and rubber plug for sink or lavatory basin.",
+"L.S.",
+null
+],
+[
+"3146",
+"Fixing 750x450x40 mm thick wood draining board with skirting and heading.",
+"L.S.",
+null
+],
+[
+"3147",
+"Fixing 550x450 mm or 450x300 mm size bevelled on plain edge mirror.",
+"NO.",
+735.58
+],
+[
+"3148",
+"Fixing glass shelf with shelf with C.P. brass brackets and guard rail.",
+"NO.",
+396.47
+],
+[
+"3149",
+"Fixing 750x20 mm or 600x20 mm or 450x20 mm size brass towel rail.",
+"NO.",
+287.99
+],
+[
+"3150",
+"Fixing C.P. brass wooden or glazed or vitrous china \"toilet paper holder\".",
+"NO.",
+475.42
+],
+[
+"3151",
+"Fixing 80 mm dia. H.C.I. soil or vent pipe and specials.",
+"RM",
+462.72
+],
+[
+"3152",
+"Fixing 100 mm dia. H.C.I. soil or vent pipe and specials.",
+"RM",
+530.24
+],
+[
+"3153",
+"Fixing 150 mm dia. H.C.I. soil or vent pipe and specials.",
+"RM",
+689.4
+],
+[
+"3154",
+"Making lead Joints of 80 mm dia. H.C.I. pipes and specials.",
+"JNT",
+335.4
+],
+[
+"3155",
+"Making lead Joints of 100 mm dia. H.C.I. pipes and specials.",
+"JNT",
+431.84
+],
+[
+"3156",
+"Making lead Joints of 150 mm dia. H.C.I. pipes and specials.",
+"JNT",
+639.09
+],
+[
+"3157",
+"Fixing 50 mm dia. A.C. soil or vent pipe with specials.",
+"RM",
+305.32
+],
+[
+"3158",
+"Fixing 80 mm dia. A.C. soil or vent pipe with specials.",
+"RM",
+377.88
+],
+[
+"3159",
+"Fixing 100 mm dia. A.C. soil or vent pipe with specials.",
+"RM",
+445.92
+],
+[
+"3160",
+"Making 1:1 cement and coarse sand Joint of 50mm dia. A.C. soil or vent pipe & specials.",
+"JNT",
+205.46
+],
+[
+"3161",
+"Making 1:1 cement and coarse sand Joint of 80mm dia. A.C. soil or vent pipe & specials.",
+"JNT",
+290.15
+],
+[
+"3162",
+"Making 1:1 cement and coarse sand Joint of 100mm dia. A.C. soil or vent pipe & specials.",
+"JNT",
+374.75
+],
+[
+"",
+"WELL SINKING",
+"",
+null
+],
+[
+"3163",
+"Sinking of well 2.5m dia. (external) in ordinary soil 0.0 - 1.5m deep.",
+"RM",
+12907.64
+],
+[
+"3164",
+"Sinking of well 2.5m dia. (external) in ordinary soil 1.5 - 3.0m deep.",
+"RM",
+17629.89
+],
+[
+"3165",
+"Sinking of well 2.5m dia. (external) in ordinary soil 3.0 - 6.0m deep.",
+"RM",
+24117.13
+],
+[
+"3166",
+"Sinking of well 2.5m dia. (external) in ordinary soil 6.0 - 9.0m deep.",
+"RM",
+33620.93
+],
+[
+"3167",
+"Sinking of well 2.5m dia. (external) in ordinary soil 9.0 - 12.0m deep.",
+"RM",
+40740.65
+],
+[
+"3168",
+"Sinking of well 2.5m dia. (external) in ordinary soil 12.0 - 15.0m deep.",
+"RM",
+45701.95
+],
+[
+"3169",
+"Same as item 3163 to 3168 but for other diameters (the rates shall be proportional to their areas).",
+"RM",
+null
+],
+[
+"3170",
+"Same as item 3163 to 3169 but for soft clay (extra over items 3163 to 3169).",
+"25%",
+null
+],
+[
+"3171",
+"Same as item 3163 to 3169 but for hard clay (extra over items 3163 to 3169).",
+"50%",
+null
+],
+[
+"3172",
+"Same as item 3163 to 3169 but for kankar, shingles (extra over items 3163 to 3169).",
+"75%",
+null
+],
+[
+"",
+"MISCELLANEOUS",
+"",
+null
+],
+[
+"3173",
+"Kerb & Channel (K&C) drains (ordinary) no. i.",
+"RM",
+482.21
+],
+[
+"3174",
+"Kerb & Channel (K&C) drains (ordinary) no. ii.",
+"RM",
+556.91
+],
+[
+"3175",
+"Kerb & Channel (K&C) drains (ordinary) no. iii.",
+"RM",
+626.43
+],
+[
+"3176",
+"Kerb & Channel (K&C) drains (ordinary) no. iv.",
+"RM",
+797.66
+],
+[
+"3177",
+"100mm dia. C.C. semi circular drain.",
+"RM",
+1103.06
+],
+[
+"3178",
+"150mm dia. C.C. semi circular drain.",
+"RM",
+1189.79
+],
+[
+"3179",
+"250mm dia. C.C. semi circular drain.",
+"RM",
+1500.37
+],
+[
+"3180",
+"300mm dia. C.C. semi circular drain.",
+"RM",
+1650.15
+],
+[
+"3181",
+"400mm dia. C.C. semi circular drain.",
+"RM",
+1928.12
+],
+[
+"3182",
+"450mm dia. C.C. semi circular drain.",
+"RM",
+2281.02
+],
+[
+"3183",
+"Dismantling & Making connection of 100mm or 150mm dia. drain pipe with C.C. 1:2:4.",
+"CONN",
+491.81
+],
+[
+"3184",
+"Dismantling & Making connection of 200, 250 & 300mm dia. drain pipe with C.C. 1:2:4.",
+"CONN",
+804.69
+],
+[
+"3185",
+"Dismantling & Making connection of 350, 400 & 450mm dia. drain pipe with C.C. 1:2:4.",
+"CONN",
+1223.5
+],
+[
+"3186",
+"Fixing R.C.C. spun ventilating column 9.0m long.",
+"NO.",
+12047.27
+],
+[
+"3187",
+"Fixing C.I. footsteps in the walls.",
+"NO.",
+282.15
+],
+[
+"3188",
+"Fixing 375x175x40mm (section) R.C.C. footsteps with 16mm dia. bar.",
+"NO.",
+432.87
+],
+[
+"3189",
+"Extra over items of Concrete, Brick Work, D.P.C., Plaster, Pointing, Flooring, Demolition & Dismantling works of schedule of rates for Building, Roads & W/S if executed from 1.5 - 3.0m deep.",
+"0.03",
+null
+],
+[
+"3190",
+"Extra over items of Concrete, Brick Work, D.P.C., Plaster, Pointing, Flooring, Demolition & Dismantling works of schedule of rates for Building, Roads & W/S if executed from 3.0 - 4.5m deep.",
+"0.07",
+null
+],
+[
+"3191",
+"Extra over items of Concrete, Brick Work, D.P.C., Plaster, Pointing, Flooring, Demolition & Dismantling works of schedule of rates for Building, Roads & W/S if executed from 4.5 - 6.0m deep.",
+"0.12",
+null
+],
+[
+"3192",
+"Extra over items of Concrete, Brick Work, D.P.C., Plaster, Pointing, Flooring, Demolition & Dismantling works of schedule of rates for Building, Roads & W/S if executed from 6.0 - 7.5m deep.",
+"0.2",
+null
+],
+[
+"3193",
+"Extra over items of Concrete, Brick Work, D.P.C., Plaster, Pointing, Flooring, Demolition & Dismantling works of schedule of rates for Building, Roads & W/S if executed from 7.5 - 9.0m deep.",
+"0.3",
+null
+],
+[
+"3194",
+"Extra over items of Concrete, Brick Work, D.P.C., Plaster, Pointing, Flooring, Demolition & Dismantling works of schedule of rates for Building, Roads & W/S if executed from 9.0 - 10.5m deep.",
+"0.4",
+null
+],
+[
+"3195",
+"Extra over items of Concrete, Brick Work, D.P.C., Plaster, Pointing, Flooring, Demolition & Dismantling works of schedule of rates for Building, Roads & W/S if executed from 10.5-12.0m deep.",
+"0.5",
+null
+],
+[
+"",
+"LAYING JOINTING RCC NP-3 PIPES",
+"",
+null
+],
+[
+"3196",
+"Cartage of 100 mm dia RCC hume pipe NP3 class and specials from store to the site of work. laying of the same pipe in to the trenches in depth up to 0.00 to 1.50 m below the ground level, true to alignment chocking the point laying sewer pipe with rubber ring and Jointing materials including excavation of the below invert level of pipe and testing of laid pipe line complete excluding the cost of excavation of earth and refilling of trenches from ground level to invert level of pipe.",
+"RM",
+348.9
+],
+[
+"3196.i.",
+"Same as item No. 3196 but for depth 00.00-01.50 m BGL",
+"RM",
+348.9
+],
+[
+"3196.ii.",
+"Same as item No. 3196 but for depth 01.50-03.00 m BGL",
+"RM",
+371.404
+],
+[
+"3196.iii.",
+"Same as item No. 3196 but for depth 03.00-04.50 m BGL",
+"RM",
+394.4314
+],
+[
+"3196.iv.",
+"Same as item No. 3196 but for depth 04.50-06.00 m BGL",
+"RM",
+421.2967
+],
+[
+"3196.v.",
+"Same as item No. 3196 but for depth 06.00-07.50 m BGL",
+"RM",
+458.978
+],
+[
+"3196.vi.",
+"Same as item No. 3196 but for depth 07.50-09.00 m BGL",
+"RM",
+509.9173
+],
+[
+"3196.vii.",
+"Same as item No. 3196 but for depth 09.00-10.50 m BGL",
+"RM",
+558.24
+],
+[
+"3196.viii.",
+"Same as item No. 3196 but for depth 10.50-12.00 m BGL",
+"RM",
+610.575
+],
+[
+"3197",
+"Cartage of 150 mm dia RCC hume pipe NP3 class and specials from store to the site of work. laying of the same pipe in to the trenches in depth up to 0.00 to 1.50 m below the ground level, true to alignment chocking the point laying sewer pipe with rubber ring and Jointing materials including excavation of the below invert level of pipe and testing of laid pipe line complete excluding the cost of excavation of earth and refilling of trenches from ground level to invert level of pipe.",
+"RM",
+441.84
+],
+[
+"3197.i.",
+"Same as item No. 3197 but for depth 00.00-01.50 m BGL",
+"RM",
+441.84
+],
+[
+"3197.ii.",
+"Same as item No. 3197 but for depth 01.50-03.00 m BGL",
+"RM",
+470.3387
+],
+[
+"3197.iii.",
+"Same as item No. 3197 but for depth 03.00-04.50 m BGL",
+"RM",
+499.5001
+],
+[
+"3197.iv.",
+"Same as item No. 3197 but for depth 04.50-06.00 m BGL",
+"RM",
+533.5218
+],
+[
+"3197.v.",
+"Same as item No. 3197 but for depth 06.00-07.50 m BGL",
+"RM",
+581.2405
+],
+[
+"3197.vi.",
+"Same as item No. 3197 but for depth 07.50-09.00 m BGL",
+"RM",
+645.7492
+],
+[
+"3197.vii.",
+"Same as item No. 3197 but for depth 09.00-10.50 m BGL",
+"RM",
+706.944
+],
+[
+"3197.viii.",
+"Same as item No. 3197 but for depth 10.50-12.00 m BGL",
+"RM",
+773.22
+],
+[
+"3198",
+"Cartage of 200 mm dia RCC hume pipe NP3 class and specials from store to the site of work. laying of the same pipe in to the trenches in depth up to 0.00 to 1.50 m below the ground level, true to alignment chocking the point laying sewer pipe with rubber ring and Jointing materials including excavation of the below invert level of pipe and testing of laid pipe line complete excluding the cost of excavation of earth and refilling of trenches from ground level to invert level of pipe.",
+"RM",
+569.57
+],
+[
+"3198.i.",
+"Same as item No. 3198 but for depth 00.00-01.50 m BGL",
+"RM",
+569.57
+],
+[
+"3198.ii.",
+"Same as item No. 3198 but for depth 01.50-03.00 m BGL",
+"RM",
+606.3073
+],
+[
+"3198.iii.",
+"Same as item No. 3198 but for depth 03.00-04.50 m BGL",
+"RM",
+643.8989
+],
+[
+"3198.iv.",
+"Same as item No. 3198 but for depth 04.50-06.00 m BGL",
+"RM",
+687.7558
+],
+[
+"3198.v.",
+"Same as item No. 3198 but for depth 06.00-07.50 m BGL",
+"RM",
+749.2693
+],
+[
+"3198.vi.",
+"Same as item No. 3198 but for depth 07.50-09.00 m BGL",
+"RM",
+832.4266
+],
+[
+"3198.vii.",
+"Same as item No. 3198 but for depth 09.00-10.50 m BGL",
+"RM",
+911.312
+],
+[
+"3198.viii.",
+"Same as item No. 3198 but for depth 10.50-12.00 m BGL",
+"RM",
+996.7475
+],
+[
+"3199",
+"Cartage of 250 mm dia RCC hume pipe NP3 class and specials from store to the site of work. laying of the same pipe in to the trenches in depth up to 0.00 to 1.50 m below the ground level, true to alignment chocking the point laying sewer pipe with rubber ring and Jointing materials including excavation of the below invert level of pipe and testing of laid pipe line complete excluding the cost of excavation of earth and refilling of trenches from ground level to invert level of pipe.",
+"RM",
+591.78
+],
+[
+"3199.i.",
+"Same as item No. 3199 but for depth 00.00-01.50 m BGL",
+"RM",
+591.78
+],
+[
+"3199.ii.",
+"Same as item No. 3199 but for depth 01.50-03.00 m BGL",
+"RM",
+629.9498
+],
+[
+"3199.iii.",
+"Same as item No. 3199 but for depth 03.00-04.50 m BGL",
+"RM",
+669.0073
+],
+[
+"3199.iv.",
+"Same as item No. 3199 but for depth 04.50-06.00 m BGL",
+"RM",
+714.5743
+],
+[
+"3199.v.",
+"Same as item No. 3199 but for depth 06.00-07.50 m BGL",
+"RM",
+778.4866
+],
+[
+"3199.vi.",
+"Same as item No. 3199 but for depth 07.50-09.00 m BGL",
+"RM",
+864.8865
+],
+[
+"3199.vii.",
+"Same as item No. 3199 but for depth 09.00-10.50 m BGL",
+"RM",
+946.848
+],
+[
+"3199.viii.",
+"Same as item No. 3199 but for depth 10.50-12.00 m BGL",
+"RM",
+1035.615
+],
+[
+"3200",
+"Cartage of 300 mm dia RCC hume pipe NP3 class and specials from store to the site of work. laying of the same pipe in to the trenches in depth up to 0.00 to 1.50 m below the ground level, true to alignment chocking the point laying sewer pipe with rubber ring and Jointing materials including excavation of the below invert level of pipe and testing of laid pipe line complete excluding the cost of excavation of earth and refilling of trenches from ground level to invert level of pipe.",
+"RM",
+730.21
+],
+[
+"3200.i.",
+"Same as item No. 3200 but for depth 00.00-01.50 m BGL",
+"RM",
+730.21
+],
+[
+"3200.ii.",
+"Same as item No. 3200 but for depth 01.50-03.00 m BGL",
+"RM",
+777.3085
+],
+[
+"3200.iii.",
+"Same as item No. 3200 but for depth 03.00-04.50 m BGL",
+"RM",
+825.5024
+],
+[
+"3200.iv.",
+"Same as item No. 3200 but for depth 04.50-06.00 m BGL",
+"RM",
+881.7286
+],
+[
+"3200.v.",
+"Same as item No. 3200 but for depth 06.00-07.50 m BGL",
+"RM",
+960.5913
+],
+[
+"3200.vi.",
+"Same as item No. 3200 but for depth 07.50-09.00 m BGL",
+"RM",
+1067.2019
+],
+[
+"3200.vii.",
+"Same as item No. 3200 but for depth 09.00-10.50 m BGL",
+"RM",
+1168.336
+],
+[
+"3200.viii.",
+"Same as item No. 3200 but for depth 10.50-12.00 m BGL",
+"RM",
+1277.8675
+],
+[
+"3201",
+"Cartage of 350 mm dia RCC hume pipe NP3 class and specials from store to the site of work. laying of the same pipe in to the trenches in depth up to 0.00 to 1.50 m below the ground level, true to alignment chocking the point laying sewer pipe with rubber ring and Jointing materials including excavation of the below invert level of pipe and testing of laid pipe line complete excluding the cost of excavation of earth and refilling of trenches from ground level to invert level of pipe.",
+"RM",
+885.4
+],
+[
+"3201.i.",
+"Same as item No. 3201 but for depth 00.00-01.50 m BGL",
+"RM",
+885.4
+],
+[
+"3201.ii.",
+"Same as item No. 3201 but for depth 01.50-03.00 m BGL",
+"RM",
+942.5083
+],
+[
+"3201.iii.",
+"Same as item No. 3201 but for depth 03.00-04.50 m BGL",
+"RM",
+1000.9447
+],
+[
+"3201.iv.",
+"Same as item No. 3201 but for depth 04.50-06.00 m BGL",
+"RM",
+1069.1205
+],
+[
+"3201.v.",
+"Same as item No. 3201 but for depth 06.00-07.50 m BGL",
+"RM",
+1164.7437
+],
+[
+"3201.vi.",
+"Same as item No. 3201 but for depth 07.50-09.00 m BGL",
+"RM",
+1294.0121
+],
+[
+"3201.vii.",
+"Same as item No. 3201 but for depth 09.00-10.50 m BGL",
+"RM",
+1416.64
+],
+[
+"3201.viii.",
+"Same as item No. 3201 but for depth 10.50-12.00 m BGL",
+"RM",
+1549.45
+],
+[
+"3202",
+"Cartage of 400 mm dia RCC hume pipe NP3 class and specials from store to the site of work. laying of the same pipe in to the trenches in depth up to 0.00 to 1.50 m below the ground level, true to alignment chocking the point laying sewer pipe with rubber ring and Jointing materials including excavation of the below invert level of pipe and testing of laid pipe line complete excluding the cost of excavation of earth and refilling of trenches from ground level to invert level of pipe.",
+"RM",
+966.49
+],
+[
+"3202.i.",
+"Same as item No. 3202 but for depth 00.00-01.50 m BGL",
+"RM",
+966.49
+],
+[
+"3202.ii.",
+"Same as item No. 3202 but for depth 01.50-03.00 m BGL",
+"RM",
+1028.8286
+],
+[
+"3202.iii.",
+"Same as item No. 3202 but for depth 03.00-04.50 m BGL",
+"RM",
+1092.6169
+],
+[
+"3202.iv.",
+"Same as item No. 3202 but for depth 04.50-06.00 m BGL",
+"RM",
+1167.0367
+],
+[
+"3202.v.",
+"Same as item No. 3202 but for depth 06.00-07.50 m BGL",
+"RM",
+1271.4176
+],
+[
+"3202.vi.",
+"Same as item No. 3202 but for depth 07.50-09.00 m BGL",
+"RM",
+1412.5251
+],
+[
+"3202.vii.",
+"Same as item No. 3202 but for depth 09.00-10.50 m BGL",
+"RM",
+1546.384
+],
+[
+"3202.viii.",
+"Same as item No. 3202 but for depth 10.50-12.00 m BGL",
+"RM",
+1691.3575
+],
+[
+"3203",
+"Cartage of 450 mm dia RCC hume pipe NP3 class and specials from store to the site of work. laying of the same pipe in to the trenches in depth up to 0.00 to 1.50 m below the ground level, true to alignment chocking the point laying sewer pipe with rubber ring and Jointing materials including excavation of the below invert level of pipe and testing of laid pipe line complete excluding the cost of excavation of earth and refilling of trenches from ground level to invert level of pipe.",
+"RM",
+1150.94
+],
+[
+"3203.i.",
+"Same as item No. 3203 but for depth 00.00-01.50 m BGL",
+"RM",
+1150.94
+],
+[
+"3203.ii.",
+"Same as item No. 3203 but for depth 01.50-03.00 m BGL",
+"RM",
+1225.1756
+],
+[
+"3203.iii.",
+"Same as item No. 3203 but for depth 03.00-04.50 m BGL",
+"RM",
+1301.1377
+],
+[
+"3203.iv.",
+"Same as item No. 3203 but for depth 04.50-06.00 m BGL",
+"RM",
+1389.7601
+],
+[
+"3203.v.",
+"Same as item No. 3203 but for depth 06.00-07.50 m BGL",
+"RM",
+1514.0616
+],
+[
+"3203.vi.",
+"Same as item No. 3203 but for depth 07.50-09.00 m BGL",
+"RM",
+1682.0988
+],
+[
+"3203.vii.",
+"Same as item No. 3203 but for depth 09.00-10.50 m BGL",
+"RM",
+1841.504
+],
+[
+"3203.viii.",
+"Same as item No. 3203 but for depth 10.50-12.00 m BGL",
+"RM",
+2014.145
+],
+[
+"3204",
+"Cartage of 500 mm dia RCC hume pipe NP3 class and specials from store to the site of work. laying of the same pipe in to the trenches in depth up to 0.00 to 1.50 m below the ground level, true to alignment chocking the point laying sewer pipe with rubber ring and Jointing materials including excavation of the below invert level of pipe and testing of laid pipe line complete excluding the cost of excavation of earth and refilling of trenches from ground level to invert level of pipe.",
+"RM",
+1283.68
+],
+[
+"3204.i.",
+"Same as item No. 3204 but for depth 00.00-01.50 m BGL",
+"RM",
+1283.68
+],
+[
+"3204.ii.",
+"Same as item No. 3204 but for depth 01.50-03.00 m BGL",
+"RM",
+1366.4774
+],
+[
+"3204.iii.",
+"Same as item No. 3204 but for depth 03.00-04.50 m BGL",
+"RM",
+1451.2002
+],
+[
+"3204.iv.",
+"Same as item No. 3204 but for depth 04.50-06.00 m BGL",
+"RM",
+1550.0436
+],
+[
+"3204.v.",
+"Same as item No. 3204 but for depth 06.00-07.50 m BGL",
+"RM",
+1688.681
+],
+[
+"3204.vi.",
+"Same as item No. 3204 but for depth 07.50-09.00 m BGL",
+"RM",
+1876.0983
+],
+[
+"3204.vii.",
+"Same as item No. 3204 but for depth 09.00-10.50 m BGL",
+"RM",
+2053.888
+],
+[
+"3204.viii.",
+"Same as item No. 3204 but for depth 10.50-12.00 m BGL",
+"RM",
+2246.44
+],
+[
+"3205",
+"Cartage of 600 mm dia RCC hume pipe NP3 class and specials from store to the site of work. laying of the same pipe in to the trenches in depth up to 0.00 to 1.50 m below the ground level, true to alignment chocking the point laying sewer pipe with rubber ring and Jointing materials including excavation of the below invert level of pipe and testing of laid pipe line complete excluding the cost of excavation of earth and refilling of trenches from ground level to invert level of pipe.",
+"RM",
+1476.19
+],
+[
+"3205.i.",
+"Same as item No. 3205 but for depth 00.00-01.50 m BGL",
+"RM",
+1476.19
+],
+[
+"3205.ii.",
+"Same as item No. 3205 but for depth 01.50-03.00 m BGL",
+"RM",
+1571.4043
+],
+[
+"3205.iii.",
+"Same as item No. 3205 but for depth 03.00-04.50 m BGL",
+"RM",
+1668.8328
+],
+[
+"3205.iv.",
+"Same as item No. 3205 but for depth 04.50-06.00 m BGL",
+"RM",
+1782.4994
+],
+[
+"3205.v.",
+"Same as item No. 3205 but for depth 06.00-07.50 m BGL",
+"RM",
+1941.9279
+],
+[
+"3205.vi.",
+"Same as item No. 3205 but for depth 07.50-09.00 m BGL",
+"RM",
+2157.4517
+],
+[
+"3205.vii.",
+"Same as item No. 3205 but for depth 09.00-10.50 m BGL",
+"RM",
+2361.904
+],
+[
+"3205.viii.",
+"Same as item No. 3205 but for depth 10.50-12.00 m BGL",
+"RM",
+2583.3325
+],
+[
+"3206",
+"Cartage of 700 mm dia RCC hume pipe NP3 class and specials from store to the site of work. laying of the same pipe in to the trenches in depth up to 0.00 to 1.50 m below the ground level, true to alignment chocking the point laying sewer pipe with rubber ring and Jointing materials including excavation of the below invert level of pipe and testing of laid pipe line complete excluding the cost of excavation of earth and refilling of trenches from ground level to invert level of pipe.",
+"RM",
+1640.39
+],
+[
+"3206.i.",
+"Same as item No. 3206 but for depth 00.00-01.50 m BGL",
+"RM",
+1640.39
+],
+[
+"3206.ii.",
+"Same as item No. 3206 but for depth 01.50-03.00 m BGL",
+"RM",
+1746.1952
+],
+[
+"3206.iii.",
+"Same as item No. 3206 but for depth 03.00-04.50 m BGL",
+"RM",
+1854.4609
+],
+[
+"3206.iv.",
+"Same as item No. 3206 but for depth 04.50-06.00 m BGL",
+"RM",
+1980.7709
+],
+[
+"3206.v.",
+"Same as item No. 3206 but for depth 06.00-07.50 m BGL",
+"RM",
+2157.933
+],
+[
+"3206.vi.",
+"Same as item No. 3206 but for depth 07.50-09.00 m BGL",
+"RM",
+2397.43
+],
+[
+"3206.vii.",
+"Same as item No. 3206 but for depth 09.00-10.50 m BGL",
+"RM",
+2624.624
+],
+[
+"3206.viii.",
+"Same as item No. 3206 but for depth 10.50-12.00 m BGL",
+"RM",
+2870.6825
+],
+[
+"3207",
+"Cartage of 800 mm dia RCC hume pipe NP3 class and specials from store to the site of work. laying of the same pipe in to the trenches in depth up to 0.00 to 1.50 m below the ground level, true to alignment chocking the point laying sewer pipe with rubber ring and Jointing materials including excavation of the below invert level of pipe and testing of laid pipe line complete excluding the cost of excavation of earth and refilling of trenches from ground level to invert level of pipe.",
+"RM",
+2539.49
+],
+[
+"3207.i.",
+"Same as item No. 3207 but for depth 00.00-01.50 m BGL",
+"RM",
+2539.49
+],
+[
+"3207.ii.",
+"Same as item No. 3207 but for depth 01.50-03.00 m BGL",
+"RM",
+2703.2871
+],
+[
+"3207.iii.",
+"Same as item No. 3207 but for depth 03.00-04.50 m BGL",
+"RM",
+2870.8934
+],
+[
+"3207.iv.",
+"Same as item No. 3207 but for depth 04.50-06.00 m BGL",
+"RM",
+3066.4342
+],
+[
+"3207.v.",
+"Same as item No. 3207 but for depth 06.00-07.50 m BGL",
+"RM",
+3340.6991
+],
+[
+"3207.vi.",
+"Same as item No. 3207 but for depth 07.50-09.00 m BGL",
+"RM",
+3711.4646
+],
+[
+"3207.vii.",
+"Same as item No. 3207 but for depth 09.00-10.50 m BGL",
+"RM",
+4063.184
+],
+[
+"3207.viii.",
+"Same as item No. 3207 but for depth 10.50-12.00 m BGL",
+"RM",
+4444.1075
+],
+[
+"3208",
+"Cartage of 900 mm dia RCC hume pipe NP3 class and specials from store to the site of work. laying of the same pipe in to the trenches in depth up to 0.00 to 1.50 m below the ground level, true to alignment chocking the point laying sewer pipe with rubber ring and Jointing materials including excavation of the below invert level of pipe and testing of laid pipe line complete excluding the cost of excavation of earth and refilling of trenches from ground level to invert level of pipe.",
+"RM",
+2915.36
+],
+[
+"3208.i.",
+"Same as item No. 3208 but for depth 00.00-01.50 m BGL",
+"RM",
+2915.36
+],
+[
+"3208.ii.",
+"Same as item No. 3208 but for depth 01.50-03.00 m BGL",
+"RM",
+3103.4007
+],
+[
+"3208.iii.",
+"Same as item No. 3208 but for depth 03.00-04.50 m BGL",
+"RM",
+3295.8145
+],
+[
+"3208.iv.",
+"Same as item No. 3208 but for depth 04.50-06.00 m BGL",
+"RM",
+3520.2972
+],
+[
+"3208.v.",
+"Same as item No. 3208 but for depth 06.00-07.50 m BGL",
+"RM",
+3835.1561
+],
+[
+"3208.vi.",
+"Same as item No. 3208 but for depth 07.50-09.00 m BGL",
+"RM",
+4260.7986
+],
+[
+"3208.vii.",
+"Same as item No. 3208 but for depth 09.00-10.50 m BGL",
+"RM",
+4664.576
+],
+[
+"3208.viii.",
+"Same as item No. 3208 but for depth 10.50-12.00 m BGL",
+"RM",
+5101.88
+],
+[
+"3209",
+"Cartage of 1000 mm dia RCC hume pipe NP3 class and specials from store to the site of work. laying of the same pipe in to the trenches in depth up to 0.00 to 1.50 m below the ground level, true to alignment chocking the point laying sewer pipe with rubber ring and Jointing materials including excavation of the below invert level of pipe and testing of laid pipe line complete excluding the cost of excavation of earth and refilling of trenches from ground level to invert level of pipe.",
+"RM",
+3343.25
+],
+[
+"3209.i.",
+"Same as item No. 3209 but for depth 00.00-01.50 m BGL",
+"RM",
+3343.25
+],
+[
+"3209.ii.",
+"Same as item No. 3209 but for depth 01.50-03.00 m BGL",
+"RM",
+3558.8896
+],
+[
+"3209.iii.",
+"Same as item No. 3209 but for depth 03.00-04.50 m BGL",
+"RM",
+3779.5441
+],
+[
+"3209.iv.",
+"Same as item No. 3209 but for depth 04.50-06.00 m BGL",
+"RM",
+4036.9744
+],
+[
+"3209.v.",
+"Same as item No. 3209 but for depth 06.00-07.50 m BGL",
+"RM",
+4398.0454
+],
+[
+"3209.vi.",
+"Same as item No. 3209 but for depth 07.50-09.00 m BGL",
+"RM",
+4886.1599
+],
+[
+"3209.vii.",
+"Same as item No. 3209 but for depth 09.00-10.50 m BGL",
+"RM",
+5349.2
+],
+[
+"3209.viii.",
+"Same as item No. 3209 but for depth 10.50-12.00 m BGL",
+"RM",
+5850.6875
+],
+[
+"3210",
+"Cartage of 1100 mm dia RCC hume pipe NP3 class and specials from store to the site of work. laying of the same pipe in to the trenches in depth up to 0.00 to 1.50 m below the ground level, true to alignment chocking the point laying sewer pipe with rubber ring and Jointing materials including excavation of the below invert level of pipe and testing of laid pipe line complete excluding the cost of excavation of earth and refilling of trenches from ground level to invert level of pipe.",
+"RM",
+3920.19
+],
+[
+"3210.i.",
+"Same as item No. 3210 but for depth 00.00-01.50 m BGL",
+"RM",
+3920.19
+],
+[
+"3210.ii.",
+"Same as item No. 3210 but for depth 01.50-03.00 m BGL",
+"RM",
+4173.0423
+],
+[
+"3210.iii.",
+"Same as item No. 3210 but for depth 03.00-04.50 m BGL",
+"RM",
+4431.7748
+],
+[
+"3210.iv.",
+"Same as item No. 3210 but for depth 04.50-06.00 m BGL",
+"RM",
+4733.6294
+],
+[
+"3210.v.",
+"Same as item No. 3210 but for depth 06.00-07.50 m BGL",
+"RM",
+5157.0099
+],
+[
+"3210.vi.",
+"Same as item No. 3210 but for depth 07.50-09.00 m BGL",
+"RM",
+5729.3577
+],
+[
+"3210.vii.",
+"Same as item No. 3210 but for depth 09.00-10.50 m BGL",
+"RM",
+6272.304
+],
+[
+"3210.viii.",
+"Same as item No. 3210 but for depth 10.50-12.00 m BGL",
+"RM",
+6860.3325
+],
+[
+"3211",
+"Cartage of 1200 mm dia RCC hume pipe NP3 class and specials from store to the site of work. laying of the same pipe in to the trenches in depth up to 0.00 to 1.50 m below the ground level, true to alignment chocking the point laying sewer pipe with rubber ring and Jointing materials including excavation of the below invert level of pipe and testing of laid pipe line complete excluding the cost of excavation of earth and refilling of trenches from ground level to invert level of pipe.",
+"RM",
+4515.01
+],
+[
+"3211.i.",
+"Same as item No. 3211 but for depth 00.00-01.50 m BGL",
+"RM",
+4515.01
+],
+[
+"3211.ii.",
+"Same as item No. 3211 but for depth 01.50-03.00 m BGL",
+"RM",
+4806.2281
+],
+[
+"3211.iii.",
+"Same as item No. 3211 but for depth 03.00-04.50 m BGL",
+"RM",
+5104.2188
+],
+[
+"3211.iv.",
+"Same as item No. 3211 but for depth 04.50-06.00 m BGL",
+"RM",
+5451.8746
+],
+[
+"3211.v.",
+"Same as item No. 3211 but for depth 06.00-07.50 m BGL",
+"RM",
+5939.4957
+],
+[
+"3211.vi.",
+"Same as item No. 3211 but for depth 07.50-09.00 m BGL",
+"RM",
+6598.6871
+],
+[
+"3211.vii.",
+"Same as item No. 3211 but for depth 09.00-10.50 m BGL",
+"RM",
+7224.016
+],
+[
+"3211.viii.",
+"Same as item No. 3211 but for depth 10.50-12.00 m BGL",
+"RM",
+7901.2675
+],
+[
+"3212",
+"Cartage of 1400 mm dia RCC hume pipe NP3 class and specials from store to the site of work. laying of the same pipe in to the trenches in depth up to 0.00 to 1.50 m below the ground level, true to alignment chocking the point laying sewer pipe with rubber ring and Jointing materials including excavation of the below invert level of pipe and testing of laid pipe line complete excluding the cost of excavation of earth and refilling of trenches from ground level to invert level of pipe.",
+"RM",
+5647.51
+],
+[
+"3212.i.",
+"Same as item No. 3212 but for depth 00.00-01.50 m BGL",
+"RM",
+5647.51
+],
+[
+"3212.ii.",
+"Same as item No. 3212 but for depth 01.50-03.00 m BGL",
+"RM",
+6011.7744
+],
+[
+"3212.iii.",
+"Same as item No. 3212 but for depth 03.00-04.50 m BGL",
+"RM",
+6384.5101
+],
+[
+"3212.iv.",
+"Same as item No. 3212 but for depth 04.50-06.00 m BGL",
+"RM",
+6819.3683
+],
+[
+"3212.v.",
+"Same as item No. 3212 but for depth 06.00-07.50 m BGL",
+"RM",
+7429.2994
+],
+[
+"3212.vi.",
+"Same as item No. 3212 but for depth 07.50-09.00 m BGL",
+"RM",
+8253.8359
+],
+[
+"3212.vii.",
+"Same as item No. 3212 but for depth 09.00-10.50 m BGL",
+"RM",
+9036.016
+],
+[
+"3212.viii.",
+"Same as item No. 3212 but for depth 10.50-12.00 m BGL",
+"RM",
+9883.1425
+],
+[
+"3213",
+"Cartage of 1600 mm dia RCC hume pipe NP3 class and specials from store to the site of work. laying of the same pipe in to the trenches in depth up to 0.00 to 1.50 m below the ground level, true to alignment chocking the point laying sewer pipe with rubber ring and Jointing materials including excavation of the below invert level of pipe and testing of laid pipe line complete excluding the cost of excavation of earth and refilling of trenches from ground level to invert level of pipe.",
+"RM",
+6961.18
+],
+[
+"3213.i.",
+"Same as item No. 3213 but for depth 00.00-01.50 m BGL",
+"RM",
+6961.18
+],
+[
+"3213.ii.",
+"Same as item No. 3213 but for depth 01.50-03.00 m BGL",
+"RM",
+7410.1761
+],
+[
+"3213.iii.",
+"Same as item No. 3213 but for depth 03.00-04.50 m BGL",
+"RM",
+7869.614
+],
+[
+"3213.iv.",
+"Same as item No. 3213 but for depth 04.50-06.00 m BGL",
+"RM",
+8405.6249
+],
+[
+"3213.v.",
+"Same as item No. 3213 but for depth 06.00-07.50 m BGL",
+"RM",
+9157.4323
+],
+[
+"3213.vi.",
+"Same as item No. 3213 but for depth 07.50-09.00 m BGL",
+"RM",
+10173.7646
+],
+[
+"3213.vii.",
+"Same as item No. 3213 but for depth 09.00-10.50 m BGL",
+"RM",
+11137.888
+],
+[
+"3213.viii.",
+"Same as item No. 3213 but for depth 10.50-12.00 m BGL",
+"RM",
+12182.065
+],
+[
+"3214",
+"Cartage of 1800 mm dia RCC hume pipe NP3 class and specials from store to the site of work. laying of the same pipe in to the trenches in depth up to 0.00 to 1.50 m below the ground level, true to alignment chocking the point laying sewer pipe with rubber ring and Jointing materials including excavation of the below invert level of pipe and testing of laid pipe line complete excluding the cost of excavation of earth and refilling of trenches from ground level to invert level of pipe.",
+"RM",
+8644.91
+],
+[
+"3214.i.",
+"Same as item No. 3214 but for depth 00.00-01.50 m BGL",
+"RM",
+8644.91
+],
+[
+"3214.ii.",
+"Same as item No. 3214 but for depth 01.50-03.00 m BGL",
+"RM",
+9202.5067
+],
+[
+"3214.iii.",
+"Same as item No. 3214 but for depth 03.00-04.50 m BGL",
+"RM",
+9773.0708
+],
+[
+"3214.iv.",
+"Same as item No. 3214 but for depth 04.50-06.00 m BGL",
+"RM",
+10438.7288
+],
+[
+"3214.v.",
+"Same as item No. 3214 but for depth 06.00-07.50 m BGL",
+"RM",
+11372.3791
+],
+[
+"3214.vi.",
+"Same as item No. 3214 but for depth 07.50-09.00 m BGL",
+"RM",
+12634.536
+],
+[
+"3214.vii.",
+"Same as item No. 3214 but for depth 09.00-10.50 m BGL",
+"RM",
+13831.856
+],
+[
+"3214.viii.",
+"Same as item No. 3214 but for depth 10.50-12.00 m BGL",
+"RM",
+15128.5925
+],
+[
+"UP PWD 2020",
+"",
+"",
+null
+],
+[
+"PWD-1",
+"Re-instatement of Kachcha Marg",
+"SQM",
+0
+],
+[
+"PWD-2",
+"Re-instatement of Dry Kharanja",
+"SQM",
+0
+],
+[
+"PWD-3",
+"Re-instatement of Paved Kharanja",
+"SQM",
+0
+],
+[
+"PWD-4",
+"Re-instatement of Cement Concrete road",
+"SQM",
+2228
+],
+[
+"PWD-5",
+"Re-instatement of Bituminous Hot Mix Plant road",
+"SQM",
+4030
+],
+[
+"PWD-6",
+"Re-instatement of Inter locking Tiles road",
+"SQM",
+0
+],
+[
+"DELHI SCHEDULE OF RATE-2019",
+"",
+"",
+null
+],
+[
+"",
+"inflation @ 10%",
+"",
+null
+],
+[
+"DSR-2019",
+"Carriage of materials: By Mechanical Transport including loading, unloading and stacking (Lead upto 5 Km away from the site)",
+"",
+null
+],
+[
+"1.1.2",
+"Earth",
+"CUM",
+193.05
+],
+[
+"1.1.1",
+"Rubbish",
+"CUM",
+154.44
+],
+[
+"1.1.17",
+"Dismantled RCC Pipe",
+"",
+null
+],
+[
+"1.1.17.3",
+"150 mm dia pipes",
+"100 RM",
+562.64
+],
+[
+"1.1.17.4",
+"200 mm dia pipes",
+"100 RM",
+915.23
+],
+[
+"1.1.17.5",
+"250 mm dia pipes",
+"100 RM",
+1300.58
+],
+[
+"1.1.17.6",
+"300 mm dia pipes",
+"100 RM",
+1607.54
+],
+[
+"1.1.17.7",
+"350 mm dia pipes",
+"100 RM",
+2250.55
+],
+[
+"1.1.17.8",
+"400 mm dia pipes",
+"100 RM",
+3068.93
+],
+[
+"1.1.17.9",
+"450 & 500 mm dia pipes",
+"100 RM",
+3750.92
+],
+[
+"1.1.17.10",
+"600, 700, 750 & 800 mm dia pipes",
+"100 RM",
+5626.38
+],
+[
+"",
+"FORM WORK FOR CC WORK",
+"",
+null
+],
+[
+"DSR 4.3",
+"Centering and shuttering including strutting, propping etc. and removal of form work for :",
+"",
+null
+],
+[
+"4.3.1",
+"Foundations, footings, bases for columns.",
+"SQM",
+272.47
+],
+[
+"4.3.2",
+"Retaining walls, return walls, walls (any thickness) including attached pilasters, buttresses, plinth and string courses fillets, kerbs and steps etc..",
+"SQM",
+582.81
+],
+[
+"4.3.3",
+"Columns, piers, abutments, pillars, posts and struts.",
+"SQM",
+701.8
+],
+[
+"4.15",
+"Extra for laying concrete in or under water and/or liquid mud including cum per cost of pumping or bailing out water and removing slush etc. complete.",
+"per RM",
+760.1
+],
+[
+"4.16",
+"Extra for laying concrete in or under foul positions.",
+"CUM",
+321.92
+],
+[
+"",
+"FORM WORK FOR RCC WORK",
+"",
+null
+],
+[
+"DSR 5.9",
+"Centering and shuttering including strutting, propping etc. and removal of form for :",
+"",
+null
+],
+[
+"5.9.1",
+"Foundations, footings, bases of columns, etc. for mass concrete",
+"sqm",
+272.47
+],
+[
+"5.9.2",
+"Walls (any thickness) including attached pilasters, butteresses, plinth and string courses etc.",
+"sqm",
+582.81
+],
+[
+"5.9.3",
+"Suspended floors, roofs, landings, balconies and access platform",
+"sqm",
+662.92
+],
+[
+"5.9.4",
+"Shelves (Cast in situ)",
+"sqm",
+662.92
+],
+[
+"5.9.5",
+"Lintels, beams, plinth beams, girders, bressumers and cantilevers",
+"sqm",
+528.05
+],
+[
+"5.9.6",
+"Columns, Pillars, Piers, Abutments, Posts and Struts",
+"sqm",
+701.8
+],
+[
+"5.9.7",
+"Stairs, (excluding landings) except spiral-staircases",
+"sqm",
+595.29
+],
+[
+"5.9.8",
+"Spiral staircases (including landing)",
+"sqm",
+573.91
+],
+[
+"5.9.9",
+"Arches, domes, vaults up to 6 m span",
+"sqm",
+1638.71
+],
+[
+"5.9.10",
+"Extra for arches, domes, vaults exceeding 6 m span",
+"sqm",
+536.27
+],
+[
+"5.9.11",
+"Chimneys and shafts",
+"sqm",
+582.81
+],
+[
+"5.9.12",
+"Well steining",
+"sqm",
+235.69
+],
+[
+"5.9.13",
+"Vertical and horizontal fins individually or forming box louvers band, facias and eaves boards",
+"sqm",
+979.05
+],
+[
+"5.9.14",
+"Extra for shuttering in circular work (20% of respective centering and shuttering items).",
+"sqm",
+0
+],
+[
+"5.9.15",
+"Small lintels not exceeding 1.5 m clear span, moulding as in cornices, window sills, string courses, bands, copings, bed plates, anchor blocks and the like",
+"sqm",
+272.47
+],
+[
+"5.9.16",
+"Edges of slabs and breaks in floors and walls",
+"",
+0
+],
+[
+"5.9.16.1",
+"Under 20 cm wide",
+"m",
+165.72
+],
+[
+"5.9.16.2",
+"Above 20 cm wide",
+"sqm",
+705.24
+],
+[
+"5.9.17",
+"Cornices and mouldings",
+"sqm",
+708.07
+],
+[
+"5.9.18",
+"Small surfaces such as cantilever ends, brackets and ends of steps, caps and bases to pilasters and columns and the like",
+"sqm",
+740.06
+],
+[
+"5.9.19",
+"Weather shade, Chajjas, corbels etc., including edges",
+"sqm",
+733.41
+],
+[
+"5.9.20",
+"Suspended floors, roofs, landings, balconies and access platform with water proof ply 12 mm thick",
+"sqm",
+745.42
+],
+[
+"5.9.21",
+"Lintels, beams, plinth beams, girders, bressumers and cantilevers with water proof ply 12 mm thick",
+"sqm",
+613.7
+],
+[
+"DSR 5.34",
+"Extra for providing richer mixes at all floor levels.",
+"",
+null
+],
+[
+"5.34.1",
+"Providing M-30 grade concrete instead of M-25 grade BMC/RMC. (Note:- Cement content considered in M-30 is @340 kg/cum).",
+"CUM",
+66.72
+],
+[
+"5.34.2",
+"Providing M-35 grade concrete instead of M-25 grade BMC/RMC. (Note : Cement content considered in M-35 is @350 kg/cum).",
+"CUM",
+133.39
+],
+[
+"5.34.3",
+"Providing M-40 grade concrete instead of M-25 grade BMC/RMC.(Note : Cement content considered in M-40 is @360 kg/cum).",
+"CUM",
+200.1
+],
+[
+"5.35",
+"Add for using extra cement in the items of design mix over and above the specified cement content therein.",
+"QTL",
+644.03
+],
+[
+"DSR\n13.52",
+"Finishing with Epoxy paint (two or more coats) at all locations prepared and applied as per manufacturer's specifications including appropriate priming coat, preparation of surface, etc. complete.",
+"",
+null
+],
+[
+"13.52.1",
+"On steel work",
+"SQM",
+181.5
+],
+[
+"13.52.2",
+"On concrete work",
+"SQM",
+181.17
+],
+[
+"15.24",
+"Demolishing dry brick pitching in floors, drains etc. including stacking serviceable material and disposal of unserviceable material within 50 metres lead:",
+"CUM",
+899.61
+],
+[
+"DSR\n15.43",
+"Dismantling manually/ by mechanical means including stacking of serviceable material and disposal of unserviceable material within 50 metres lead as per direction of Engineer-in-charge :",
+"",
+null
+],
+[
+"15.43.1",
+"Water Bound Macadam Road",
+"SQM",
+149.22
+],
+[
+"15.43.2",
+"Bitumionous Road",
+"SQM",
+293.32
+],
+[
+"DSR\n16.68",
+"Providing and laying 60mm thick factory made cement concrete interlocking paver block of M -30 grade made by block making machine with strong vibratory compaction, of approved size, design & shape, laid in required colour and pattern over and including 50mm thick compacted bed of coarse sand, filling the joints with fine sand etc. all complete as per the direction of Engineer-in-charge.",
+"SQM",
+821.99
+],
+[
+"DSR\n16.81",
+"Providing and erecting 2.00 metre high temporary barricading at site as per drawing/ direction of Engineer-in-Charge which includes writing and painting, arrangement for traffic diversion such as traffic signals during construction at site for day and night, glow lamps, reflective signs, marking, flags, caution tape as directed by the Engineer-in-Charge. The barricading provided shall be retained in position at site continuously i/c shifting of barricading from one location to another location as many times as required during the execution of the entire work till its completion. Rate include its maintenance for damages, painting, all incidentals, labour materials, equipments and works required to execute the job. The barricading shall not be removed without prior approval of Engineer-in-Charge.",
+"RM",
+2455.1
+],
+[
+"DSR\n16.83",
+"Taking out existing CC interlocking paver blocks from footpath/ central verge, including removal of rubbish etc., disposal of unserviceable material to the dumping ground, for which payment shall be made separately and stacking of serviceable material within 50 metre lead as per direction of Engineer-in-Charge.",
+"SQM",
+89.96
+],
+[
+"DSR\n16.84",
+"Laying old cement cocrete interlocking paver blocks of any design/ shape laid in required line, level, curvature, colour and pattern over and including 50 mm thick compacted bed of coarse sand, filling the joints with fine sand etc. all complete as per the direction of Engineerin-charge. (Old CC paver blocks shall be supplied by the department free of cost)",
+"SQM",
+310.1
+],
+[
+"20.3",
+"Boring, Providing and installing cast in situ single under reamed piles of specified diameter and length below pile cap in M-25 cement concrete, to carry a safe working load not less than specified, excluding the cost of steel reinforcement but including the cost of boring with bentonite solution and the length of the pile to be embedded in pile cap etc. all complete. (Length of pile for payment shall be measured upto to the bottom of pile cap) :",
+"",
+null
+],
+[
+"20.3.1",
+"300 mm dia",
+"M",
+2283.6
+],
+[
+"20.3.2",
+"400 mm dia",
+"M",
+2822.79
+],
+[
+"20.3.3",
+"450 mm dia",
+"M",
+3144.37
+],
+[
+"20.3.4",
+"550 mm dia",
+"M",
+3529.47
+],
+[
+"",
+"CARTING & RECARTING",
+"",
+null
+],
+[
+"100",
+"Carting and recarting of excavated earth where sufficient width of road is not available for stacking of excavated earth average lead 250m.",
+"CUM",
+158
+],
+[
+"",
+"SHIFTING & REINSTATEMENT OF UTILITIES",
+"",
+null
+],
+[
+"101",
+"Provision for shifting & reistatement of utilities e.g. electric & telephone cable/ poles, water lines, drains and culverts etc. during excavation & laying of sewers.",
+"M",
+300
+],
+[
+"",
+"TRAFFIC DIVERSION",
+"",
+null
+],
+[
+"102",
+"Provision for traffic diversion/ regulation during construction period.",
+"M",
+120
+],
+[
+"",
+"SITE CLEARANCE",
+"",
+null
+],
+[
+"105",
+"Provision for site clearance after construction period and unforeseen items.",
+"M",
+18
+],
+[
+"",
+"GRANULAR BEDDING",
+"",
+null
+],
+[
+"106",
+"Supply and laying of Granular bedding for Sewer line as per drawing and specifications complete",
+"",
+null
+],
+[
+"106.1",
+"00.00 – 1.50m",
+"CUM",
+2840.88
+],
+[
+"106.2",
+"01.50 – 03.00m   Increase 3%",
+"CUM",
+2926.1064
+],
+[
+"106.3",
+"03.00 – 04.50m   Increase 7%",
+"CUM",
+3039.7416
+],
+[
+"106.4",
+"04.50 – 06.00m   Increase 12%",
+"CUM",
+3181.7856
+],
+[
+"106.5",
+"06.00 – 07.50m   Increase 20%",
+"CUM",
+3409.056
+],
+[
+"106.6",
+"07.50 – 09.00m   Increase 30%",
+"CUM",
+3693.144
+],
+[
+"106.7",
+"09.00 – 10.50m   Increase 42%",
+"CUM",
+4034.0496
+],
+[
+"106.8",
+"10.50 – 12.00m   Increase 57%",
+"CUM",
+4460.1816
+],
+[
+"106.9",
+"12.00 – 13.50m   Increase 75%",
+"CUM",
+4971.54
+],
+[
+"",
+"RCC CRADLE",
+"",
+null
+],
+[
+"107",
+"Reinforced Concrete Cradle Bedding / RCC Encasement Bedding with 0.4% steel in 12-20mm gauge approved stone ballast, coarse sand and cement in 4:2:1 including supply of all materials and reinforcement labour T&P etc. required for proper completion of work.  (excluding shuttering and centering)",
+"",
+null
+],
+[
+"107.1",
+"00.00 – 1.50m",
+"CUM",
+12042.2238
+],
+[
+"107.2",
+"01.50 – 03.00m   Increase 3%",
+"CUM",
+12403.4905
+],
+[
+"107.3",
+"03.00 – 04.50m   Increase 7%",
+"CUM",
+12885.1794
+],
+[
+"107.4",
+"04.50 – 06.00m   Increase 12%",
+"CUM",
+13487.2906
+],
+[
+"107.5",
+"06.00 – 07.50m   Increase 20%",
+"CUM",
+14450.6685
+],
+[
+"107.6",
+"07.50 – 09.00m   Increase 30%",
+"CUM",
+15654.8909
+],
+[
+"107.7",
+"09.00 – 10.50m   Increase 42%",
+"CUM",
+17099.9577
+],
+[
+"107.8",
+"10.50 – 12.00m   Increase 57%",
+"CUM",
+18906.2913
+],
+[
+"107.9",
+"12.00 – 13.50m   Increase 75%",
+"CUM",
+21073.8916
+],
+[
+"108",
+"Reinforced Concrete Cradle Bedding / RCC Encasement Bedding with 1% steel in 12-20mm gauge approved stone ballast, coarse sand and cement in M-15 including supply of all materials and reinforcement labour T&P etc. required for proper completion of work.  (excluding shuttering and centering)",
+"",
+null
+],
+[
+"108.1",
+"00.00 – 1.50m",
+"CUM",
+17035.2194
+],
+[
+"108.2",
+"01.50 – 03.00m   Increase 3%",
+"CUM",
+17546.276
+],
+[
+"108.3",
+"03.00 – 04.50m   Increase 7%",
+"CUM",
+18227.6848
+],
+[
+"108.4",
+"04.50 – 06.00m   Increase 12%",
+"CUM",
+19079.4457
+],
+[
+"108.5",
+"06.00 – 07.50m   Increase 20%",
+"CUM",
+20442.2633
+],
+[
+"108.6",
+"07.50 – 09.00m   Increase 30%",
+"CUM",
+22145.7852
+],
+[
+"108.7",
+"09.00 – 10.50m   Increase 42%",
+"CUM",
+24190.0115
+],
+[
+"108.8",
+"10.50 – 12.00m   Increase 57%",
+"CUM",
+26745.2945
+],
+[
+"108.9",
+"12.00 – 13.50m   Increase 75%",
+"CUM",
+29811.634
+],
+[
+"",
+"RCC WORK",
+"",
+null
+],
+[
+"109",
+"Providing and laying in position machine batched and machine mixed design mix M-25 grade cement concrete for reinforced cement concrete work, using cement content as per approved design mix, including pumping of concrete to site of laying but excluding the cost of centering, shuttering, finishing and reinforcement, including admixtures in recommended proportions as per IS: 9103 to accelerate, retard setting of concrete, improve workability without impairing strength and durability as per direction of Engineer-in-charge. (Note :- Cement content considered in this item is @ 330 kg/cum. Excess/less cement used as per design mix is payable/recoverable separately).",
+"",
+null
+],
+[
+"109.1",
+"00.00 – 01.50m",
+"CUM",
+6260.86
+],
+[
+"109.2",
+"01.50 – 03.00m   Increase 3%",
+"CUM",
+0
+],
+[
+"109.3",
+"03.00 – 04.50m   Increase 7%",
+"CUM",
+0
+],
+[
+"109.4",
+"04.50 – 06.00m   Increase 12%",
+"CUM",
+0
+],
+[
+"109.5",
+"06.00 – 07.50m   Increase 20%",
+"CUM",
+0
+],
+[
+"109.6",
+"07.50 – 09.00m   Increase 30%",
+"CUM",
+0
+],
+[
+"109.7",
+"09.00 – 10.50m   Increase 42%",
+"CUM",
+0
+],
+[
+"109.8",
+"10.50 – 12.00m   Increase 57%",
+"CUM",
+0
+],
+[
+"109.9",
+"12.00 – 13.50m   Increase 75%",
+"CUM",
+0
+],
+[
+"110",
+"Providing and laying in position machine batched and machine mixed design mix M-30 grade cement concrete for reinforced cement concrete work, using cement content as per approved design mix, including pumping of concrete to site of laying but excluding the cost of centering, shuttering, finishing and reinforcement, including admixtures in recommended proportions as per IS: 9103 to accelerate, retard setting of concrete, improve workability without impairing strength and durability as per direction of Engineer-in-charge. (Note :- Cement content considered in this item is @ 330 kg/cum. Excess/less cement used as per design mix is payable/recoverable separately).",
+"",
+null
+],
+[
+"110.1",
+"00.00 – 01.50m",
+"CUM",
+6260.86
+],
+[
+"110.2",
+"01.50 – 03.00m   Increase 3%",
+"CUM",
+0
+],
+[
+"110.3",
+"03.00 – 04.50m   Increase 7%",
+"CUM",
+0
+],
+[
+"110.4",
+"04.50 – 06.00m   Increase 12%",
+"CUM",
+0
+],
+[
+"110.5",
+"06.00 – 07.50m   Increase 20%",
+"CUM",
+0
+],
+[
+"110.6",
+"07.50 – 09.00m   Increase 30%",
+"CUM",
+0
+],
+[
+"110.7",
+"09.00 – 10.50m   Increase 42%",
+"CUM",
+0
+],
+[
+"110.8",
+"10.50 – 12.00m   Increase 57%",
+"CUM",
+0
+],
+[
+"110.9",
+"12.00 – 13.50m   Increase 75%",
+"CUM",
+0
+],
+[
+"",
+"QUATATION RATE",
+"",
+null
+],
+[
+"",
+"RCC NP3 PIPE",
+"",
+null
+],
+[
+"QR-1",
+"Providing and conveying to site RCC pipes with sulphate resistant cement of NP3 Class (with s/s ends) and diameter as per IS: 458 - 2003 (Amended up to date) including all taxes (Central and Local) with Rubber gaskets as per  (EPDM/SBR) for sewer lines as per IS: 5382-1985 or (Amended up to date), including cost of Rubber gaskets, labour required, transportation, loading, unloading & stacking etc.The pipe shall be ISI marked.",
+"",
+null
+],
+[
+"QR-1.1",
+"150 mm internal diameter",
+"M",
+920
+],
+[
+"QR-1.2",
+"200 mm internal diameter",
+"M",
+1120
+],
+[
+"QR-1.3",
+"250 mm internal diameter",
+"M",
+1780
+],
+[
+"QR-1.4",
+"300 mm internal diameter",
+"M",
+2360
+],
+[
+"QR-1.5",
+"350 mm internal diameter",
+"M",
+4190
+],
+[
+"QR-1.6",
+"400 mm internal diameter",
+"M",
+4540
+],
+[
+"QR-1.7",
+"450 mm internal diameter",
+"M",
+4980
+],
+[
+"QR-1.8",
+"500mm internal diameter",
+"M",
+5350
+],
+[
+"QR-1.9",
+"600mm internal diameter",
+"M",
+6785
+],
+[
+"QR-1.10",
+"700mm internal diameter",
+"M",
+8100
+],
+[
+"QR-1.11",
+"800mm internal diameter",
+"M",
+9720
+],
+[
+"QR-1.12",
+"900mm internal diameter",
+"M",
+11845
+],
+[
+"",
+"HDPE PIPE",
+"",
+null
+],
+[
+"QR-2",
+"Providing & supplying, laying, jointing High Density Polyethylene pipes (HDPE) confirming to BIS 14333 of PE-100 grade and PN-6 class. The pipe shall be ISI marked.",
+"",
+null
+],
+[
+"QR-2.1",
+"160mm dia",
+"M",
+1795
+],
+[
+"QR-2.2",
+"225mm dia",
+"M",
+2965
+],
+[
+"",
+"uPVC PIPE",
+"",
+null
+],
+[
+"QR-3",
+"Providing, Supplying uPVC pipes of Class III (6 kg/cm2)  as per IS 4985: 2000, ISI marked.",
+"",
+null
+],
+[
+"QR-3.1",
+"160 mm Outer Diameter.",
+"M",
+1212
+],
+[
+"",
+"CI FOOT STEPS",
+"",
+null
+],
+[
+"QR-4",
+"Providing and fixing foot steps in Manholes in proper position as per direction of Engineer incharge.",
+"",
+null
+],
+[
+"QR-4.1",
+"CI foot steps (PVC encapsulated)",
+"NOS.",
+225
+],
+[
+"",
+"SFRC MANHOLE FRAME & COVER",
+"",
+null
+],
+[
+"QR-5",
+"RECTANGULAR MANHOLE",
+"",
+null
+],
+[
+"QR-5.1",
+"600 mm x 600 mm",
+"NOS.",
+2524
+],
+[
+"QR-5.2",
+"750 mm x 500 mm",
+"NOS.",
+2330
+],
+[
+"QR-5.3",
+"900 mm x 600 mm",
+"NOS.",
+4537
+],
+[
+"QR-6",
+"CIRCULAR",
+"",
+null
+],
+[
+"QR-6.1",
+"560 mm dia",
+"NOS.",
+1874
+],
+[
+"",
+"SOR FOR TRENCHLESS TECHNOLOGY-2019",
+"",
+null
+],
+[
+"",
+"inflation @ 10%",
+"",
+null
+],
+[
+"",
+"MANHOLE CONNECTION",
+"",
+null
+],
+[
+"1.6",
+"Making connection of sewer line with existing manhole including breaking into and making good the walls, floors with cement concrete 1:2:4 mix cement plastered on both sides with cement mortar 1:3 finished with a floating coat of neat cement and making necessary channels with drain etc. complete",
+"",
+null
+],
+[
+"1.6.1",
+"for pipes 100 to 230 mm diameter",
+"EACH",
+1533
+],
+[
+"1.6.2",
+"for pipes 250 to 300 mm diameter",
+"EACH",
+2019
+],
+[
+"1.6.3",
+"for pipes 350 to 450 mm diameter",
+"EACH",
+3068
+],
+[
+"",
+"SEWER PIPELINE DE-SILTING",
+"",
+null
+],
+[
+"1.7",
+"Desilting the sewer lines through jetting and suction machines including cleaning, barricading and reconstruction of manholes for section isolation by plugging and flow stoppage, setting up the over-pumping arrangements, traffic management, jetting and dislodging of accumulated silt from the pipelines, removal of silt through suction hose, disposal of removed silt from upto a distance of 20 km, necessary temporary repairs of sewers to stop locational collapses, ingress of ground water in desilted section of the pipelines all complete as per the instructions of the Employer's Representative.",
+"CUM",
+5500
+],
+[
+"",
+"MICRO TUNNELING",
+"",
+null
+],
+[
+"2.7",
+"Installation of product pipe by Micro Tunneling Method including making of entry and exit pits, all related civil works like excavation, shoring/ strutting, etc. and ground penetrating Radar survey, to protect any existing utilities at the pipe installation location and restoration of site after completion. (up to 100 m of installation length)",
+"",
+null
+],
+[
+"2.7.1",
+"Upto 300 mm dia",
+"",
+null
+],
+[
+"2.7.1.1",
+"All type of soil(Except mixed strata & rock)",
+"M",
+32972
+],
+[
+"2.7.1.2",
+"Mixed Strata",
+"M",
+36873
+],
+[
+"2.7.1.3",
+"Rock",
+"M",
+80750
+],
+[
+"2.7.2",
+"300 mm to 450 mm dia",
+"",
+null
+],
+[
+"2.7.2.1",
+"All type of soil(Except mixed strata & rock)",
+"M",
+36873
+],
+[
+"2.7.2.2",
+"Mixed Strata",
+"M",
+40545
+],
+[
+"2.7.2.3",
+"Rock",
+"M",
+102000
+],
+[
+"2.7.3",
+"450 mm - 600 mm dia",
+"",
+null
+],
+[
+"2.7.3.1",
+"All type of soil(Except mixed strata & rock)",
+"M",
+40545
+],
+[
+"2.7.3.2",
+"Mixed Strata",
+"M",
+44600
+],
+[
+"2.7.3.3",
+"Rock",
+"M",
+127500
+],
+[
+"2.7.4",
+"600 mm - 900 mm dia",
+"",
+null
+],
+[
+"2.7.4.1",
+"All type of soil(Except mixed strata & rock)",
+"M",
+55250
+],
+[
+"2.7.4.2",
+"Mixed Strata",
+"M",
+72250
+],
+[
+"2.7.4.2",
+"Rock",
+"M",
+144500
+],
+[
+"",
+"REHABILITATION OF EXISTING SEWERS",
+"",
+null
+],
+[
+"3.1",
+"Rehabilitation of existing pipeline by GRP structural lining method including site survey, plugging and flow diversion, cleaning, pre lining CCTV, Repair of defects, pre lining measurement, designing, site preparatory work, installation of GRP Liner, jointing, grouting, post lining CCTV and measurement, rehabilitation of manholes, testing and commissioning and restoration of road and surfaces all inclusive as per IndSTT: 202-2018; Code of Practice for GRP Lining Technology Suiting Indian Condition.",
+"",
+null
+],
+[
+"3.1.4",
+"from 750 - 1000 mm diameter",
+"M",
+69000
+],
+[
+"3.1.5",
+"from 1000 - 1250 mm diameter",
+"M",
+85000
+],
+[
+"3.1.6",
+"from 1250 - 1500 mm diameter",
+"M",
+91000
+],
+[
+"3.1.7",
+"from 1500 - 1750 mm diameter",
+"M",
+100000
+],
+[
+"3.1.8",
+"from 1750 - 2000 mm diameter",
+"M",
+123000
+],
+[
+"3.1.9",
+"from 2000 - 2250 mm diameter",
+"M",
+145000
+],
+[
+"3.1.10",
+"from 2250 - 2500 mm diameter",
+"M",
+168000
+],
+[
+"3.1.11",
+"from 2500 - 2750 mm diameter",
+"M",
+171000
+],
+[
+"3.1.12",
+"from 2750 - 3000 mm diameter",
+"M",
+219000
+],
+[
+"3.2.1",
+"Cured in Place Pipe (CIPP) lining using Hot water/Steam Curing of resin impregenated felt: Rehabilitation of existing line by CIPP Structural lining method including site survey, plugging and flow diversion, cleaning, pre lining CCTV, Repair of defects, pre lining measurement, designing, site preparatory work, installation of resin impregnated liner, curing of liner using hot water/steam recirculation, post lining CCTV and measurement, rehabilitation of manholes, testing and commissioning and restoration of roads and surfaces all inclusive as per IndSTT: 201-2018; Code of Practice For Cured in Place Pipe Technique Suiting Indian Condition",
+"",
+null
+],
+[
+"3.2.1.1",
+"From 250-500 mm",
+"M",
+30000
+],
+[
+"3.2.1.2",
+"From 500-750 mm",
+"M",
+51000
+],
+[
+"0",
+"",
+"",
+0
+]
+]
+}

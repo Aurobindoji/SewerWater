@@ -1,0 +1,16 @@
+{
+  "_readme": "Pipes the water design may choose from, smallest first. id_mm = internal diameter used in the hydraulics (CPHEEO 6.6(iv) p400: actual internal diameter). C = Hazen-Williams C for design (CPHEEO Table 6.2 p394). HDPE internal diameters from the original scripts\\pipe_catalog.json (HILLCREST SUBZONE-8 model: OD 110/140/160 -> 99.3/126.3/144.4 mm) - VERIFY the PN class; DI K-7 sizes as used in the Elmwood DPR, internal diameter taken as nominal (as in the original scripts\\pipe_catalog.json) - replace with the lined internal diameter of the class if known.",
+  "sizes": [
+    {"name": "HDPE 110", "material": "HDPE PE-100", "nominal": 110, "id_mm": 99.3,  "C": 145},
+    {"name": "HDPE 140", "material": "HDPE PE-100", "nominal": 140, "id_mm": 126.3, "C": 145},
+    {"name": "HDPE 160", "material": "HDPE PE-100", "nominal": 160, "id_mm": 144.4, "C": 145},
+    {"name": "DI 200",   "material": "DI K-7",      "nominal": 200, "id_mm": 200,   "C": 140},
+    {"name": "DI 250",   "material": "DI K-7",      "nominal": 250, "id_mm": 250,   "C": 140},
+    {"name": "DI 300",   "material": "DI K-7",      "nominal": 300, "id_mm": 300,   "C": 140},
+    {"name": "DI 350",   "material": "DI K-7",      "nominal": 350, "id_mm": 350,   "C": 140},
+    {"name": "DI 400",   "material": "DI K-7",      "nominal": 400, "id_mm": 400,   "C": 140},
+    {"name": "DI 450",   "material": "DI K-7",      "nominal": 450, "id_mm": 450,   "C": 140},
+    {"name": "DI 500",   "material": "DI K-7",      "nominal": 500, "id_mm": 500,   "C": 140},
+    {"name": "DI 600",   "material": "DI K-7",      "nominal": 600, "id_mm": 600,   "C": 140}
+  ]
+}

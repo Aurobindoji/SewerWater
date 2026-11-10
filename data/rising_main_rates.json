@@ -1,0 +1,176 @@
+{
+  "_readme": "Rates for the rising main of a pumping station (DI pipe), for the approximate cost of zoning options. User decision 12-Oct-2026: SOR rates from 'sor springfield.xlsx' (SCHEDULE OF RATES FOR YEAR 2025-26); the other rates as before (DI supply from Rate_2025-26.pdf M.193, specials and thrust blocks from the Elmwood DPR - all as in the original scripts\\sor_rates.json). Rates exclude GST / cess / contingency, as the other cost items.",
+  "pipe_supply_di_k7": {
+    "_source": "Rate_2025-26.pdf (UPJN SE Construction Circle Westbrook, office memo 22-08-2025), M.193 DI K-7 p9-10, M.194 HDPE IS 4984:2016 PN-6 p10. Used in Elmwood DPR Springfield (DS!I9:I20).",
+    "class": "K-7 (IS 8329) - the only DI class with a rate here; a rising main is often K-9 (not available - K-7 used, slightly low)",
+    "by_dia_mm": {
+      "100": {
+        "rate": 1234,
+        "code": "M.193(b)"
+      },
+      "150": {
+        "rate": 1724,
+        "code": "M.193(d)"
+      },
+      "200": {
+        "rate": 2127,
+        "code": "M.193(e)"
+      },
+      "250": {
+        "rate": 2795,
+        "code": "M.193(f)"
+      },
+      "300": {
+        "rate": 3589,
+        "code": "M.193(g)"
+      },
+      "350": {
+        "rate": 4417,
+        "code": "M.193(h)"
+      },
+      "400": {
+        "rate": 5372,
+        "code": "M.193(i)"
+      },
+      "450": {
+        "rate": 6337,
+        "code": "M.193(j)"
+      },
+      "500": {
+        "rate": 7557,
+        "code": "M.193(k)"
+      },
+      "600": {
+        "rate": 9891,
+        "code": "M.193(l)"
+      }
+    }
+  },
+  "laying_di": {
+    "_source": "sor springfield.xlsx (SOR 2025-26) items 2197-2210: carting, laying and testing of C.I. S&S class 'LA' tyton joint pipes & specials",
+    "by_dia_mm": {
+      "80": {
+        "rate": 36.76,
+        "code": "2197"
+      },
+      "100": {
+        "rate": 47.09,
+        "code": "2198"
+      },
+      "125": {
+        "rate": 60.99,
+        "code": "2199"
+      },
+      "150": {
+        "rate": 76.13,
+        "code": "2200"
+      },
+      "200": {
+        "rate": 111.09,
+        "code": "2201"
+      },
+      "250": {
+        "rate": 149.86,
+        "code": "2202"
+      },
+      "300": {
+        "rate": 193.57,
+        "code": "2203"
+      },
+      "350": {
+        "rate": 225.11,
+        "code": "2204"
+      },
+      "400": {
+        "rate": 273.23,
+        "code": "2205"
+      },
+      "450": {
+        "rate": 330.1,
+        "code": "2206"
+      },
+      "500": {
+        "rate": 386.93,
+        "code": "2207"
+      },
+      "600": {
+        "rate": 514.73,
+        "code": "2208"
+      },
+      "700": {
+        "rate": 665.11,
+        "code": "2209"
+      },
+      "750": {
+        "rate": 745.01,
+        "code": "2210"
+      }
+    }
+  },
+  "excavation": {
+    "code": "2001",
+    "rate": 291.62,
+    "unit": "cum",
+    "_source": "sor springfield.xlsx (SOR 2025-26) item 2001 - pipe line in ordinary soil incl. refilling",
+    "trench": "L x (D + 0.6) x (D + 1.0), D in m - Elmwood DPR, RC!E5 (as boq.py)"
+  },
+  "specials_fraction": {
+    "value": 0.1,
+    "_source": "Elmwood DPR Springfield, DS!K21:K22 (specials @5% of HDPE pipe cost, @10% of DI pipe cost)."
+  },
+  "thrust_block": {
+    "_source": "Elmwood DPR Springfield DS!106-122: one block per 200 m of DI main (ROUNDUP(L/200)); RCC 1:1.5:3 item 1025 @ 11260.02/cum; MS reinforcement item 1151 @ 106.0084/kg (SOR 2025-26). Volume and steel per block: DPR sheets 'Thrust 200' ... 'Thrust 400'.",
+    "spacing_m": 200,
+    "rcc_rate": 11260.02,
+    "rcc_code": "1025",
+    "steel_rate": 106.0084,
+    "steel_code": "1151",
+    "per_block": {
+      "200": {
+        "rcc_cum": 0.614,
+        "steel_kg": 72.3
+      },
+      "250": {
+        "rcc_cum": 1.0,
+        "steel_kg": 117.75
+      },
+      "300": {
+        "rcc_cum": 1.331,
+        "steel_kg": 156.73
+      },
+      "350": {
+        "rcc_cum": 1.728,
+        "steel_kg": 203.47
+      },
+      "400": {
+        "rcc_cum": 2.197,
+        "steel_kg": 258.7
+      }
+    }
+  },
+  "design": {
+    "max_velocity_mps": {
+      "value": 1.8,
+      "status": "assumed",
+      "note": "smallest DI size with velocity at peak flow not above this; above the largest size with a supply rate (600 mm) parallel mains are taken"
+    },
+    "hazen_williams_c": {
+      "value": 140,
+      "status": "assumed",
+      "note": "DI, cement-mortar lined"
+    },
+    "route_factor": {
+      "value": 1.3,
+      "status": "assumed",
+      "note": "rising main length = straight distance to the STP x this (along the roads)"
+    },
+    "delivery_head_m": {
+      "value": 2.0,
+      "status": "assumed",
+      "note": "delivery above GL at the STP inlet"
+    }
+  },
+  "check": {
+    "note": "Lakeside zone DPR (AMRUT 2.0, appraisal 29-08-2025, the user's 'this file to imrove ips rates.pdf'): rising main 450 & 300 mm, 3400 m = Rs 422.53 lakh = Rs 12,427 per m all-in - compare with the rate built here"
+  }
+}

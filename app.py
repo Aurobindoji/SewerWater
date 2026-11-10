@@ -238,6 +238,120 @@ class Api:
                f"New master folder: {m} - close the app and start it again to use it.")
         (webview.active_window() or self._main).evaluate_js(f"alert({json.dumps(msg)})")
 
+    # the menu "App": About, and the updates (user decisions 10-Nov-2026: checked only from the menu, installed in
+    # one click - downloaded, its SHA-256 matched against GitHub's, the app closed, the setup run, the app reopened)
+    def _one_window(self, key, title, **kw):
+        w = self._windows.get(key)
+        if w is not None and w in webview.windows:
+            w.restore()
+            w.show()
+            return w
+        w = webview.create_window(title, js_api=self, width=680, height=620, min_size=(520, 420), **kw)
+        self._windows[key] = w
+        return w
+
+    def show_about(self):
+        from launcher import about
+        self._one_window("about", "About - " + about.APP_NAME, html=about.about_html(self._master, desktop=True))
+
+    def show_update(self):
+        self._one_window("update", "Update - " + TITLE, html=UPDATE_PAGE)
+
+    def check_update(self):
+        from launcher import about
+        r = about.check()
+        r["frozen"] = bool(getattr(sys, "frozen", False))      # from source (not the setup): git pull, no install
+        return r
+
+    def start_update(self):
+        """The newest setup downloaded in a thread (update_progress tells how far), checked against GitHub's SHA-256."""
+        from launcher import about
+        self._dl = {"done": 0, "size": 0, "path": None, "error": None}
+
+        def run():
+            try:
+                r = about.check()
+                if not r.get("ok") or not r.get("newer"):
+                    raise ValueError(r.get("log") or "कोई नया version नहीं / no newer version")
+                folder = os.path.join(os.environ.get("TEMP") or os.path.expanduser("~"), "SewerWater_update")
+                self._dl["path"] = about.download(r["setup"], folder,
+                                                  progress=lambda d, s: self._dl.update(done=d, size=s))
+            except Exception as e:
+                self._dl["error"] = str(e) or type(e).__name__
+        threading.Thread(target=run, daemon=True).start()
+        return True
+
+    def update_progress(self):
+        return dict(getattr(self, "_dl", None) or {})
+
+    def run_update(self):
+        """The checked setup run quietly for this user (it closes the app's files, installs, and starts the app again -
+        installer\\SewerWater.iss); this app closes itself at once."""
+        import subprocess
+        p = (getattr(self, "_dl", None) or {}).get("path")
+        if not p or not os.path.isfile(p):
+            return "setup नहीं मिला / setup not found"
+        subprocess.Popen([p, "/SILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/CURRENTUSER", "/SP-"],
+                         creationflags=getattr(subprocess, "DETACHED_PROCESS", 0) | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0),
+                         close_fds=True)
+        threading.Timer(0.5, lambda: [w.destroy() for w in list(webview.windows)]).start()
+        return None
+
+
+# the update window (menu App -> Check for updates)
+UPDATE_PAGE = """<!doctype html><html><head><meta charset="utf-8"><style>
+body{font:15px "Segoe UI","Nirmala UI",sans-serif;margin:0;background:#f5f7fa;color:#222}
+.box{max-width:600px;margin:28px auto;background:#fff;border-radius:10px;padding:22px 28px;box-shadow:0 2px 10px #0002}
+h2{margin:0 0 10px;color:#0d47a1} .hint{color:#666;font-size:13px} .ok{color:#2e7d32} .err{color:#c62828}
+pre{white-space:pre-wrap;background:#f3f5f8;border-radius:6px;padding:10px;max-height:220px;overflow:auto;font:13px Consolas,monospace}
+button{font:15px "Segoe UI",sans-serif;padding:8px 16px;border-radius:6px;border:1px solid #1565c0;background:#1565c0;
+color:#fff;cursor:pointer;margin-top:8px} button:disabled{opacity:.45;cursor:default}
+progress{width:100%;height:16px;margin-top:10px}</style></head><body><div class="box">
+<h2>Update देखें / Check for updates</h2><div id="st">GitHub पर देख रहे हैं … / Checking GitHub …</div>
+<div id="more"></div></div><script>
+const api = () => window.pywebview.api;
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+async function go() {
+  const r = await api().check_update();
+  if (!r.ok) { $("st").innerHTML = `<span class="err">${esc(r.log)}</span>`; return; }
+  if (!r.newer) {
+    $("st").innerHTML = `<span class="ok">✔ नया version यही है: ${esc(r.current)} / You have the newest version: ${esc(r.current)}</span>`;
+    return;
+  }
+  const mb = r.setup ? (r.setup.size / 1048576).toFixed(1) + " MB" : "";
+  $("st").innerHTML = `नया version <b>${esc(r.latest)}</b> उपलब्ध है (अभी ${esc(r.current)}) / Version <b>${esc(r.latest)}</b> is available (you have ${esc(r.current)})`;
+  let h = `<pre>${esc(r.notes || "")}</pre>`;
+  if (!r.frozen) h += `<div class="hint">App source से चल रहा है - update: git pull / The app runs from source: update with git pull.</div>`;
+  else if (!r.setup) h += `<div class="err">इस release में setup नहीं / this release has no setup</div>`;
+  else h += `<div class="hint">App बंद होकर setup चलेगा और नया version अपने-आप खुलेगा - पहले सब काम सहेज लें। ${esc(r.setup.name)}, ${mb}; SHA-256 GitHub से मिलाया जाएगा.<br>
+The app closes, the setup runs and the new version opens by itself - save your work first.</div>
+<button id="inst">Download और install / Download and install</button><progress id="pg" value="0" max="1" hidden></progress><div id="msg"></div>`;
+  $("more").innerHTML = h;
+  if ($("inst")) $("inst").onclick = install;
+}
+async function install() {
+  if (!confirm("सब काम सहेज लिया? App बंद होकर update होगा। / Is all your work saved? The app will close and update.")) return;
+  $("inst").disabled = true; $("pg").hidden = false; $("msg").textContent = "Download हो रहा है … / Downloading …";
+  await api().start_update();
+  const t = setInterval(async () => {
+    const p = await api().update_progress();
+    if (p.size) $("pg").value = p.done / p.size;
+    if (p.error) { clearInterval(t); $("msg").innerHTML = `<span class="err">${esc(p.error)}</span>`; $("inst").disabled = false; return; }
+    if (p.path) {
+      clearInterval(t);
+      $("msg").innerHTML = `<span class="ok">✔ SHA-256 मिला - setup चल रहा है, app बंद हो रहा है … / SHA-256 matched - the setup runs, the app closes …</span>`;
+      const e = await api().run_update();
+      if (e) { $("msg").innerHTML = `<span class="err">${esc(e)}</span>`; $("inst").disabled = false; }
+    }
+  }, 400);
+}
+let began = false;
+const begin = () => { if (!began) { began = true; go(); } };
+window.addEventListener("pywebviewready", begin);
+if (window.pywebview && window.pywebview.api) begin();
+</script></body></html>"""
+
 
 def main():
     webview.settings["ALLOW_DOWNLOADS"] = True                   # the pages' CSV / KML / DXF downloads
@@ -264,7 +378,9 @@ def main():
             api._main = webview.create_window(TITLE, START_URL, js_api=api, min_size=(900, 600), **WINDOW)
     api._main.events.loaded += lambda: api._main.evaluate_js(OPEN_JS)
     menu = [Menu("App", [MenuAction("Master folder खोलें / Open the master folder", api.open_master),
-                         MenuAction("Master folder बदलें… / Change the master folder…", api.change_master)])]
+                         MenuAction("Master folder बदलें… / Change the master folder…", api.change_master),
+                         MenuAction("Update देखें… / Check for updates…", api.show_update),
+                         MenuAction("About", api.show_about)])]
     webview.start(private_mode=False, storage_path=storage, menu=menu)   # localStorage kept (in <master>\App)
     sys.exit(0)                                                # every window closed: the servers end with the app
 

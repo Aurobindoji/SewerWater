@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.2 (beta) - 2026-11-10
+
+- Updates from inside the app: menu **App → Check for updates**. If a newer release is out on GitHub, one click
+  downloads its setup, checks its SHA-256 against GitHub's, closes the app, installs the update and opens the app
+  again. A download that does not match is deleted and nothing is installed. The app checks only when you ask.
+- **About** (menu App, and the start page): the version, the licence, the source and the credits.
+
 ## 0.9.1 (beta) - 2026-11-10
 
 - Sewer and water supply are now fully independent apps. The start page (language, then sewer or water) starts

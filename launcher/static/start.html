@@ -21,6 +21,8 @@
   button.big small { display: block; margin-top: 6px; font: 400 13px/1.3 "Segoe UI", "Nirmala UI", sans-serif; color: var(--muted); }
   .back { margin-top: 22px; background: none; border: none; color: var(--accent); font: inherit; font-size: 14px; cursor: pointer; }
   [hidden] { display: none !important; }
+  .foot { position: fixed; bottom: 10px; left: 0; right: 0; text-align: center; font-size: 13px; color: var(--muted); }
+  .foot a { color: var(--muted); }
 </style>
 </head>
 <body>
@@ -43,6 +45,7 @@
     <button class="back" id="back"></button>
   </div>
 </main>
+<div class="foot"><a href="#" id="about">About</a> <span id="ver"></span></div>
 <script>
 "use strict";
 // the launcher's start page (user decision 10-Nov-2026): only the module chosen is started (launcher/server.py
@@ -85,6 +88,13 @@ async function openModule(name) {
     alert((lang === "en" ? "Could not start: " : "शुरू नहीं हुआ: ") + e.message);
   }
 }
+// About (10-Nov-2026): the desktop app's own window, else this page's tab
+fetch("/api/version").then(r => r.json()).then(r => { document.getElementById("ver").textContent = "· v" + r.app_version; }).catch(() => { });
+document.getElementById("about").onclick = e => {
+  e.preventDefault();
+  if (window.pywebview && window.pywebview.api && window.pywebview.api.show_about) window.pywebview.api.show_about();
+  else location.href = "/about";
+};
 document.getElementById("sewer").onclick = () => openModule("sewer");
 document.getElementById("water").onclick = () => openModule("water");
 document.getElementById("back").onclick = () => {

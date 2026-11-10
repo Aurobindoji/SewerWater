@@ -106,8 +106,12 @@ class Handler(BaseHTTPRequestHandler):
         if u.path in ("/", "/index.html"):
             with open(os.path.join(STATIC, "start.html"), "rb") as fh:
                 return self._send(200, fh.read(), "text/html; charset=utf-8")
+        if u.path == "/about":                           # the About page (10-Nov-2026)
+            from . import about
+            return self._send(200, about.about_html().encode("utf-8"), "text/html; charset=utf-8")
         if u.path == "/api/version":
-            return self._send(200, {"ok": True, "version": VERSION, "pid": os.getpid()})
+            from . import about
+            return self._send(200, {"ok": True, "version": VERSION, "app_version": about.APP_VERSION, "pid": os.getpid()})
         if u.path == "/api/open":
             name = (parse_qs(u.query).get("module") or [""])[0]
             if name not in MODULES:

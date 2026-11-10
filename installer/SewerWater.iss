@@ -8,7 +8,8 @@
 #define AppName "Sewer & Water Network Design"
 #define AppExe "SewerWater.exe"
 #ifndef AppVersion
-  #define AppVersion "0.9.1"
+  ; build_setup.bat passes launcher\about.py APP_VERSION (/DAppVersion=...); this only when ISCC runs alone
+  #define AppVersion "0.9.2"
 #endif
 
 [Setup]
@@ -56,6 +57,8 @@ Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; Tasks: desktopico
 Filename: "{tmp}\MicrosoftEdgeWebview2Setup.exe"; Parameters: "/silent /install"; Check: NeedsWebView2; \
   StatusMsg: "Installing Microsoft Edge WebView2 (internet needed) ..."; Flags: waituntilterminated
 Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags: nowait postinstall skipifsilent
+; the app's own update (menu App -> Check for updates, 10-Nov-2026) runs this setup silently: the app opens again
+Filename: "{app}\{#AppExe}"; Flags: nowait postinstall runasoriginaluser; Check: WizardSilent
 
 [Code]
 const

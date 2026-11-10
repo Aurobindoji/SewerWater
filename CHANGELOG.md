@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.1 (beta) - 2026-11-10
+
+- Sewer and water supply are now fully independent apps. The start page (language, then sewer or water) starts
+  only the module chosen; opening the water supply app no longer starts the sewer app as well.
+- Each app has a button beside "CPHEEO" and the language link that opens the other app, in a window of its own.
+  Only then do both run. If the other app is open already, its window is brought forward and its work is kept.
+- The language link now switches the language on the page itself.
+
 ## 0.9.0 (beta) - 2026-11-10
 
 The first public build.

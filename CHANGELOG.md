@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.9.4 (beta) - 2026-11-11
 
 - Floating population is now a field in the population step of both apps ("Floating population (%)"),
   10 % by default as before. CPHEEO's water manual (Annexure 2.8) suggests 1-3 % when no figures are available.
@@ -11,7 +11,7 @@
   variables and imports nothing used are gone; `ruff check` (settings in pyproject.toml) guards against new ones.
   No design result changes.
 - Inside: the long writers of the DPR workbooks are now one function per sheet group (sewer `write_dpr`; water
-  `abstracts`, `om_economics`, `salient`). Every cell of the DPRs was compared before and after: the same.
+  `abstracts`, `om_economics`, `salient`; sewer `om`, `economics`). Every cell of the DPRs was compared before and after: the same.
 
 ## 0.9.3 (beta) - 2026-11-10
 

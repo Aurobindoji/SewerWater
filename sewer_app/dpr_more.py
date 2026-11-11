@@ -120,7 +120,7 @@ def house_connections(B, P):
             a = h3.cell(r, 6, area)
             a.fill = B.yellow
             h3.cell(r, 7, f"=F{r}*C{r}").number_format = "#,##0.00"
-            rt = h3.cell(r, 8, cut[i] if not cut[i].startswith("=") else cut[i])
+            rt = h3.cell(r, 8, cut[i])
             if not cut[i].startswith("="):
                 rt.value = float(cut[i])
                 rt.fill = B.yellow
@@ -378,59 +378,74 @@ def pumping_stations(B, stations):
 def om(B, ps, ac):
     """SPS O&M, 5 yr O&M, Sewer Lines and RM, ABS (O&M). ac = cells of Abstract comprehensive. Returns the cells Form J
     and the economics use."""
-    O = B.S["om"]
-    out = {}
-    blocks = []
-    if ps:
-        so = B.sheet("SPS O&M", "EXPENDITURE ON OPERATION AND MAINTENANCE OF THE PUMPING STATIONS (per year)", 6)
-        B.header(so, 3, ["", "Particulars", "Base year", "Middle year (+15)", "Design year (+30)", "Note"],
-                 [4, 56, 15, 15, 15, 60])
-        r = 4
-        for k, (tag, rmn, wwn) in enumerate(zip(ps["names"], ps["rm_sheet"], ps["ww_sheet"])):
-            so.cell(r, 2, f"{tag} ({ps['stations'][k]['outfall']})").font = B.bold
-            r += 1
-            b = {}
-            rows = [("kw", "Pumps working at the average flow (kW)", [f"={q(rmn)}!{c}31" for c in "EHK"],
-                     "sheet RM: kW at the average flow of the stage (efficiency there)"),
-                    ("kwh", "Energy (kWh / year) = kW x 24 x 365", None, ""),
-                    ("conn", "Connected load (kW) = pumps at peak x installed / working",
-                     [f"={q(rmn)}!{c}31*{q(wwn)}!$D$39/{q(wwn)}!$D$40" for c in "FIL"], "sheet WET WELL D39 / D40"),
-                    ("fixed", f"Fixed charges (Rs lakh) = connected kW x Rs {O['power_fixed_rs_per_kw_month']} x 12", None,
-                     "Riverside 'STP (O&M)' row 24"),
-                    ("run", f"Running charges (Rs lakh) = kWh x Rs {O['power_rate_rs_per_kwh']}", None, "Riverside 'STP (O&M)' rows 29-35"),
-                    ("duty", f"Electricity duty {O['electricity_duty'] * 100:g} % + regulatory surcharge "
-                             f"{O['regulatory_surcharge'] * 100:g} %", None, "Riverside 'STP (O&M)' rows 38-39"),
-                    ("elec", "Electricity (Rs lakh / year)", None, ""),
-                    ("dg", f"D.G. set: diesel {O['dg_litre_per_kva_hour']} l / kVA / h x {O['dg_hours_per_day']} h x 365 x "
-                           f"Rs {O['diesel_rs_per_litre']} (kVA = connected kW / 0.8) + lubricant "
-                           f"{O['lubricant_share'] * 100:g} % + servicing Rs {O['dg_servicing_lakh']} lakh", None,
-                     "Riverside 'STP (O&M)' rows 43-47"),
-                    ("op", "Operation (staff) (Rs lakh / year)", None, "Riverside SPS-1 '5 yr O&M' C22 - to be confirmed")]
-            for key, name, vals, note in rows:
-                so.cell(r, 2, name)
-                so.cell(r, 6, note)
-                for j in range(3):
-                    c = B.col(3 + j)
-                    f = {"kw": vals[j] if vals else None, "conn": vals[j] if vals else None,
-                         "kwh": f"={c}{b.get('kw')}*24*365",
-                         "fixed": f"={c}{b.get('conn')}*{O['power_fixed_rs_per_kw_month']}*12/100000",
-                         "run": f"={c}{b.get('kwh')}*{O['power_rate_rs_per_kwh']}/100000",
-                         "duty": f"=({c}{b.get('fixed')}+{c}{b.get('run')})*({O['electricity_duty']}+{O['regulatory_surcharge']})",
-                         "elec": f"={c}{b.get('fixed')}+{c}{b.get('run')}+{c}{b.get('duty')}",
-                         "dg": (f"={c}{b.get('conn')}/0.8*{O['dg_litre_per_kva_hour']}*{O['dg_hours_per_day']}*365*"
-                                f"{O['diesel_rs_per_litre']}/100000*(1+{O['lubricant_share']})+{O['dg_servicing_lakh']}"),
-                         "op": O["sps_operation_lakh_per_year"] if j == 0 else f"=$C{r}"}[key]
-                    cell = so.cell(r, 3 + j, f)
-                    cell.number_format = "#,##0.00"
-                    if key == "op" and j == 0:
-                        cell.fill = B.yellow
-                b[key] = r
-                r += 1
-            blocks.append(b)
-            r += 1
-        out["sps_elec"] = ["+".join(f"'SPS O&M'!{c}{b['elec']}" for b in blocks) for c in "CDE"]
+    blocks, sps_elec = _sps_om(B, ps)
+    tot = _om_5_years(B, ps, blocks)
+    _om_civil(B, ac)
+    _om_abstract(B, tot)
+    out = {"sps_elec": sps_elec} if ps else {}
+    out.update({"civil_om": "'ABS (O&M)'!E13", "total_om": "'ABS (O&M)'!G19"})
+    return out
 
-    # 5 yr O&M of the E&M (Rs lakh)
+
+def _sps_om(B, ps):
+    """Sheet SPS O&M: the yearly electricity, D.G. set and operation of each pumping station -> (the rows of each
+    station by what they hold, the cells of the electricity by stage); ([], None) with no pumping station."""
+    O = B.S["om"]
+    blocks = []
+    if not ps:
+        return blocks, None
+    so = B.sheet("SPS O&M", "EXPENDITURE ON OPERATION AND MAINTENANCE OF THE PUMPING STATIONS (per year)", 6)
+    B.header(so, 3, ["", "Particulars", "Base year", "Middle year (+15)", "Design year (+30)", "Note"],
+             [4, 56, 15, 15, 15, 60])
+    r = 4
+    for k, (tag, rmn, wwn) in enumerate(zip(ps["names"], ps["rm_sheet"], ps["ww_sheet"])):
+        so.cell(r, 2, f"{tag} ({ps['stations'][k]['outfall']})").font = B.bold
+        r += 1
+        b = {}
+        rows = [("kw", "Pumps working at the average flow (kW)", [f"={q(rmn)}!{c}31" for c in "EHK"],
+                 "sheet RM: kW at the average flow of the stage (efficiency there)"),
+                ("kwh", "Energy (kWh / year) = kW x 24 x 365", None, ""),
+                ("conn", "Connected load (kW) = pumps at peak x installed / working",
+                 [f"={q(rmn)}!{c}31*{q(wwn)}!$D$39/{q(wwn)}!$D$40" for c in "FIL"], "sheet WET WELL D39 / D40"),
+                ("fixed", f"Fixed charges (Rs lakh) = connected kW x Rs {O['power_fixed_rs_per_kw_month']} x 12", None,
+                 "Riverside 'STP (O&M)' row 24"),
+                ("run", f"Running charges (Rs lakh) = kWh x Rs {O['power_rate_rs_per_kwh']}", None, "Riverside 'STP (O&M)' rows 29-35"),
+                ("duty", f"Electricity duty {O['electricity_duty'] * 100:g} % + regulatory surcharge "
+                         f"{O['regulatory_surcharge'] * 100:g} %", None, "Riverside 'STP (O&M)' rows 38-39"),
+                ("elec", "Electricity (Rs lakh / year)", None, ""),
+                ("dg", f"D.G. set: diesel {O['dg_litre_per_kva_hour']} l / kVA / h x {O['dg_hours_per_day']} h x 365 x "
+                       f"Rs {O['diesel_rs_per_litre']} (kVA = connected kW / 0.8) + lubricant "
+                       f"{O['lubricant_share'] * 100:g} % + servicing Rs {O['dg_servicing_lakh']} lakh", None,
+                 "Riverside 'STP (O&M)' rows 43-47"),
+                ("op", "Operation (staff) (Rs lakh / year)", None, "Riverside SPS-1 '5 yr O&M' C22 - to be confirmed")]
+        for key, name, vals, note in rows:
+            so.cell(r, 2, name)
+            so.cell(r, 6, note)
+            for j in range(3):
+                c = B.col(3 + j)
+                f = {"kw": vals[j] if vals else None, "conn": vals[j] if vals else None,
+                     "kwh": f"={c}{b.get('kw')}*24*365",
+                     "fixed": f"={c}{b.get('conn')}*{O['power_fixed_rs_per_kw_month']}*12/100000",
+                     "run": f"={c}{b.get('kwh')}*{O['power_rate_rs_per_kwh']}/100000",
+                     "duty": f"=({c}{b.get('fixed')}+{c}{b.get('run')})*({O['electricity_duty']}+{O['regulatory_surcharge']})",
+                     "elec": f"={c}{b.get('fixed')}+{c}{b.get('run')}+{c}{b.get('duty')}",
+                     "dg": (f"={c}{b.get('conn')}/0.8*{O['dg_litre_per_kva_hour']}*{O['dg_hours_per_day']}*365*"
+                            f"{O['diesel_rs_per_litre']}/100000*(1+{O['lubricant_share']})+{O['dg_servicing_lakh']}"),
+                     "op": O["sps_operation_lakh_per_year"] if j == 0 else f"=$C{r}"}[key]
+                cell = so.cell(r, 3 + j, f)
+                cell.number_format = "#,##0.00"
+                if key == "op" and j == 0:
+                    cell.fill = B.yellow
+            b[key] = r
+            r += 1
+        blocks.append(b)
+        r += 1
+    return blocks, ["+".join(f"'SPS O&M'!{c}{b['elec']}" for b in blocks) for c in "CDE"]
+
+
+def _om_5_years(B, ps, blocks):
+    """Sheet 5 yr O&M of the E&M (Rs lakh) -> the cells of its 5-year totals by kind."""
+    O = B.S["om"]
     fy = B.sheet("5 yr O&M", "OPERATION AND MAINTENANCE OF THE PUMPING STATIONS FOR 5 YEARS (Rs. lakh)", 10)
     B.header(fy, 3, ["S.No.", "Particulars", "Basic cost", "1st year", "2nd year", "3rd year", "4th year", "5th year",
                      "Total of 5 years", "Remark"], [6, 40, 12, 11, 11, 11, 11, 11, 14, 52])
@@ -453,7 +468,6 @@ def om(B, ps, ac):
             fy.cell(r, 3, basic).number_format = "#,##0.00"
             fy.cell(r, 4, y1.format(r=r)).number_format = "#,##0.00"
             for j in range(1, 5):
-                c = B.col(4 + j)
                 fy.cell(r, 4 + j, f"={B.col(3 + j)}{r}{grow}").number_format = "#,##0.00"
             first = B.col(4 + O["dlp_years"]) if key == "mach" else "D"
             fy.cell(r, 9, f"=SUM({first}{r}:H{r})").number_format = "#,##0.00"
@@ -461,8 +475,12 @@ def om(B, ps, ac):
             tot[key].append(f"'5 yr O&M'!I{r}")
             r += 1
         r += 1
+    return tot
 
-    # Sewer Lines and RM: civil O&M (Rs lakh)
+
+def _om_civil(B, ac):
+    """Sheet Sewer Lines and RM: the O&M of the civil works (Rs lakh)."""
+    O = B.S["om"]
     sl = B.sheet("Sewer Lines and RM", "Cost of Annual O&M Cost for CIVIL WORKS (Rs. lakh)", 6)
     B.header(sl, 4, ["S.N", "District", "Estimated Cost", f"Annual repairs of RM & sewer @ {O['sewer_rm_repair'] * 100:g} %",
                      f"Annual repairs of C.W. @ {O['civil_works_repair'] * 100:g} %", "Total"], [6, 44, 16, 18, 18, 14])
@@ -500,7 +518,10 @@ def om(B, ps, ac):
     sl.cell(17, 2, "Cost of O&M for civil works for 5 years in Rs lakh (SPS from the 2nd year, as Riverside)").font = B.bold
     sl.cell(17, 6, "=F16").number_format = "#,##0.00"
 
-    # ABS (O&M)
+
+def _om_abstract(B, tot):
+    """Sheet ABS (O&M): the O&M of 5 years, civil and E&M."""
+    O = B.S["om"]
     ab = B.sheet("ABS (O&M)", "Abstract of 5 Years O&M Cost (CIVIL + E&M) (Rs. lakh)", 7)
     B.header(ab, 4, ["S.N", "", "Description", "", "CIVIL", "E&M", "O&M cost for 5 years"], [6, 14, 30, 10, 14, 14, 18])
     sm = lambda cells: ("=" + "+".join(cells)) if cells else 0                      # noqa: E731
@@ -535,18 +556,32 @@ def om(B, ps, ac):
         for c in "EG":
             ab[f"{c}{x}"].number_format = "#,##0.00"
     ab["A19"].font = ab["G19"].font = B.bold
-    out.update({"civil_om": "'ABS (O&M)'!E13", "total_om": "'ABS (O&M)'!G19"})
-    return out
 
 
 # ------------------------------------------------------------------------------------------------------------ economics
 def economics(B, P, ac, omr, fj):
     """ECONOMICS and its statements. ac = Abstract comprehensive cells, omr = om() cells, fj = Form j compre cells."""
-    E = B.S["economics"]
-    yrs = [str(y) for y in B.years]
-    stage = [f"Base year {yrs[0]}", f"Middle year {yrs[1]}", f"Design year {yrs[2]}"]
+    bc, t = _eco_breakup(B, ac)
+    rw = _eco_repair(B, t)
+    sf, st = _eco_staff(B)
+    re_ = _eco_recurring(B, omr, st)
+    inc = _eco_income(B, P)
+    ec = _eco_sheet(B, P, fj)
+    for wsx in (bc, rw, sf, re_, inc, ec):
+        for row in wsx.iter_rows(min_row=4, max_row=wsx.max_row, max_col=wsx.max_column):
+            for cell in row:
+                cell.border = B.box
+    return ["ECONOMICS", "INCOME", "RECURRING EXP", "REPAIR WORKS", "A.R. EXP ON M. STAFF", "BREAKUP OF COST"]
 
-    # BREAKUP OF COST (Rs lakh)
+
+def _stages(B):
+    """The three stages' years as texts, and their names."""
+    yrs = [str(y) for y in B.years]
+    return yrs, [f"Base year {yrs[0]}", f"Middle year {yrs[1]}", f"Design year {yrs[2]}"]
+
+
+def _eco_breakup(B, ac):
+    """Sheet BREAKUP OF COST (Rs lakh) -> (the sheet, its sub total row)."""
     bc = B.sheet("BREAKUP OF COST", "BREAKUP OF COST (Rs. lakh)", 8)
     B.header(bc, 4, ["S.N.", "Sub Head", "Total cost of work", "Building", "R.C.C.", "Pipe Line", "Machinery", "Misc."],
              [6, 52, 16, 13, 13, 13, 13, 13])
@@ -564,8 +599,13 @@ def economics(B, P, ac, omr, fj):
     for c in "CDEFGH":
         bc[f"{c}{t}"] = f"=SUM({c}5:{c}{t - 1})"
         bc[f"{c}{t}"].number_format = "#,##0.00"
+    return bc, t
 
-    # REPAIR WORKS (Rs)
+
+def _eco_repair(B, t):
+    """Sheet REPAIR WORKS (Rs); t = the sub total row of BREAKUP OF COST."""
+    E = B.S["economics"]
+    yrs = _stages(B)[0]
     rw = B.sheet("REPAIR WORKS", "ANNUAL MAINTENANCE EXPENDITURE ON REPAIR WORKS (Rs.)", 9)
     B.header(rw, 4, ["S.N.", "Particulars", "Total cost of work (Rs.)", f"% {yrs[0]}", "Amount", f"% {yrs[1]}", "Amount",
                      f"% {yrs[2]}", "Amount"], [6, 30, 18, 8, 16, 8, 16, 8, 16])
@@ -584,8 +624,12 @@ def economics(B, P, ac, omr, fj):
     for c in "CEGI":
         rw[f"{c}10"] = f"=SUM({c}5:{c}9)"
         rw[f"{c}10"].number_format = "#,##0"
+    return rw
 
-    # A.R. EXP ON M. STAFF (Rs)
+
+def _eco_staff(B):
+    """Sheet A.R. EXP ON M. STAFF (Rs) -> (the sheet, its total row)."""
+    E = B.S["economics"]
     sf = B.sheet("A.R. EXP ON M. STAFF", "ANNUAL RECURRING EXPENDITURE ON MAINTENANCE STAFF (Rs.)", 11)
     B.header(sf, 4, ["S.N.", "Particulars", "No.", "Average pay", "Annual pay", "No.", "Average pay", "Annual pay", "No.",
                      "Average pay", "Annual pay"], [6, 40, 6, 12, 14, 6, 12, 14, 6, 12, 14])
@@ -603,8 +647,12 @@ def economics(B, P, ac, omr, fj):
     for c in "EHK":
         sf[f"{c}{st}"] = f"=SUM({c}5:{c}{st - 1})"
         sf[f"{c}{st}"].number_format = "#,##0"
+    return sf, st
 
-    # RECURRING EXP (Rs)
+
+def _eco_recurring(B, omr, st):
+    """Sheet RECURRING EXP (Rs); st = the total row of the staff sheet."""
+    stage = _stages(B)[1]
     re_ = B.sheet("RECURRING EXP", "ANNUAL RECURRING EXPENDITURE ON MAINTENANCE (Rs.)", 5)
     B.header(re_, 4, ["S.N.", "Particulars"] + stage, [6, 52, 18, 18, 18])
     elec = omr.get("sps_elec") or ["0", "0", "0"]
@@ -626,8 +674,13 @@ def economics(B, P, ac, omr, fj):
     for c in "CDE":
         re_[f"{c}10"] = f"=SUM({c}5:{c}9)"
         re_[f"{c}10"].number_format = "#,##0"
+    return re_
 
-    # INCOME (Rs)
+
+def _eco_income(B, P):
+    """Sheet INCOME (Rs)."""
+    E = B.S["economics"]
+    stage = _stages(B)[1]
     inc = B.sheet("INCOME", "STATEMENT OF ANNUAL INCOME (Rs.)", 5)
     B.header(inc, 4, ["S.N.", "Particulars"] + stage, [6, 70, 18, 18, 18])
     tar = E["tariff_per_month"]
@@ -661,8 +714,12 @@ def economics(B, P, ac, omr, fj):
         inc.cell(11, 3 + j, f"=ROUND(({c}7*{c}9+{c}8*{c}10)*12,-3)").number_format = "#,##0"
         inc.cell(12, 3 + j, f"='RECURRING EXP'!{c}10").number_format = "#,##0"
         inc.cell(13, 3 + j, f"={c}11-{c}12").number_format = "#,##0"
+    return inc
 
-    # ECONOMICS (Rs lakh)
+
+def _eco_sheet(B, P, fj):
+    """Sheet ECONOMICS (Rs lakh)."""
+    yrs = _stages(B)[0]
     ec = B.sheet("ECONOMICS", "ECONOMICS", 5)
     B.header(ec, 4, ["S.No.", "Description"] + yrs, [6, 60, 16, 16, 16])
     lines = [("Project cost without centage (Rs. lakh)", [f"={fj['total']}-{fj['centage']}"] * 3, "#,##0.00"),
@@ -680,11 +737,7 @@ def economics(B, P, ac, omr, fj):
         ec.cell(x, 2, name)
         for j, v in enumerate(vals):
             ec.cell(x, 3 + j, v).number_format = fmt
-    for wsx in (bc, rw, sf, re_, inc, ec):
-        for row in wsx.iter_rows(min_row=4, max_row=wsx.max_row, max_col=wsx.max_column):
-            for cell in row:
-                cell.border = B.box
-    return ["ECONOMICS", "INCOME", "RECURRING EXP", "REPAIR WORKS", "A.R. EXP ON M. STAFF", "BREAKUP OF COST"]
+    return ec
 
 
 # -------------------------------------------------------------------------------------------------------- Form j compre

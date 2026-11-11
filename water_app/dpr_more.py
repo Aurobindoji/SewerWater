@@ -120,6 +120,17 @@ def signatures_em(B, ws, r):
 
 # ------------------------------------------------------------------------------------------------------------ abstracts
 def abstracts(B):
+    """The abstracts of cost and the Forms J: ABS Com, ABS Civil, Breakup, Form J Com., Form J Civil, Form J E&M."""
+    _abs_com(B)
+    _abs_civil(B)
+    _breakup(B)
+    _form_j_com(B)
+    _form_j_civil(B)
+    form_j_em(B)
+
+
+def _abs_com(B):
+    """Sheet ABS Com: the civil and the E&M works -> B.AC, its cells by what they hold."""
     S = B.S
     L = S["lump_sums"]
     ws = B.sheet("ABS Com", "COMBINED GENERAL ABSTRACT OF COST", 4)
@@ -196,7 +207,10 @@ def abstracts(B):
     B.AC = {"civil": f"'ABS Com'!$D${civ}", "em": f"'ABS Com'!$D${em}", "ab": f"'ABS Com'!$D${x + 1}",
             "power": f"'ABS Com'!$D${x + 2}", "rows": rows, "civ_rows": (civ0, civ - 1)}
 
-    # ABS Civil
+
+def _abs_civil(B):
+    """Sheet ABS Civil: the civil rows of ABS Com."""
+    civ0, civ = B.AC["civ_rows"][0], B.AC["civ_rows"][1] + 1
     wc = B.sheet("ABS Civil", "GENERAL ABSTRACT OF COST (CIVIL)", 4)
     B.header(wc, 5, ["Sl. No.", "Description of work", "Qty.", "Total (Rs. in lakh)"], [7, 70, 22, 18])
     y = 6
@@ -209,7 +223,10 @@ def abstracts(B):
     B.sign(wc, y + 3, 3)
     B.AC["civil_abs"] = f"'ABS Civil'!$D${y}"
 
-    # Breakup
+
+def _breakup(B):
+    """Sheet Breakup: every row of ABS Com under its head -> B.BR, the totals of the heads."""
+    rows = B.AC["rows"]
     wb_ = B.sheet("Breakup", "BREAKUP OF COST", 8)
     B.header(wb_, 5, ["Sl. No.", "Description of works", "Total (Rs. lakh)"] + [f"{h} (Rs. lakh)" for h in BREAK],
              [7, 60, 14, 14, 14, 14, 14, 14])
@@ -227,8 +244,10 @@ def abstracts(B):
     B.sign(wb_, y + 3, 6)
     B.BR = {h: f"Breakup!${B.col(4 + j)}${y}" for j, h in enumerate(BREAK)}
 
-    # Form J Com.
-    fj = S["form_j"]
+
+def _form_j_com(B):
+    """Sheet Form J Com. (comprehensive) -> B.FJ, its cells by what they hold."""
+    fj = B.S["form_j"]
     fo = B.sheet("Form J Com.", 'FORM - "J" (Comprehensive)', 5 + len(fj["shares"]))
     B.header(fo, 5, ["S. No.", "Description", "Amount (Rs. in lakh)", "Percentage %", "Total (Rs. in lakh)"] +
              [f"{s[0]} (Rs. lakh)" for s in fj["shares"]], [7, 50, 16, 12, 16, 15, 15, 15])
@@ -334,7 +353,10 @@ def abstracts(B):
             "sub3": f"'Form J Com.'!$E${rowno[3]}", "total": f"'Form J Com.'!$E${tot}",
             "grand": f"'Form J Com.'!$E${grand}", "om": f"'Form J Com.'!$E${omx}"}
 
-    # Form J Civil
+
+def _form_j_civil(B):
+    """Sheet Form J Civil."""
+    fj = B.S["form_j"]
     fc = B.sheet("Form J Civil", 'FORM - "J" (Civil works)', 5)
     B.header(fc, 5, ["Sl. No.", "Description", "Amount (Rs. in lakh)", "Percentage %", "Total (Rs. in lakh)"],
              [7, 56, 16, 12, 16])
@@ -379,7 +401,6 @@ def abstracts(B):
     B.cell(fc, x, 2, "Grand Total", bold=True)
     B.cell(fc, x, 5, f"=E{x - 2}+E{x - 1}", fmt="#,##0.00", bold=True)
     signatures(B, fc, x + 3)
-    form_j_em(B)
 
 
 def form_j_em(B):
@@ -429,12 +450,21 @@ def form_j_em(B):
 
 
 # ------------------------------------------------------------------------------------------------------------ O&M, economics
-def om_economics(B):
-    S, PR, T1 = B.S, B.PR, B.T1
-    O = S["om"]
-    tot = T1["total"]
+REP_MACH = 9                    # row of the machinery works in sheet Repair on Works
 
-    # Repair on Works (Elmwood): a share of each breakup head, by stage
+
+def om_economics(B):
+    """The annual O&M and the economics: Repair on Works, A.Ex. Staff, Chemical, Electicity, Income, Cess,
+    Ann. Expe, Economics, and the O&M of 5 years (civil; civil and E&M)."""
+    rep_tot = _repair_on_works(B)
+    staff = _staff_sheet(B)
+    _stage_sheets(B, rep_tot, staff)
+    _om_5_years(B, rep_tot, staff)
+
+
+def _repair_on_works(B):
+    """Sheet Repair on Works (Elmwood): a share of each breakup head, by stage -> its total row."""
+    O = B.S["om"]
     rw = B.sheet("Repair on Works", "ANNUAL REPAIR CHARGES", 9)
     B.header(rw, 5, ["S. No.", "Description", "Cost (in lakh)", "Initial %", "Amount", "Middle %", "Amount",
                      "Ultimate %", "Amount"], [7, 30, 14, 10, 12, 10, 12, 10, 12])
@@ -456,10 +486,13 @@ def om_economics(B):
     B.cell(rw, x, 2, "TOTAL (Rs. in lakh)", bold=True)
     for c in (3, 5, 7, 9):
         B.cell(rw, x, c, f"=SUM({B.col(c)}6:{B.col(c)}{x - 1})", fmt="#,##0.00", bold=True)
-    rep_tot, rep_mach = x, 9
     B.sign(rw, x + 3, 7)
+    return x
 
-    # A.Ex. Staff
+
+def _staff_sheet(B):
+    """Sheet A.Ex. Staff: the maintenance staff of the civil works, by stage -> its row of the totals in lakh."""
+    O = B.S["om"]
     sf = B.sheet("A.Ex. Staff", "ANNUAL EXPENDITURE ON MAINTENANCE STAFF FOR CIVIL WORKS", 11)
     B.header(sf, 5, ["Sl. No", "Particulars", "Initial: No.", "Pay & allowance (Rs/month)", "Amount (Rs)",
                      "Middle: No.", "Pay & allowance", "Amount (Rs)", "Ultimate: No.", "Pay & allowance",
@@ -492,30 +525,40 @@ def om_economics(B):
             "Check: Part B 1.2 p4 - in pumping schemes 20 % to 40 % of the annual O&M cost goes to the staff, "
             "30 % to 50 % to power.")):
         sf.cell(x + 3 + k, 2, t).font = B.italic
+    return staff
 
-    def stage_sheet(name, heading, rows, note=None):
-        ws = B.sheet(name, heading, 5)
-        B.header(ws, 5, ["S. No.", "Description", "", "", ""], [7, 56, 18, 18, 18])
-        _stage_heads(B, ws, 5)
-        x_ = 6
-        out = {}
-        for i, (key, lab, vals, fmt, inp) in enumerate(rows, 1):
-            B.cell(ws, x_, 1, i)
-            B.cell(ws, x_, 2, lab, bold=key in ("total", "say"))
-            for j, v in enumerate(vals):
-                if callable(v):
-                    v = v(x_, B.col(3 + j))
-                B.cell(ws, x_, 3 + j, v, fmt=fmt, inp=inp, bold=key in ("total", "say"))
-            out[key] = x_
-            x_ += 1
-        if note:
-            ws.cell(x_ + 1, 2, note).font = B.italic
-        B.sign(ws, x_ + 3, 4)
-        return out
 
+def _stage_sheet(B, name, heading, rows, note=None):
+    """A sheet of rows by stage (initial / middle / ultimate): rows = [(key, label, the three values or makers of
+    them, number format, an input?)] -> {key: its row}."""
+    ws = B.sheet(name, heading, 5)
+    B.header(ws, 5, ["S. No.", "Description", "", "", ""], [7, 56, 18, 18, 18])
+    _stage_heads(B, ws, 5)
+    x_ = 6
+    out = {}
+    for i, (key, lab, vals, fmt, inp) in enumerate(rows, 1):
+        B.cell(ws, x_, 1, i)
+        B.cell(ws, x_, 2, lab, bold=key in ("total", "say"))
+        for j, v in enumerate(vals):
+            if callable(v):
+                v = v(x_, B.col(3 + j))
+            B.cell(ws, x_, 3 + j, v, fmt=fmt, inp=inp, bold=key in ("total", "say"))
+        out[key] = x_
+        x_ += 1
+    if note:
+        ws.cell(x_ + 1, 2, note).font = B.italic
+    B.sign(ws, x_ + 3, 4)
+    return out
+
+
+def _stage_sheets(B, rep_tot, staff):
+    """Sheets Chemical, Electicity, Income, Cess, Ann. Expe and Economics."""
+    PR, T1 = B.PR, B.T1
+    O = B.S["om"]
+    tot = T1["total"]
     st3 = lambda f: [f.replace("#", c) for c in "CDE"]
     pm = T1["pm"]
-    ch = stage_sheet("Chemical", "ANNUAL EXPENDITURE ON LIQUID CHLORINE (SODIUM HYPOCHLORITE)", [
+    ch = _stage_sheet(B, "Chemical", "ANNUAL EXPENDITURE ON LIQUID CHLORINE (SODIUM HYPOCHLORITE)", [
         ("q", "Total discharge (KL/day) - pumping main demand (T10)", [f"=T1!{c}{tot}" for c in pm], "#,##0", False),
         ("ann", "Total annual production of water (KL)", st3("=#6*365.25"), "#,##0", False),
         ("dose", "Dosing rate of chlorine (ppm)", [0.5, 0.5, 0.5], "0.00", True),
@@ -527,12 +570,12 @@ def om_economics(B):
         ("test", "Cost of testing water samples for quality control (Rs)", O["testing"], "#,##0", True),
         ("total", "TOTAL (Rs)", st3("=#13+#14"), "#,##0", False),
         ("say", "SAY (in lakh)", st3("=#15/100000"), "#,##0.00", False)])
-    el = stage_sheet("Electicity", "ANNUAL EXPENDITURE ON ELECTRICITY FOR PUMPING PLANTS & MCS", [
+    el = _stage_sheet(B, "Electicity", "ANNUAL EXPENDITURE ON ELECTRICITY FOR PUMPING PLANTS & MCS", [
         ("pw", "Power consumption on tube wells, CWR, booster pumps & LCS (Rs)", [f"={B.EM['elec_year']}", "=C6", "=D6"],
          "#,##0", False),
         ("say", "SAY (in lakh)", st3("=#6/100000"), "#,##0.00", False)],
         note="Sheet EM O&M (the pumps of the design, U.P. Jal Nigam E&M estimate Riverside R3) - the same in every stage.")
-    inc = stage_sheet("Income", "STATEMENT OF ANNUAL INCOME", [
+    inc = _stage_sheet(B, "Income", "STATEMENT OF ANNUAL INCOME", [
         ("pop", "Design population (residential)", [f"=T1!{c}{tot}" for c in "DEF"], "#,##0", False),
         ("lpcd", "Rate of water supply (lpcd) incl. losses", [f"={PR['lpcd']}*(1+{PR['losses']})"] * 3, "0.0", False),
         ("kl", "Average daily water requirement (KL) - distribution network (T10)", [f"=T1!{c}{tot}" for c in "MNO"],
@@ -545,12 +588,12 @@ def om_economics(B):
         ("exp", "Annual maintenance expenditure (Rs)", st3("='Ann. Expe'!#11*100000"), "#,##0", False),
         ("net", "Net profit (+) / loss (-) (Rs)", st3("=#13-#14"), "#,##0", False),
         ("say", "Net profit (+) / loss (-) (Rs. lakh)", st3("=#15/100000"), "#,##0.00", False)])
-    cs = stage_sheet("Cess", "ANNUAL EXPENDITURE ON WATER CESS", [
+    cs = _stage_sheet(B, "Cess", "ANNUAL EXPENDITURE ON WATER CESS", [
         ("d", "Daily water drawn (KL)", st3(f"=Income!#{inc['kl']}"), "#,##0", False),
         ("a", "Annual water drawn (KL)", st3(f"=Income!#{inc['ann']}"), "#,##0", False),
         ("c", f"Cess @ Rs {O['cess_per_kl']:g} per KL (Rs)", st3(f"=#7*{O['cess_per_kl']}"), "#,##0", False),
         ("say", "Say (lakh)", st3("=#8/100000"), "#,##0.00", False)])
-    ae = stage_sheet("Ann. Expe", "ANNUAL EXPENDITURE ON OPERATION & MAINTENANCE OF THE PROJECT", [
+    ae = _stage_sheet(B, "Ann. Expe", "ANNUAL EXPENDITURE ON OPERATION & MAINTENANCE OF THE PROJECT", [
         ("el", "Electricity charges", st3(f"=Electicity!#{el['say']}"), "#,##0.00", False),
         ("ch", "Liquid chlorine", st3(f"=Chemical!#{ch['say']}"), "#,##0.00", False),
         ("rep", "Repair of works", [f"='Repair on Works'!{c}{rep_tot}" for c in "EGI"], "#,##0.00", False),
@@ -558,7 +601,7 @@ def om_economics(B):
         ("cess", f"Cess charges @ Rs {O['cess_per_kl']:g}/K.L.", st3(f"=Cess!#{cs['say']}"), "#,##0.00", False),
         ("total", "TOTAL (Rs. in lakh)", st3("=SUM(#6:#10)"), "#,##0.00", False)])
     assert ae["total"] == 11 and inc["kl"] == 8 and inc["inc"] == 13 and inc["hh"] == HH_ROW
-    stage_sheet("Economics", "ABSTRACT OF ECONOMICS", [
+    _stage_sheet(B, "Economics", "ABSTRACT OF ECONOMICS", [
         ("pop", "Design population", st3(f"=Income!#{inc['pop']}"), "#,##0", False),
         ("cost", "Cost of scheme (Rs. in lakh) without centage", [f"={B.FJ['total']}-{B.FJ['centage']}"] * 3,
          "#,##0.00", False),
@@ -572,7 +615,11 @@ def om_economics(B):
         ("net", "Net profit (+) / loss (-) (Rs. in lakh)", st3("=#11-#9"), "#,##0.00", False),
         ("pci", "Per capita income (Rs)", st3("=#11/#6*100000"), "#,##0.00", False)])
 
-    # 5 Yr O&M Civil, 5Yr O&M Com
+
+def _om_5_years(B, rep_tot, staff):
+    """Sheets 5 Yr O&M Civil and 5Yr O&M Com."""
+    O = B.S["om"]
+    rep_mach = REP_MACH
     oc = B.sheet("5 Yr O&M Civil", "OPERATION & MAINTENANCE COST FOR 5 YEARS FOR CIVIL WORKS", 5)
     for c, w in zip("ABCDE", (8, 50, 4, 16, 16)):
         oc.column_dimensions[c].width = w

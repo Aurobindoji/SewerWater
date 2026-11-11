@@ -179,10 +179,11 @@ def index_entries(names):
     return out
 
 
-def write_dpr(out, path, title="", inp=None, stations=None, previous=None):
-    """The DPR workbook of a pipeline.run result at path. stations = the pumping stations of the zoning option
-    [{"outfall", "dist" (straight distance to the STP, m, or None)}]; previous = an earlier DPR of the project, whose
-    Project sheet texts are kept. Returns path."""
+def _book(out, title, inp):
+    """The empty workbook of a pipeline.run result and what every sheet of it is made with: the settings and rates
+    read, the design rows, the styles, sheet() and header()."""
+    from types import SimpleNamespace
+
     from openpyxl import Workbook
     from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
     from openpyxl.utils import get_column_letter as col
@@ -229,10 +230,20 @@ def write_dpr(out, path, title="", inp=None, stations=None, previous=None):
             if w:
                 ws.column_dimensions[col(c)].width = w
 
-    # ------------------------------------------------------------------ HY DESIGN STATEMENT and Qty, one pair per zone
-    tr, tb, bd = S["trench"], S["timbering"], S["bedding"]
-    dias = sorted({nominal_mm(rw["d"]) for rw in rows})
-    zone_sheets = []        # (zone, HY sheet, Qty sheet, last data row, total row, {dia: laying row}, bedding row)
+    return SimpleNamespace(out=out, wb=wb, S=S, sor=sor, rates=rates, inp=inp, title=title, title_text=title_text,
+                           f_pop=f_pop, y0=y0, R=R, rows=rows, mhs=mhs, zone_names=zone_names, sor_codes=sor_codes,
+                           sor_desc=sor_desc, bold=bold, head=head, yellow=yellow, box=box, wrap=wrap, center=center,
+                           sheet=sheet, header=header, col=col, tr=S["trench"], tb=S["timbering"], bd=S["bedding"],
+                           dias=sorted({nominal_mm(rw["d"]) for rw in rows}), classes=S["manholes"])
+
+
+def _zone_sheets(X):
+    """HY DESIGN STATEMENT and Qty, one pair per zone -> X.zone_sheets = [(zone, HY sheet, Qty sheet, last data row,
+    total row, {dia: laying row}, bedding row)]."""
+    S, R, inp, rows, zone_names, dias = X.S, X.R, X.inp, X.rows, X.zone_names, X.dias
+    sheet, header, col, bold, yellow, box, wrap = X.sheet, X.header, X.col, X.bold, X.yellow, X.box, X.wrap
+    tr, tb, bd = X.tr, X.tb, X.bd
+    zone_sheets = X.zone_sheets = []
     for k, z in enumerate(zone_names, 1):
         zr = [r for r in rows if r["zone"] == z]
         hy_name, q_name = f"HY DESIGN STATEMENT_{k}", f"Qty {k}"
@@ -338,9 +349,14 @@ def write_dpr(out, path, title="", inp=None, stations=None, previous=None):
             qs.cell(x, 9 + b, f"=SUMIFS({rng('Z')},{rng('AA')},{b + 1})").number_format = "0.00"
         zone_sheets.append((z, hy_name, q_name, last, tot, lay_rows, x))
 
-    # ------------------------------------------------------------------ Manholes
+
+def _manholes(X):
+    """Sheet Manholes: every manhole once, its class by depth -> X.mh_last (its last data row)."""
+    from openpyxl.styles import Font
+
+    mhs, zone_names, classes = X.mhs, X.zone_names, X.classes
+    sheet, header, box = X.sheet, X.header, X.box
     mh = sheet("Manholes", "DETAIL OF MANHOLES (circular brick masonry, by depth - unit estimates)", 10)
-    classes = S["manholes"]
     header(mh, 4, ["S.N.", "Manhole", "Zone (outfall)", "Ground level (m)", "Invert (m)", "Depth (m)",
                    "Class (1-%d)" % len(classes), "Extra depth over unit (m)", "Volume (cum)", "Type"],
            [6, 12, 14, 10, 10, 9, 8, 10, 10, 34])
@@ -365,15 +381,20 @@ def write_dpr(out, path, title="", inp=None, stations=None, previous=None):
     mh_last = 4 + max(1, len(mh_rows))
     mh.cell(mh_last + 2, 1, f"Class limits (depth up to, m): {lim} - data/dpr_sewer.json 'manholes' (Riverside DPR unit "
                             f"estimates). Depth = ground level - invert.").font = Font(italic=True)
+    X.mh_last = mh_last
 
-    # ------------------------------------------------------------------ Abstract (the sample's 'Sheet1')
+
+def _abstract(X):
+    """Sheet Abstract (the sample's 'Sheet1'): the quantities of all zones -> X.ref, its cells by what they hold."""
+    S, tb, dias, classes, zone_sheets, mh_last = X.S, X.tb, X.dias, X.classes, X.zone_sheets, X.mh_last
+    sheet, col, bold, head, center = X.sheet, X.col, X.bold, X.head, X.center
     ab = sheet("Abstract", "ABSTRACT OF QUANTITIES", 14)
     ab.column_dimensions["A"].width = 6
     ab.column_dimensions["B"].width = 36
     ab.column_dimensions["C"].width = 16
     for c in range(4, 15):
         ab.column_dimensions[col(c)].width = 12
-    ref = {}
+    ref = X.ref = {}
     r = 4
 
     def block(name, cols, cell_of, key):
@@ -451,7 +472,15 @@ def write_dpr(out, path, title="", inp=None, stations=None, previous=None):
         cell.font, cell.number_format = bold, "0.00"
     ref["mh_vol"] = f"Abstract!F{r}"
 
-    # ------------------------------------------------------------------ BOQ
+
+def _boq(X):
+    """Sheet BOQ, the estimate of the sewer network -> X.boq_total (its total's cell) and X.boq (its rates' cells
+    the other sheets use)."""
+    from openpyxl.styles import Font
+
+    out, S, sor, rates, rows, dias, classes, ref = X.out, X.S, X.sor, X.rates, X.rows, X.dias, X.classes, X.ref
+    sor_codes, sor_desc, tb, bd = X.sor_codes, X.sor_desc, X.tb, X.bd
+    sheet, header, bold, yellow, box, wrap, center = X.sheet, X.header, X.bold, X.yellow, X.box, X.wrap, X.center
     # rates: the finalised ones of sewer_sor_rates.json and the pipe catalog; an SOR item not there from sheet 'sor';
     # the rest (Riverside DPR unit estimates / rate analyses) in yellow, named in column H - to be confirmed
     JSON, SORX = "sewer_sor_rates.json", "SOR 2025-26 (sheet sor) - not in sewer_sor_rates.json"
@@ -594,8 +623,17 @@ def write_dpr(out, path, title="", inp=None, stations=None, previous=None):
     for row in bq.iter_rows(min_row=5, max_row=r, max_col=8):
         for cell in row:
             cell.border = box
+    X.boq_total = boq_total
+    X.boq = {"bt_cut": f"BOQ!F{cut_rows[0]}", "cc_cut": f"BOQ!F{cut_rows[1]}", "il_cut": f"BOQ!F{cut_rows[2]}",
+             "bt_re": f"BOQ!F{re_rows[0]}", "cc_re": f"BOQ!F{re_rows[1]}", "il_re": f"BOQ!F{re_rows[2]}",
+             "disposal": f"BOQ!F{disp_row}"}
 
-    # ------------------------------------------------------------------ sor
+
+def _sor_sheet(X):
+    """Sheet sor: the schedule of rates, for the look-ups of the BOQ and for reference."""
+    from openpyxl.styles import Alignment, Font
+
+    wb, sor, header = X.wb, X.sor, X.header
     so = wb.create_sheet("sor")
     so.cell(1, 1, sor.get("title") or "SCHEDULE OF RATES").font = Font(bold=True, size=12)
     header(so, 3, ["Item No.", "Description of item", "Unit", "Rate"], [12, 100, 8, 12])
@@ -607,27 +645,10 @@ def write_dpr(out, path, title="", inp=None, stations=None, previous=None):
         so.cell(x, 4, rate).number_format = "0.00"
     so.freeze_panes = "A4"
 
-    # ------------------------------------------------------------------ the sheets of dpr_more (Riverside estimate)
-    from types import SimpleNamespace
-    B = SimpleNamespace(wb=wb, copied=set(), title=title, years=[y0, y0 + 15, y0 + 30], S=S, inp=inp, out=out, sheet=sheet,
-                        header=header, col=col, bold=bold,
-                        head=head, yellow=yellow, box=box, wrap=wrap, center=center, big=Font(bold=True, size=12),
-                        italic=Font(italic=True), red=Font(italic=True, color="C00000"),
-                        hcenter=Alignment(horizontal="center"), sor_rng=f"sor!$A$4:$D${3 + len(sor['items'])}",
-                        boq={"bt_cut": f"BOQ!F{cut_rows[0]}", "cc_cut": f"BOQ!F{cut_rows[1]}",
-                             "il_cut": f"BOQ!F{cut_rows[2]}", "bt_re": f"BOQ!F{re_rows[0]}", "cc_re": f"BOQ!F{re_rows[1]}",
-                             "il_re": f"BOQ!F{re_rows[2]}", "disposal": f"BOQ!F{disp_row}"})
-    PR = front.project(B, f_pop, inp, title_text, previous)
-    B.PR = PR
-    ps = more.pumping_stations(B, more.station_data(out, stations or []))
-    T = front.tech(B, PR, f_pop, inp, out, ps, ref, dias)
-    P = more.population(B, T, PR)
-    hc = more.house_connections(B, P)
-    front.coverage(B, PR, hc["count"])
-    front.certificate(B, PR)
-    front.bar_chart(B)
 
-    # ------------------------------------------------------------------ Abstract comprehensive (the sample's rows)
+def _abstract_cost(X, ps, hc):
+    """Sheets Abstract comprehensive and ABS civil (the sample's rows) -> the cells of the first by what they hold."""
+    sheet, header, bold, box, ref, boq_total = X.sheet, X.header, X.bold, X.box, X.ref, X.boq_total
     ac = sheet("Abstract comprehensive", "Abstract Cost - Comprehensive", 4)
     header(ac, 3, ["Sl. No.", "Items", "Qty", "Amount (Rs. Lac)"], [7, 56, 18, 18])
     ac.cell(4, 1, "A").font = bold
@@ -690,11 +711,15 @@ def write_dpr(out, path, title="", inp=None, stations=None, previous=None):
         ab_c.cell(x, 4, f"='Abstract comprehensive'!D{x}").number_format = "#,##0.00"
     ab_c.cell(9, 2, "Total (A)").font = bold
     ab_c.cell(9, 4, "=SUM(D5:D8)").number_format = "#,##0.00"
+    return acr
 
-    omr = more.om(B, ps, acr)
-    fjc = more.form_j_compre(B, acr, omr)
-    eco = more.economics(B, P, acr, omr, fjc)
 
+def _form_j_civil(X, PR, omr):
+    """Sheet Form j civil: the cost of the civil works with contingency, cess, GST, centage and the O&M."""
+    from openpyxl.styles import Alignment, Font
+
+    S, wb, title = X.S, X.wb, X.title
+    header, col, bold, yellow, box = X.header, X.col, X.bold, X.yellow, X.box
     fj = S["form_j"]
     fo = wb.create_sheet("Form j civil")
     fo.cell(1, 1, f'=""&{PR["office"]}').font = bold
@@ -794,11 +819,50 @@ def write_dpr(out, path, title="", inp=None, stations=None, previous=None):
             cell.border = box
     front.signatures(fo, x + 2, PR)
 
+
+def write_dpr(out, path, title="", inp=None, stations=None, previous=None):
+    """The DPR workbook of a pipeline.run result at path. stations = the pumping stations of the zoning option
+    [{"outfall", "dist" (straight distance to the STP, m, or None)}]; previous = an earlier DPR of the project, whose
+    Project sheet texts are kept. Returns path."""
+    from types import SimpleNamespace
+
+    from openpyxl.styles import Alignment, Font
+
+    X = _book(out, title, inp)
+    wb, inp, f_pop = X.wb, X.inp, X.f_pop
+    _zone_sheets(X)
+    _manholes(X)
+    _abstract(X)
+    _boq(X)
+    _sor_sheet(X)
+
+    # ------------------------------------------------------------------ the sheets of dpr_more (Riverside estimate)
+    B = SimpleNamespace(wb=wb, copied=set(), title=X.title, years=[X.y0, X.y0 + 15, X.y0 + 30], S=X.S, inp=inp, out=out,
+                        sheet=X.sheet, header=X.header, col=X.col, bold=X.bold, head=X.head, yellow=X.yellow, box=X.box,
+                        wrap=X.wrap, center=X.center, big=Font(bold=True, size=12),
+                        italic=Font(italic=True), red=Font(italic=True, color="C00000"),
+                        hcenter=Alignment(horizontal="center"), sor_rng=f"sor!$A$4:$D${3 + len(X.sor['items'])}",
+                        boq=X.boq)
+    PR = front.project(B, f_pop, inp, X.title_text, previous)
+    B.PR = PR
+    ps = more.pumping_stations(B, more.station_data(out, stations or []))
+    T = front.tech(B, PR, f_pop, inp, out, ps, X.ref, X.dias)
+    P = more.population(B, T, PR)
+    hc = more.house_connections(B, P)
+    front.coverage(B, PR, hc["count"])
+    front.certificate(B, PR)
+    front.bar_chart(B)
+    acr = _abstract_cost(X, ps, hc)
+    omr = more.om(B, ps, acr)
+    fjc = more.form_j_compre(B, acr, omr)
+    eco = more.economics(B, P, acr, omr, fjc)
+    _form_j_civil(X, PR, omr)
+
     # sheet order as in the sample: Form J, abstracts, O&M, economics, BOQ, quantities, design statements, SOR
     order = ["Project", "Coverage", "Certificate", "Index", "Form j compre", "Form j civil", "Abstract comprehensive",
              "ABS civil", "ABS (O&M)", "Sewer Lines and RM", "5 yr O&M", "SPS O&M"] + eco + \
         ["Bar Chart", "Tech", "Population", "BOQ", "Abstract", "Manholes"] + \
-        [z[2] for z in zone_sheets] + [z[1] for z in zone_sheets] + \
+        [z[2] for z in X.zone_sheets] + [z[1] for z in X.zone_sheets] + \
         ["hcc2", "hcc3", "house connection", "Table 160", "E&M SPS"] + ((ps or {}).get("sheets") or []) + ["sor"]
     front.index(B, index_entries([n for n in order if n in wb.sheetnames or n == "Index"]))
     order = [n for n in order if n in wb.sheetnames]

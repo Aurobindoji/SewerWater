@@ -10,6 +10,8 @@
 - Inside: each server's calls are now a table of small functions (one per call) in place of one long chain;
   variables and imports nothing used are gone; `ruff check` (settings in pyproject.toml) guards against new ones.
   No design result changes.
+- Inside: the long writers of the DPR workbooks are now one function per sheet group (sewer `write_dpr`; water
+  `abstracts`, `om_economics`, `salient`). Every cell of the DPRs was compared before and after: the same.
 
 ## 0.9.3 (beta) - 2026-11-10
 

@@ -17,6 +17,8 @@ sheet with the part's name in a framed page (divider). The texts come from sheet
 
     write(B)    after the abstracts, O&M and economics (B.FJ, Economics) and the technical sheets
 """
+from types import SimpleNamespace
+
 from openpyxl.styles import Alignment, Border, Font, Side
 from openpyxl.worksheet.pagebreak import Break
 
@@ -275,7 +277,34 @@ def salient(B):
         m(r, 1, 1, f"{no}-", True, box=False)
         m(r, 2, N, lab, True, "left", box=False)
 
-    # ---------------------------------------------------------------- 1-5: project, population, rate of supply
+    def years(r, c0):
+        for j in range(3):
+            m(r, c0 + j, c0 + j, f'=""&{yrs[j]}', True)
+
+    K = SimpleNamespace(B=B, sf=sf, m=m, item=item, heading=heading, years=years, N=N, PR=PR, T1=T1, info=info, S=S,
+                        zs=zs, tot=tot, yrs=yrs)
+    x = _salient_1_5(K)
+    sf.row_breaks.append(Break(id=x))                    # as the example: the demand on a page of its own
+    x = _salient_6_8(K, x + 1)
+    x = _salient_9_10(K, x)
+    last = _salient_11_12(K, x)
+    # the page as the example: A4 portrait, its margins, centred, fitted to the width
+    ps = sf.page_setup
+    ps.paperSize, ps.orientation = sf.PAPERSIZE_A4, "portrait"
+    ps.fitToWidth, ps.fitToHeight = 1, 0
+    ps.blackAndWhite = True                              # the yellow inputs on the screen only
+    sf.sheet_properties.pageSetUpPr.fitToPage = True
+    sf.print_options.horizontalCentered = True
+    mg = sf.page_margins
+    mg.left, mg.right, mg.top, mg.bottom = 0.433, 0.236, 0.394, 0.354
+    sf.print_area = f"A1:M{last}"
+    B.own_page.add("Salient feature")
+
+
+def _salient_1_5(K):
+    """1-5: project, population, rate of supply -> the row after them."""
+    B, sf, m, item, heading, years, N = K.B, K.sf, K.m, K.item, K.heading, K.years, K.N
+    PR, T1, zs, tot, yrs = K.PR, K.T1, K.zs, K.tot, K.yrs
     x = head(B, sf, N, "SALIENT FEATURES")
     item(x, 1, "Name of Project", f'=UPPER(""&{PR["title"]})')
     sf.row_dimensions[x].height = 51.6
@@ -310,10 +339,6 @@ def salient(B):
     x = stage_table(x, f'="Total Population of "&IF(""&{PR["ulb"]}="","the City",{PR["ulb"]})&" :-"', city, True)
     x = stage_table(x, "Total Population of the Project Area :-",
                     lambda i: (f"=T1!{'DEF'[i]}{tot}", f"=T1!{'GHI'[i]}{tot}"))
-
-    def years(r, c0):
-        for j in range(3):
-            m(r, c0 + j, c0 + j, f'=""&{yrs[j]}', True)
     m(x, 1, 1, "S. No.", True, r1=x + 1)
     m(x, 2, 3, "Zone No.", True, r1=x + 1)
     m(x, 4, 6, "Population", True)
@@ -346,9 +371,13 @@ def salient(B):
         m(r, 5, 5, ":", True, box=False)
         m(r, 6, N, v, h="left", box=False)
     x += 3
-    sf.row_breaks.append(Break(id=x))                    # as the example: the demand on a page of its own
-    # ---------------------------------------------------------------- 6-8: demand, source, rising main
-    x += 1
+    return x
+
+
+def _salient_6_8(K, x):
+    """6-8: demand, source, rising main, from row x -> the row after them."""
+    B, sf, m, heading, N, PR, T1, info, S, zs = K.B, K.sf, K.m, K.heading, K.N, K.PR, K.T1, K.info, K.S, K.zs
+    years = K.years
     heading(x, 6, "Clear Water Demand:")
     x += 2
     m(x, 1, 1, "S. No.", True, r1=x + 1)
@@ -427,7 +456,12 @@ def salient(B):
         m(x, 2, N, "No new rising main is proposed in this DPR.", h="left", box=False)
         x += 1
     x += 2
-    # ---------------------------------------------------------------- 9-10: storage, network, connections
+    return x
+
+
+def _salient_9_10(K, x):
+    """9-10: storage, network, connections, from row x -> the row after them."""
+    B, sf, m, heading, N, PR, T1, info, zs, tot = K.B, K.sf, K.m, K.heading, K.N, K.PR, K.T1, K.info, K.zs, K.tot
     heading(x, 9, "Storage")
     m(x + 1, 2, N, f'="As per the design criteria for water supply schemes under "&{PR["under"]}&" programme, the storage '
                    f'capacity OHT has been calculated and proposed in this DPR."', h="justify", box=False)
@@ -501,7 +535,12 @@ def salient(B):
     m(x + 1, 2, N, "Proposed: the connections of the DPR (sheet Project) shared by the base-year population of the "
                    "zones (sheet T1); existing (yellow): fill in.", h="left", box=False, size=10)
     x += 3
-    # ---------------------------------------------------------------- 11-12: agency, economics
+    return x
+
+
+def _salient_11_12(K, x):
+    """11-12: agency, economics, from row x -> the last row of the page."""
+    m, heading, N, yrs = K.m, K.heading, K.N, K.yrs
     m(x, 1, 1, "11-", True, box=False)
     m(x, 2, N, " Implementing Agency       -          U.P. Jal Nigam (Urban)", True, "left", box=False)
     heading(x + 1, 12, "Economics of the Scheme:")
@@ -526,18 +565,7 @@ def salient(B):
             m(x, c0, c0 + 1, f"=Economics!{c}{er}", i == 3, fmt=fmt)
         x += 1
     m(x + 2, 11, 13, "Assistant Engineer", True, box=False)
-    last = x + 2
-    # the page as the example: A4 portrait, its margins, centred, fitted to the width
-    ps = sf.page_setup
-    ps.paperSize, ps.orientation = sf.PAPERSIZE_A4, "portrait"
-    ps.fitToWidth, ps.fitToHeight = 1, 0
-    ps.blackAndWhite = True                              # the yellow inputs on the screen only
-    sf.sheet_properties.pageSetUpPr.fitToPage = True
-    sf.print_options.horizontalCentered = True
-    mg = sf.page_margins
-    mg.left, mg.right, mg.top, mg.bottom = 0.433, 0.236, 0.394, 0.354
-    sf.print_area = f"A1:M{last}"
-    B.own_page.add("Salient feature")
+    return x + 2
 
 
 def write(B):

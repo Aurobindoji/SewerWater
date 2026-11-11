@@ -227,7 +227,7 @@ def test_zoning_export(server, tmp_path):
     # every larger piece of a zone / sub-zone has its name inside
     for mz in o["mains"]:
         assert len(mz["ring_labels"]) == len(mz["rings"]) and mz["ring_labels"][0]
-    tree = ET.parse(r["files"]["kml"])                                           # well-formed KML
+    ET.parse(r["files"]["kml"])                                                  # well-formed KML
     rows = list(openpyxl.load_workbook(r["files"]["xlsx"], read_only=True)["Zones"].iter_rows(values_only=True))
     assert {f"Zone {i}" for i in num.values()} <= {row[0] for row in rows[1:]}
     assert set(sub.values()) <= {row[1] for row in rows[1:]}

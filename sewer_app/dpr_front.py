@@ -182,7 +182,6 @@ def tech(B, PR, f, inp, out, ps, ref, dias):
     r += max(n, 1)
     bot = r - 1
     ws.cell(r, 2, "Average").font = B.bold
-    X = f"D{r}"
     if n >= 2:
         ws.cell(r, 4, f"=AVERAGE(D{top + 1}:D{bot})").number_format = "#,##0.00"
         ws.cell(r, 5, f"=IFERROR(AVERAGE(E{top + 2}:E{bot}),0)" if n >= 3 else 0).number_format = "#,##0.00"

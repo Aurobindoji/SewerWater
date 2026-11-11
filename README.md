@@ -111,6 +111,8 @@ python -m venv .venv
 - `sewer_ui.bat` runs the same app in the browser instead.
 - `build_setup.bat` builds the setup. It needs PyInstaller and Inno Setup 6.
 - `.venv\Scripts\python -m pytest` runs the tests.
+- `.venv\Scripts
+- `.venv\Scripts\ruff check` looks for mistakes such as unused or undefined names.
 
 ## Standards used
 

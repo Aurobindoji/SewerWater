@@ -1,8 +1,6 @@
 """Prefixes of the junction / pipe names chosen on the page (user request 30-Oct-2026: N-, J-, M-, MH-, P-, CO- ...),
 for a layout and for a DXF import; the defaults as before (water J- / P-, sewer MH- / CO-)."""
 import json
-import os
-import urllib.request
 
 from test_water_ui import SAMPLE, call, server  # noqa: F401  (the fixture)
 from test_dxf_extract import make_dxf

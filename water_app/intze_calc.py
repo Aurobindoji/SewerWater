@@ -66,7 +66,7 @@ class R:
 
 def report(res):
     """The lines of the report."""
-    g, th, M, opt, lev, x = res["geo"], res["geo"]["th"], res["members"], res["opt"], res["levels"], res["x"]
+    g, th, M, opt, _lev, x = res["geo"], res["geo"]["th"], res["members"], res["opt"], res["levels"], res["x"]
     mat, f, C = x["mat"], x["f"], x["C"]
     fck, fckf, fy, sst = mat.fck, mat.fck_f, mat.fy, mat.sst_w
     D, D0, R_, r0, H = g["D"], g["D0"], g["R"], g["r0"], g["H"]

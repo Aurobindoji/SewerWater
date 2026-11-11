@@ -122,19 +122,18 @@ def net_state(stem):
 
 def net_import(req):
     from . import netedit
-    path = str(req.get("path") or "").strip().strip('"')
-    if not os.path.isfile(path):
-        return {"ok": False, "log": f"file नहीं मिली: {path}"}
+    path, missing = dxf_path(req)
+    if missing:
+        return missing
     stem = safe_name(req.get("name") or os.path.splitext(os.path.basename(path))[0])
     pipes = [x for x in req.get("pipe_layers") or [] if x]
     if not pipes:
         return {"ok": False, "log": "कम से कम एक pipe layer चुनें"}
     lines = []
     try:
-        epsg = req.get("epsg")
         zm = req.get("z_mode") if req.get("z_mode") in ("auto", "first", "off") else "auto"   # Z of the line ends
         st = netedit.import_dxf(out_root(), stem, path, pipes, req.get("mh_layers") or [], req.get("level_layers") or [],
-                                int(epsg) if epsg not in (None, "", "local") else None, log=lines.append, z_mode=zm,
+                                epsg_of(req), log=lines.append, z_mode=zm,
                                 il_layers=[x for x in req.get("il_layers") or [] if x],
                                 node_prefix=name_prefix(req.get("node_prefix"), "MH-"),
                                 pipe_prefix=name_prefix(req.get("pipe_prefix"), "CO-"))
@@ -208,7 +207,7 @@ def run_layout(name, kml, gl_mode="spots", flat_gl=None, snap=1.0, spacing=30.0,
                pipe_prefix=None):
     """Save the KML, run 'layout' on it (roads, boundary, wards and spot levels all from that one file) and return
     {ok, log, files, manholes, conduits, marks} with the network in lon / lat for the map."""
-    from . import geo, network
+    from . import geo
     from .__main__ import cmd_layout
     stem = safe_name(name)
     path = save_project(stem, kml)
@@ -324,7 +323,7 @@ def converters_for(stem):
 def export_zoning(name, req):
     """DXF + KML + Excel of one option of the project's last zoning, as the map shows it (zone_export)."""
     import time
-    from . import network, zone_export
+    from . import zone_export
     stem = safe_name(name)
     folder, f_mh, f_co, _ = _paths(stem)
     f = os.path.join(folder, f"{stem}_zoning_ui.json")
@@ -693,7 +692,7 @@ def _zoning(stem, inp, stp, max_zones, log, mode="auto", max_depth=None, bend_dr
     GIVEN), the sewer may get deeper than the project limit. bend_drop, mh_spacing, bend_angle: see criteria_for. edits: the pipe /
     manhole tables' changes (edits.py) - on the returned network (net['_fixed_inv'] = the given inverts)."""
     from . import edits as ed
-    from . import network, zoning
+    from . import zoning
     _, f_mh, f_co, _ = _paths(stem)
     bend_drop = bend_drop_on(bend_drop)
     edits = ed.clean(edits)
@@ -1181,6 +1180,57 @@ def _sewer_checks(d, R, s_min, cov):
     return out
 
 
+# ---------------------------------------------------------------------------------------- the page's calls (HTTP)
+LOCAL_HOSTS = ("127.0.0.1", "localhost")
+PAGES = {"/sewer": ("map.html", "text/html; charset=utf-8"), "/i18n.js": ("i18n.js", "text/javascript; charset=utf-8")}
+# a DXF network's zoning tools (27-Oct-2026), each a list kept as projects\<name>.<kind>.json:
+# GET /api/<kind>?name=... reads it, POST /api/<kind>_save writes it
+LISTS = ("barriers", "loops", "crossings")
+
+
+def _problem(e, plain=()):
+    """An exception as the page's answer; the kinds in `plain` are messages for the user, shown as they are."""
+    return {"ok": False, "log": str(e) if isinstance(e, plain) else f"{type(e).__name__}: {e}"}
+
+
+def _answer(fn, *args, plain=()):
+    """fn(*args), or what went wrong in it as the page's answer."""
+    try:
+        return fn(*args)
+    except Exception as e:
+        return _problem(e, plain)
+
+
+def dxf_path(req):
+    """The DXF the page names -> (its path, None); (the path, the answer saying so) when there is no such file."""
+    path = str(req.get("path") or "").strip().strip('"')
+    return path, (None if os.path.isfile(path) else {"ok": False, "log": f"file नहीं मिली: {path}"})
+
+
+def epsg_of(req):
+    """The EPSG code the page gives; None for a drawing in local coordinates."""
+    epsg = req.get("epsg")
+    return int(epsg) if epsg not in (None, "", "local") else None
+
+
+def list_file(name, kind):
+    return os.path.join(proj_dir(), safe_name(name) + f".{kind}.json")
+
+
+def read_list(name, kind):
+    f = list_file(name, kind)
+    if not os.path.isfile(f):
+        return []
+    with open(f, encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+def write_list(name, kind, items):
+    os.makedirs(proj_dir(), exist_ok=True)
+    with open(list_file(name, kind), "w", encoding="utf-8") as fh:
+        json.dump(items or [], fh, ensure_ascii=False)
+
+
 class Handler(BaseHTTPRequestHandler):
     server_version = "sewer_app_ui"
 
@@ -1198,7 +1248,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def _local_only(self):
         host = (self.headers.get("Host") or "").split(":")[0]
-        if host not in ("127.0.0.1", "localhost"):
+        if host not in LOCAL_HOSTS:
             self._send(403, {"ok": False, "log": "local use only"})
             return False
         return True
@@ -1233,6 +1283,21 @@ class Handler(BaseHTTPRequestHandler):
         os.replace(path + ".part", path)
         return self._send(200, {"ok": True, "path": path, "mb": round(n / 1048576, 1)})
 
+    def _own_page(self):
+        """A POST of this app's own pages (and of programs, which send no Origin). A page of another site open in
+        the same browser could otherwise post to this server unseen - its Origin is not this computer."""
+        origin = self.headers.get("Origin")
+        if origin is None or urlparse(origin).hostname in LOCAL_HOSTS:
+            return True
+        self.rfile.read(min(int(self.headers.get("Content-Length") or 0), MAX_BODY))   # read, so the answer arrives
+        self._send(403, {"ok": False, "log": "local use only"})
+        return False
+
+    def _name(self, u):
+        """The project named in the query, as a file name."""
+        return safe_name((parse_qs(u.query).get("name") or [""])[0])
+
+    # ------------------------------------------------------------------------------------------------ GET
     def do_GET(self):
         if not self._local_only():
             return
@@ -1242,62 +1307,66 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Location", "/sewer" + (f"?{u.query}" if u.query else ""))
             self.end_headers()
             return
-        pages = {"/sewer": "map.html", "/i18n.js": "i18n.js"}
-        if u.path in pages:
-            with open(os.path.join(STATIC, pages[u.path]), "rb") as fh:
-                ctype = "text/javascript; charset=utf-8" if u.path.endswith(".js") else "text/html; charset=utf-8"
+        if u.path in PAGES:
+            fname, ctype = PAGES[u.path]
+            with open(os.path.join(STATIC, fname), "rb") as fh:
                 return self._send(200, fh.read(), ctype)
-        if u.path == "/api/version":
-            return self._send(200, {"ok": True, "version": VERSION, "pid": os.getpid(),
-                                    "page_age_s": round(time.time() - LAST_PING[0], 1) if LAST_PING[0] else None})
-        if u.path == "/api/ping":                        # an open page: "still here"
-            LAST_PING[0] = time.time()
-            return self._send(200, {"ok": True})
-        if u.path in ("/api/barriers", "/api/loops", "/api/crossings"):   # a DXF network's zoning tools (27-Oct-2026)
-            kind = u.path.rsplit("/", 1)[1]
-            f = os.path.join(proj_dir(), safe_name((parse_qs(u.query).get("name") or [""])[0]) + f".{kind}.json")
-            items = []
-            if os.path.isfile(f):
-                with open(f, encoding="utf-8") as fh:
-                    items = json.load(fh)
-            return self._send(200, {"ok": True, kind: items})
-        if u.path == "/api/projects":
-            return self._send(200, {"ok": True, "projects": list_projects()})
-        if u.path == "/api/catalogs":
-            return self._send(200, {"ok": True, "catalogs": catalogs(),
-                                    "max_depth": criteria_for()["sewer"]["max_depth_project_m"]["value"]})
-        if u.path == "/api/last_results":
-            name = safe_name((parse_qs(u.query).get("name") or [""])[0])
-            try:
-                with LOCK:
-                    return self._send(200, last_results(name))
-            except Exception as e:
-                return self._send(200, {"ok": False, "log": f"{type(e).__name__}: {e}"})
-        if u.path == "/api/layout_result":
-            name = safe_name((parse_qs(u.query).get("name") or [""])[0])
-            try:
-                return self._send(200, layout_result(name))
-            except Exception as e:
-                return self._send(200, {"ok": False, "log": f"{type(e).__name__}: {e}"})
-        if u.path in ("/api/net", "/api/net_texts"):
-            with LOCK:
-                return self._send(200, net_call(u.path, {}, parse_qs(u.query)))
-        if u.path == "/api/project":
-            name = safe_name((parse_qs(u.query).get("name") or [""])[0])
-            if is_dxf(name):
-                return self._send(200, {"ok": True, "name": name, "kind": "dxf"})
-            path = os.path.join(proj_dir(), name + ".kml")
-            if not os.path.isfile(path):
-                return self._send(404, {"ok": False, "log": f"project '{name}' not found"})
-            with open(path, encoding="utf-8") as fh:
-                return self._send(200, {"ok": True, "name": name, "kml": fh.read()})
-        self._send(404, {"ok": False, "log": "not found"})
+        if u.path.startswith("/api/") and u.path[5:] in LISTS:
+            return self._send(200, {"ok": True, u.path[5:]: read_list(self._name(u), u.path[5:])})
+        get = self.GET.get(u.path)
+        if get is None:
+            return self._send(404, {"ok": False, "log": "not found"})
+        res = get(self, u)
+        return self._send(*res) if isinstance(res, tuple) else self._send(200, res)
 
+    def _get_version(self, u):
+        return {"ok": True, "version": VERSION, "pid": os.getpid(),
+                "page_age_s": round(time.time() - LAST_PING[0], 1) if LAST_PING[0] else None}
+
+    def _get_ping(self, u):                              # an open page: "still here"
+        LAST_PING[0] = time.time()
+        return {"ok": True}
+
+    def _get_projects(self, u):
+        return {"ok": True, "projects": list_projects()}
+
+    def _get_catalogs(self, u):
+        return {"ok": True, "catalogs": catalogs(),
+                "max_depth": criteria_for()["sewer"]["max_depth_project_m"]["value"]}
+
+    def _get_last_results(self, u):
+        with LOCK:
+            return _answer(last_results, self._name(u))
+
+    def _get_layout_result(self, u):
+        return _answer(layout_result, self._name(u))
+
+    def _get_net(self, u):
+        with LOCK:
+            return net_call(u.path, {}, parse_qs(u.query))
+
+    def _get_project(self, u):
+        name = self._name(u)
+        if is_dxf(name):
+            return {"ok": True, "name": name, "kind": "dxf"}
+        path = os.path.join(proj_dir(), name + ".kml")
+        if not os.path.isfile(path):
+            return 404, {"ok": False, "log": f"project '{name}' not found"}
+        with open(path, encoding="utf-8") as fh:
+            return {"ok": True, "name": name, "kml": fh.read()}
+
+    GET = {"/api/version": _get_version, "/api/ping": _get_ping, "/api/projects": _get_projects,
+           "/api/catalogs": _get_catalogs, "/api/last_results": _get_last_results,
+           "/api/layout_result": _get_layout_result, "/api/net": _get_net, "/api/net_texts": _get_net,
+           "/api/project": _get_project}
+
+    # ----------------------------------------------------------------------------------------------- POST
     def do_POST(self):
-        if not self._local_only():
+        if not self._local_only() or not self._own_page():
             return
         n = int(self.headers.get("Content-Length") or 0)
-        if urlparse(self.path).path == "/api/dxf_upload":
+        u = self._route()
+        if u.path == "/api/dxf_upload":
             return self._dxf_upload(n)
         if n > MAX_BODY:
             return self._send(413, {"ok": False, "log": "too large"})
@@ -1305,75 +1374,81 @@ class Handler(BaseHTTPRequestHandler):
             req = json.loads(self.rfile.read(n).decode("utf-8") or "{}")
         except ValueError:
             return self._send(400, {"ok": False, "log": "bad JSON"})
-        u = self._route()
-        if u.path in ("/api/barriers_save", "/api/loops_save", "/api/crossings_save"):   # the same, kept
-            kind = u.path.rsplit("/", 1)[1][:-len("_save")]
-            os.makedirs(proj_dir(), exist_ok=True)
-            with open(os.path.join(proj_dir(), safe_name(req.get("name")) + f".{kind}.json"), "w", encoding="utf-8") as fh:
-                json.dump(req.get(kind) or [], fh, ensure_ascii=False)
+        if u.path.startswith("/api/") and u.path.endswith("_save") and u.path[5:-5] in LISTS:   # the same, kept
+            kind = u.path[5:-5]
+            write_list(req.get("name"), kind, req.get(kind))
             return self._send(200, {"ok": True})
-        if u.path == "/api/save":
-            path = save_project(req.get("name"), req.get("kml") or "")
-            return self._send(200, {"ok": True, "path": path, "name": safe_name(req.get("name"))})
-        if u.path == "/api/kmz":
-            import base64
-            try:
-                return self._send(200, {"ok": True, "kml": kmz_to_kml(base64.b64decode(req.get("data") or ""))})
-            except Exception as e:
-                return self._send(200, {"ok": False, "log": f"KMZ not read: {e}"})
-        if u.path == "/api/layout":
-            with LOCK:
-                res = run_layout(req.get("name"), req.get("kml") or "", req.get("gl_mode", "spots"),
-                                 req.get("flat_gl"), req.get("snap", 1.0), req.get("spacing", 30.0),
-                                 bend_nodes=True, node_prefix=req.get("node_prefix"), pipe_prefix=req.get("pipe_prefix"))
-            return self._send(200, res)
-        if u.path == "/api/dxf_preview":                 # one layer of the drawing on the map
-            from . import netedit
-            path = str(req.get("path") or "").strip().strip('"')
-            if not os.path.isfile(path):
-                return self._send(200, {"ok": False, "log": f"file नहीं मिली: {path}"})
-            ep = req.get("epsg")
-            try:
-                return self._send(200, netedit.dxf_preview(path, str(req.get("layer") or ""),
-                                                           int(ep) if ep not in (None, "", "local") else None))
-            except Exception as e:
-                return self._send(200, {"ok": False, "log": f"{type(e).__name__}: {e}"})
-        if u.path == "/api/dxf_layers":
-            from . import netedit
-            path = str(req.get("path") or "").strip().strip('"')
-            if not os.path.isfile(path):
-                return self._send(200, {"ok": False, "log": f"file नहीं मिली: {path}"})
-            try:
-                rows, guess = netedit.dxf_layers(path)
-            except Exception as e:
-                return self._send(200, {"ok": False, "log": f"{type(e).__name__}: {e}"})
-            return self._send(200, {"ok": True, "layers": rows, "guess": guess,
-                                    "name": safe_name(os.path.splitext(os.path.basename(path))[0])})
-        if u.path == "/api/dxf_gl_options":            # the layers the GL could come from, for the user to choose
-            from . import dxf_extract
-            path = str(req.get("path") or "").strip().strip('"')
-            if not os.path.isfile(path):
-                return self._send(200, {"ok": False, "log": f"file नहीं मिली: {path}"})
-            try:
-                res = dxf_extract.gl_options(path, [x for x in req.get("pipe_layers") or [] if x],
-                                             [x for x in req.get("mh_layers") or [] if x])
-            except Exception as e:
-                res = {"ok": False, "log": f"{type(e).__name__}: {e}"}
-            return self._send(200, res)
-        if u.path == "/api/dxf_import":
-            with LOCK:
-                return self._send(200, net_import(req))
-        if u.path in ("/api/net_edit", "/api/net_undo", "/api/net_repair", "/api/net_save", "/api/net_place"):
-            with LOCK:
-                return self._send(200, net_call(u.path, req, {}))
-        if u.path == "/api/zoning_export":
-            with LOCK:
-                return self._send(200, export_zoning(req.get("name"), req))
-        if u.path in ("/api/zoning", "/api/design"):
-            with LOCK:
-                res = (run_zoning if u.path == "/api/zoning" else run_design)(req.get("name"), req)
-            return self._send(200, res)
-        self._send(404, {"ok": False, "log": "not found"})
+        post = self.POST.get(u.path)
+        if post is None:
+            return self._send(404, {"ok": False, "log": "not found"})
+        return self._send(200, post(self, u, req))
+
+    def _post_save(self, u, req):
+        path = save_project(req.get("name"), req.get("kml") or "")
+        return {"ok": True, "path": path, "name": safe_name(req.get("name"))}
+
+    def _post_kmz(self, u, req):
+        import base64
+        try:
+            return {"ok": True, "kml": kmz_to_kml(base64.b64decode(req.get("data") or ""))}
+        except Exception as e:
+            return {"ok": False, "log": f"KMZ not read: {e}"}
+
+    def _post_layout(self, u, req):
+        with LOCK:
+            return run_layout(req.get("name"), req.get("kml") or "", req.get("gl_mode", "spots"),
+                              req.get("flat_gl"), req.get("snap", 1.0), req.get("spacing", 30.0),
+                              bend_nodes=True, node_prefix=req.get("node_prefix"), pipe_prefix=req.get("pipe_prefix"))
+
+    def _post_dxf_preview(self, u, req):                 # one layer of the drawing on the map
+        from . import netedit
+        path, missing = dxf_path(req)
+        return missing or _answer(lambda: netedit.dxf_preview(path, str(req.get("layer") or ""), epsg_of(req)))
+
+    def _post_dxf_layers(self, u, req):
+        from . import netedit
+        path, missing = dxf_path(req)
+        if missing:
+            return missing
+        try:
+            rows, guess = netedit.dxf_layers(path)
+        except Exception as e:
+            return _problem(e)
+        return {"ok": True, "layers": rows, "guess": guess,
+                "name": safe_name(os.path.splitext(os.path.basename(path))[0])}
+
+    def _post_dxf_gl_options(self, u, req):              # the layers the GL could come from, for the user to choose
+        from . import dxf_extract
+        path, missing = dxf_path(req)
+        return missing or _answer(dxf_extract.gl_options, path, [x for x in req.get("pipe_layers") or [] if x],
+                                  [x for x in req.get("mh_layers") or [] if x])
+
+    def _post_dxf_import(self, u, req):
+        with LOCK:
+            return net_import(req)
+
+    def _post_net(self, u, req):
+        with LOCK:
+            return net_call(u.path, req, {})
+
+    def _post_zoning_export(self, u, req):
+        with LOCK:
+            return export_zoning(req.get("name"), req)
+
+    def _post_zoning(self, u, req):
+        with LOCK:
+            return run_zoning(req.get("name"), req)
+
+    def _post_design(self, u, req):
+        with LOCK:
+            return run_design(req.get("name"), req)
+
+    POST = {"/api/save": _post_save, "/api/kmz": _post_kmz, "/api/layout": _post_layout,
+            "/api/dxf_preview": _post_dxf_preview, "/api/dxf_layers": _post_dxf_layers,
+            "/api/dxf_gl_options": _post_dxf_gl_options, "/api/dxf_import": _post_dxf_import,
+            "/api/net_edit": _post_net, "/api/net_undo": _post_net, "/api/net_repair": _post_net,
+            "/api/net_save": _post_net, "/api/net_place": _post_net, "/api/zoning_export": _post_zoning_export,
+            "/api/zoning": _post_zoning, "/api/design": _post_design}
 
 
 LOCK = threading.Lock()

@@ -12,7 +12,7 @@ staff quarters, GW recharge, MCS, panel rooms and repairs of OHTs from their est
 power connections and their O&M from sheets EM and EM O&M (dpr_em.py). B = dpr.Book after the network, civil and E&M
 sheets.
 """
-from .dpr import ROADS, q, size_key
+from .dpr import q, size_key
 
 HH_ROW = 10                 # sheet Income: the row of the household connections of each stage
 OMC_CIVIL, OMC_TOTAL = 13, 23   # sheet 5Yr O&M Com: the civil works' total, the total (Riverside water DPR p57)

@@ -125,5 +125,5 @@ def test_calculation_report(tmp_path):
     text = " ".join(t for _, t in lines)
     assert "T1 = w R1 / (1 + cos θ1)" in text and "Mb = 0.5 Mo (Lc / Lb) sec (π/n)" in text
     assert f"Provide {r['members']['raft']['rad'][0]} - {r['members']['raft']['rad'][1]} φ" in text
-    p = intze_calc.export_pdf(r, str(tmp_path / "c.pdf"), {"name": "OHT-T"})
+    intze_calc.export_pdf(r, str(tmp_path / "c.pdf"), {"name": "OHT-T"})
     assert (tmp_path / "c.pdf").stat().st_size > 20000

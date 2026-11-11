@@ -28,7 +28,6 @@ def final_check_records(net_split, made, res, flows, node_info, new_mh):
     """{"conduits": [...], "manholes": [...], "outfalls": [...]} in the shape check_sewer reads, for every
     conduit of the split network (design direction: slope > 0 downhill, to_outfall True)."""
     piece_of = {p["label"]: (lab, p) for lab, pcs in made.items() if pcs for p in pcs}
-    new_by = {m["label"]: m for m in new_mh or []}
     ground = {n: v.get("ground") for n, v in net_split["nodes"].items()}
     conds = []
     for k in net_split["conduits"]:

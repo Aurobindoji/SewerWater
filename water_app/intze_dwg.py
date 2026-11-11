@@ -389,7 +389,6 @@ def _ga(sh, res, x0, y0, bw, bh):
         for x in xs_cols:
             v.rect(sgn * x - dc / 2, lev["raft_top"], sgn * x + dc / 2, lev["B3_bot"], hatch=(sgn < 0 and x == xs_cols[-1]))
         for z in g["braces"]:
-            edges = [0.0] + xs_cols if len(xs_cols) > 1 else xs_cols
             for xa, xb in zip(xs_cols, xs_cols[1:]):
                 if xb - xa > dc:
                     v.rect(sgn * (xa + dc / 2), z - g["db"] / 2, sgn * (xb - dc / 2), z + g["db"] / 2)
@@ -467,7 +466,7 @@ def _ga(sh, res, x0, y0, bw, bh):
 
 def _stair_plan(sh, P, res, k, labels=True):
     """The staircase in plan; P(x, y) gives the paper point of a real point (tank centre the origin, +x its side)."""
-    g, st = res["geo"], res["members"]["stair"]
+    st = res["members"]["stair"]
     xs, w, gap, lc, Lb = st["xs"], st["w"], st["gap"], st["lc"], st["Lb"]
     ds, bb = st["col"]["d"] / 1e3, st["beam"]["b"] / 1e3
     rl = w + gap / 2.0
@@ -557,7 +556,7 @@ def _plans(sh, res, x0, y0, bw, bh):
 def _raft_section(sh, res, x0, y0, bw, bh):
     """SECTION 2-2: the raft along a radius, the outer edge on the left."""
     g, M, opt = res["geo"], res["members"], res["opt"]
-    rf, rr, col = M["raft"], M["raft_ring"], M["column"]
+    rf, rr, _col = M["raft"], M["raft_ring"], M["column"]
     Ro, Ri, r0, bR, dc = rf["Ro"], rf["Ri"], g["r0"], rf["bR"], g["dc"]
     t, te = rf["t"] / 1e3, rf["te"] / 1e3
     s = fit_scale(Ro - Ri + 0.8, t + 2.4, bw - 16, bh - 56)
@@ -670,7 +669,6 @@ def _raft_plan(sh, res, x0, y0, bw, bh):
         ra -= L
     hs = rf["hoop"][1] / 1e3
     P, hphi = _sector(sh, x0 + bw - 12, y0 + bh / 2 + 4, s, Ri, Ro, min(bh - 40, 95), radial, [(Ri, Ro, hs)])
-    k = 1000.0 / s
     # the ring beam's band and labels along the upper edge
     for r in (r0 - bR / 2, r0 + bR / 2):
         sh.poly([P(r, -hphi + 2 * hphi * i / 8) for i in range(9)], "HIDDEN")
@@ -1149,7 +1147,7 @@ def _sheet_container(dw, res, info):
 # -------------------------------------------------------------------------------------------- sheet 3: the staircase
 def _sheet_stair(dw, res, info, index):
     sh = Sheet(dw, index, "STAIRCASE", index + 1)
-    g, lev, M, opt = res["geo"], res["levels"], res["members"], res["opt"]
+    g, _lev, M, opt = res["geo"], res["levels"], res["members"], res["opt"]
     st = M["stair"]
     xs, w, gap, lc, Lb, dc = st["xs"], st["w"], st["gap"], st["lc"], st["Lb"], g["dc"]
     r0, n = g["r0"], g["n_col"]
@@ -1227,7 +1225,6 @@ def _sheet_stair(dw, res, info, index):
     v.dots([(rl + go + 0.02, rise - c - 0.025), (xe - c - 0.05, rise - c - 0.025)], st["dist"][1] / 1e3, 0.3, first=st["dist"][1] / 1e3)
     v.dots([(c + 0.05, -wt + c + 0.025), (mb[1][0] - 0.05, -wt + c + 0.025)], st["dist"][1] / 1e3, 0.3)
     v.dots([(mb[2][0] + 0.05, rise - wt + c + 0.025), (xe - c - 0.05, rise - wt + c + 0.025)], st["dist"][1] / 1e3, 0.3)
-    sl = sec
     for x, z in ((rl * 0.5, 0.0), (rl + go + rl * 0.5, rise)):
         bd_, bb_ = st["beam"]["d"] / 1e3, st["beam"]["b"] / 1e3
         v.rect(x - bb_ / 2, z - bd_, x + bb_ / 2, z - wt, "HIDDEN")

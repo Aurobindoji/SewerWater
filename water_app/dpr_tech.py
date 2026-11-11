@@ -454,7 +454,7 @@ def pipe_table(B):
         return None
     from .design import load_pipes
     C = {s["name"]: s.get("C") for s in load_pipes()}
-    PR, T1 = B.PR, B.T1
+    T1 = B.T1
     ws = B.sheet("Pipe Table", "DISTRIBUTION DESIGN AND PIPE TABLE OF EACH OPERATION ZONE", 10)
     for c, w in zip("ABCDEFGHIJ", (14, 10, 12, 12, 10, 12, 10, 12, 16, 8)):
         ws.column_dimensions[c].width = w

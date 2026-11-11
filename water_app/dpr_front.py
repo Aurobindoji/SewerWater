@@ -138,7 +138,7 @@ def certificate(B):
     x = head(B, ws, 6)
     _merge(ws, x, 1, 6, "Certificate", _f(14, True, underline="single"))
     x += 2
-    c = _merge(ws, x, 1, 6, f'="          This is to Certify that the provision/works included under this detailed '
+    _merge(ws, x, 1, 6, f'="          This is to Certify that the provision/works included under this detailed '
                             f'project report of "&UPPER(""&{PR["title"]})&IF(""&{PR["under"]}="",""," UNDER "&UPPER('
                             f'{PR["under"]}))&" DISTRICT- "&UPPER(""&{PR["district"]})&" have neither been incorporated '
                             f'in any other DPR of the program and have not been executed in part or in full under any '

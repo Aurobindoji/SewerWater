@@ -92,7 +92,6 @@ UNITS = {0: "unitless", 1: "inches", 2: "feet", 4: "mm", 5: "cm", 6: "m", 7: "km
 # ---------------------------------------------------------------- reading
 def load(path):
     try:
-        import ezdxf
         from ezdxf import recover
     except ImportError:
         sys.exit("ezdxf is not installed: pip install ezdxf")
@@ -836,7 +835,6 @@ def main():
     msp = doc.modelspace()
     hdr = doc.header
     ins = hdr.get("$INSUNITS", 0)
-    extmin, extmax = hdr.get("$EXTMIN", None), hdr.get("$EXTMAX", None)
     layers, lines, texts, inserts, points = inventory(msp)
     print(f"File: {path}\nDXF {doc.dxfversion}, units {UNITS.get(ins, ins)}, entities read in {time.time() - t0:.1f} s; "
           f"audit: {len(auditor.errors)} error(s), {len(auditor.fixes)} fix(es)")
@@ -865,7 +863,6 @@ def main():
     lvl_cands = level_candidates(texts)
     print(f"\nTEXTS: {len(texts)} (incl. block attributes) on {len(trows)} layer(s)")
     for r in sorted(trows, key=lambda r: -r["numeric"])[:15]:
-        rng = f"{r['min']:g} - {r['max']:g}" if r["min"] is not None else "-"
         print(f"   {r['layer'][:24]:<24} {r['n']:>6} texts; kinds {r['kinds'][:60] or '-'}; e.g. "
               f"{r['samples'][:60].replace(chr(10), ' ')}")
     print(f"   layers with level-like values (narrow band, > 10): "

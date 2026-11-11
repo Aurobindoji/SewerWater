@@ -12,3 +12,11 @@ desktop = ["pywebview>=6"]          # app.py / desktop.bat: the map UI in a wind
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+
+[tool.ruff]
+line-length = 120                      # the width the code is written to (not enforced: E501 is not selected)
+extend-exclude = ["build", "dist", "output", "projects"]
+
+[tool.ruff.lint]
+# real mistakes only: undefined / unused names, syntax errors, statements with no effect (.venv\Scripts\ruff check)
+select = ["F", "E9", "PLE", "B018"]

@@ -1708,8 +1708,9 @@ def prv_on(req):
     return str(req.get("use_prv") or "").strip().lower() in ("1", "true", "yes", "on")
 
 
-def _after_prv(hnet, res_h, r, crit):
-    """The design's summary and pressure checks again, its areas' heads lowered by the PRVs."""
+def _pressure_summary(hnet, res_h, r, crit):
+    """A solved network's pressures into the design's summary and its residual-head check (the first check);
+    returns the junctions well above the upper limit of the residual head."""
     rh = crit["residual_head_m"]["value"]
     low, _, _, high = wd.check(hnet, res_h, crit)
     fixed_n = {n for n, v in hnet["nodes"].items() if v.get("head") is not None}
@@ -1718,6 +1719,12 @@ def _after_prv(hnet, res_h, r, crit):
     r["summary"]["max_pressure"] = round(max(pr), 2) if pr else None
     r["checks"][0].update(ok=not low, detail=(f"{len(low)} junctions below" if low else f"lowest {min(pr):.2f} m"))
     r["missing_head_m"] = round(max(rh - p for p in low.values()), 2) if low else None
+    return high
+
+
+def _after_prv(hnet, res_h, r, crit):
+    """The design's summary and pressure checks again, its areas' heads lowered by the PRVs."""
+    high = _pressure_summary(hnet, res_h, r, crit)
     name = f"residual head well above {crit['residual_head_max_m']['value']} m"
     r["checks"] = [c for c in r["checks"] if c["check"] != name]
     if high:
@@ -1851,13 +1858,7 @@ def _design_once(stem, req, folder, net, wnet, ohts, crit, z, lines):
             hnet["nodes"][o["name"]]["head"] = hnet["nodes"][o["name"]]["elev"] + o["_eff"]
         res_h = hy.solve(hnet, minor_loss=crit["minor_loss_factor"]["value"], demand_factor=crit["peak_factor"]["value"])
         r["result"] = res_h
-        low, fast, slow, high = wd.check(hnet, res_h, crit)
-        fixed_n = {n for n, v in hnet["nodes"].items() if v.get("head") is not None}
-        pr = [p for n, p in res_h["pressure"].items() if n not in fixed_n]
-        r["summary"]["min_pressure"] = round(min(pr), 2) if pr else None
-        r["summary"]["max_pressure"] = round(max(pr), 2) if pr else None
-        r["checks"][0].update(ok=not low, detail=(f"{len(low)} junctions below" if low else f"lowest {min(pr):.2f} m"))
-        r["missing_head_m"] = round(max(rh - p for p in low.values()), 2) if low else None
+        _pressure_summary(hnet, res_h, r, crit)
         for nm, v in staging_note.items():
             if v["required"] > 30:
                 r["checks"].append({"check": f"{nm}: staging {v['required']:g} m", "ok": True, "note": True,

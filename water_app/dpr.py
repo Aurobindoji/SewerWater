@@ -515,7 +515,7 @@ def t_projection(B):
         for j in range(3):
             r = m0 + 3 + j
             ws.cell(r, 2, f'="Population in {stage_lab[j]} Year "&{yrs[j]}')
-            ws.cell(r, 3, f"=" + shown(j))
+            ws.cell(r, 3, "=" + shown(j))
             ws.merge_cells(start_row=r, start_column=3, end_row=r, end_column=8)
             B.cell(ws, r, 9, "=" + safe(val(j)), fmt="#,##0.00")
             ws.cell(r, 10, "say")
@@ -592,7 +592,7 @@ def t_projection(B):
         ws.cell(za + 3, 2, f"{n} of the {len(w['rows'])} wards grow by the factors of their character (Riverside water DPR p76; "
                            f"sheet Wards), the others by the adopted method: the project area base / middle / design "
                            f"{w['init']:,.0f} / {w['mid']:,.0f} / {w['ult']:,.0f}" +
-                           (f"; Far-open balanced to the adopted method: x " + " / ".join(f"{x:.4f}" for x in fo["factors"])
+                           ("; Far-open balanced to the adopted method: x " + " / ".join(f"{x:.4f}" for x in fo["factors"])
                             if fo else "")).font = B.italic
         za += 1
     # ---- the graphs (example technical.xlsx 'T': the census bar chart, the simple graph and semi-log plots; and the
@@ -1067,7 +1067,6 @@ def summary(B):
 def tube_wells(B):
     """Tube wells needed for +15 years (Elmwood 'TW'): requirement of the pumping main less what the existing tube
     wells give, by tube wells of the proposed discharge."""
-    P = B.S["pump"]
     ws = B.sheet("TW", "REQUIREMENT OF WATER & TUBE WELLS (middle year, +15)", 16)
     B.header(ws, 5, ["S. No.", "Operation zone", "Existing T.W. (nos)", "Discharge of an existing T.W. (LPM)",
                      "Pumping hours", "Available from existing T.W. (KLD)", "Requirement, pumping main +15 (KLD)",
@@ -1623,10 +1622,10 @@ def ohts(B):
         for c in ("M8", "M9"):
             ws[c].fill = B.yellow
         ws.column_dimensions["L"].width = 26
-        txt = (f'="Supply of all materials, labour, T&P etc. and construction of RCC over head tank of "&M5&" KL '
-               f'capacity and "&M6&" m staging in M-30 concrete, with staircase, balcony, railing, ventilator, water '
-               f'level indicator, lightning conductor, CI manhole, CI D/F inlet / outlet / overflow / washout pipes and '
-               f'sluice valves, valve chambers, painting and gate - complete (departmental rate)"')
+        txt = ('="Supply of all materials, labour, T&P etc. and construction of RCC over head tank of "&M5&" KL '
+               'capacity and "&M6&" m staging in M-30 concrete, with staircase, balcony, railing, ventilator, water '
+               'level indicator, lightning conductor, CI manhole, CI D/F inlet / outlet / overflow / washout pipes and '
+               'sluice valves, valve chambers, painting and gate - complete (departmental rate)"')
         B.cell(ws, 7, 1, 1)
         B.cell(ws, 7, 2, txt).alignment = B.wrap
         ws.row_dimensions[7].height = 90

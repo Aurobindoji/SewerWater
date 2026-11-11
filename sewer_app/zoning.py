@@ -844,7 +844,7 @@ def cost_workbook(z, path, source=""):
                 qa *= ms
             c = pumping.sps_cost(qp, qa, dep, P, rm_head=rm["head_m"] if rm else None, q_em_lps=qm or None)
             q_pump = qm or qp
-            basis = (f"+15 years (CPHEEO Table 2.1 p2-9: pumping machinery 15 years)" if qm
+            basis = ("+15 years (CPHEEO Table 2.1 p2-9: pumping machinery 15 years)" if qm
                      else "+30 years (no +15 years population given)")
             capex_t += c["capex"]
             om_t += c["om_npv"]
@@ -1157,7 +1157,6 @@ def write_boundary_dxf(path, per_option, xy, gl, text_h):
     can be XREF'd / INSERTed on the original drawing. per_option = [(option, ev, regs)]."""
     try:
         import ezdxf
-        from ezdxf import colors as ezc
         from ezdxf import zoom
     except ImportError:
         return None

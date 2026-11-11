@@ -5,6 +5,11 @@
 - Floating population is now a field in the population step of both apps ("Floating population (%)"),
   10 % by default as before. CPHEEO's water manual (Annexure 2.8) suggests 1-3 % when no figures are available.
   The DPR's floating share cell takes the value given; earlier runs keep their 10 %.
+- Safer on a computer that is also browsing the web: the sewer and water servers now refuse a request to change
+  anything (save, layout, design ...) that comes from a page of another site. The app's own pages work as before.
+- Inside: each server's calls are now a table of small functions (one per call) in place of one long chain;
+  variables and imports nothing used are gone; `ruff check` (settings in pyproject.toml) guards against new ones.
+  No design result changes.
 
 ## 0.9.3 (beta) - 2026-11-10
 

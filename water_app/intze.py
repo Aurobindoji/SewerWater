@@ -979,7 +979,7 @@ def _rows(r, res, f, mat, C, cb3, cbr, raft, W_tot, W_live, Mw, Mlev, Mo, tve3):
 # ---------------------------------------------------------------------------------------------- bar bending schedule
 def bbs(res):
     """Bar bending schedule rows: member, mark, description, dia, number, length m, shape."""
-    g, M, lev, opt = res["geo"], res["members"], res["levels"], res["opt"]
+    g, M, _lev, opt = res["geo"], res["members"], res["levels"], res["opt"]
     th = g["th"]
     R, r0, D = g["R"], g["r0"], g["D"]
     stock = opt["stock_m"]
@@ -1077,7 +1077,7 @@ def bbs(res):
     lapf = opt["lap_dia_found"]
     n, dia = rf["rad"]
     full = rf["ao"] + rf["bR"] + rf["ai"]
-    done, s_acc, prev = 0, rf["ao"] + rf["bR"], None
+    _done, s_acc, prev = 0, rf["ao"] + rf["bR"], None
     groups = []
     for Lz, k in rf["zones_in"]:
         if prev is not None and k < prev:

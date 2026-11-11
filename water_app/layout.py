@@ -109,7 +109,6 @@ def road_graph(polylines, snap=1.0, max_spacing=30.0, boundary=None, min_dangle_
     if boundary:
         multi = isinstance(boundary[0][0], (list, tuple))
         polys = [[tuple(p[:2]) for p in pg] for pg in (boundary if multi else [boundary])]
-    bnd = polys[0] if polys and len(polys) == 1 else None
     tol = BOUNDARY_TOL_M if polys and len(polys) > 1 else 0.0
 
     def keep(pt):

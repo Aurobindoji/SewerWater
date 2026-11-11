@@ -1015,6 +1015,18 @@ def _crit(req):
     if ppc not in (None, ""):
         crit["persons_per_connection"] = dict(crit["persons_per_connection"], value=float(ppc),
                                               ref=f"given on the page ({crit['persons_per_connection']['ref']})")
+    fl = req.get("floating_pct")                  # 10 % by default, editable per project (user decision 11-Nov-2026)
+    if fl not in (None, ""):
+        try:
+            v = float(str(fl).replace("%", "").strip())
+        except ValueError:
+            raise ValueError(f"floating: '{fl}' अंक नहीं - प्रतिशत दें, जैसे 10")
+        if not 0.0 <= v <= 50.0:
+            raise ValueError(f"floating: {v:g} % ठीक नहीं - 0 से 50 % तक दें")
+        if abs(v / 100.0 - crit["floating_share"]["value"]) > 1e-12:
+            crit["floating_share"] = {"value": v / 100.0,
+                                      "ref": "given on the page (default 10 %: " + crit["floating_share"]["ref"]
+                                             + "; CPHEEO Annexure 2.8: 1-3 % without figures)"}
     win = req.get("oht_inflow")
     if win not in (None, ""):
         crit["oht_inflow_hours"] = dict(crit["oht_inflow_hours"], value=dm.parse_windows(win),
@@ -1032,7 +1044,7 @@ def _crit(req):
 def _keep(stem, kind, res, req):
     folder = os.path.join(ui.out_root(), stem)
     os.makedirs(folder, exist_ok=True)
-    keep = dict(res, req={k: req.get(k) for k in ("ohts", "pop_factor", "persons_per_connection", "oht_inflow", "near_m",
+    keep = dict(res, req={k: req.get(k) for k in ("ohts", "pop_factor", "persons_per_connection", "floating_pct", "oht_inflow", "near_m",
                                                   "pop_total", "edits", "barriers", "loops", "crossings", "wards", "bulk",
                                                   "projection", "ward_table")
                           + ui.STAGE_KEYS},

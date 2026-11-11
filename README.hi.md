@@ -220,7 +220,7 @@ Drawings "⚠" दिखें तो वे आख़िरी design से �
 |---|---|---|
 | Design अवधि | pipes और ESR अंतिम चरण (आधार + 30); machinery मध्य चरण (+15) | CPHEEO Table 2.7 S.No.1, p168 |
 | प्रति व्यक्ति जल | 150 LPCD (10 लाख से बड़े शहर; छोटे 135) | CPHEEO Table 2.7 S.No.4, p169 |
-| Floating population | 45 LPCD (स्नान सहित); हिस्सा आबादी का 10% | CPHEEO S.No.5, p170; 10% Reference DPR |
+| Floating population | 45 LPCD (स्नान सहित); हिस्सा आबादी का 10% (default - page पर "Floating आबादी (%)" में बदल सकते हैं) | CPHEEO S.No.5, p170; 10% Reference DPR |
 | हानियाँ | वितरण में 10% (भूजल सीधे: कुल 11%) | CPHEEO Table 2.7 S.No.6, p171 |
 | Peak factor | 2.5; ESR तक transmission 22 घंटे | CPHEEO Table 2.7 S.No.7, p172 |
 | न्यूनतम व्यास | 100 mm (पुराने 80 mm रह सकते हैं) | CPHEEO Table 2.7 S.No.8, p172 |
@@ -257,7 +257,7 @@ Drawings "⚠" दिखें तो वे आख़िरी design से �
 | वार्ड-वार आबादी, equivalent area (आवासीय 1, सार्वजनिक 0.25, उद्योग / कृषि 0.1, सड़क / जल 0) | CPHEEO 2.8.1.24, p131 |
 | चरित्र (low / medium / high / saturated), core लगभग saturation पर, saturation density, आबादी नगर निकाय से स्वीकृत कराएँ | CPHEEO Annexure 2.7, p974-976 |
 | density सीमाएँ 585 / 310 / 170, चरित्र के गुणक, saturation 1,880 /ha (सबसे घना वार्ड × 1.10) | Reference DPR (p76) - **ये अंक CPHEEO के नहीं**, शहर के अनुसार बदलें |
-| Floating population 10% | Reference DPR (CPHEEO Annexure 2.8 आँकड़े न हों तो 1-3% सुझाता है) |
+| Floating population 10% (default; दोनों apps के आबादी चरण में "Floating आबादी (%)" से बदलें) | Reference DPR (CPHEEO Annexure 2.8 आँकड़े न हों तो 1-3% सुझाता है) |
 
 ### 7.4 Intze OHT
 

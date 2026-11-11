@@ -434,8 +434,10 @@
         <textarea id="census" rows="2" placeholder="1991 1139236, 2001 1374963, 2011 1636569"></textarea></div>
       <div class="row"><label title="+15 और +30 वर्ष की आबादी इस तरीके से (Riverside DPR: geometrical)">Forecast का तरीका</label>
         <select id="popmeth"><option value="geometrical">Geometrical increase</option><option value="incremental">Incremental increase</option><option value="arithmetical">Arithmetical increase</option></select></div>
+      <div class="row"><label title="Floating और institutional आबादी, आबादी के % में (हर stage पर); sewage में यह 45 / (sewage ÷ 0.8) के बराबर आबादी जुड़ती है। Default 10 % (Riverside DPR); CPHEEO Annexure 2.8: आँकड़े न हों तो 1-3 %">Floating आबादी (%)</label>
+        <input type="number" id="popfl" value="10" min="0" max="50" step="0.5"></div>
       <input type="hidden" id="popm">
-      <div class="hint" id="popfc">Design की आबादी = +30 वर्ष (forecast + floating 10 %)। Zoning / design के बाद यहाँ पूरा forecast दिखेगा।</div>
+      <div class="hint" id="popfc">Design की आबादी = +30 वर्ष (forecast + floating)। Zoning / design के बाद यहाँ पूरा forecast दिखेगा।</div>
       <div class="stepbar">Zoning की सेटिंग और options</div>
       <div class="row"><label>Pipe catalog</label><select id="catalog"></select></div>
       <div class="row"><label>Joint</label><select id="joint"></select></div>
@@ -1665,9 +1667,10 @@ const ZCOL = ["#1f77b4", "#2ca02c", "#9467bd", "#ff7f0e", "#17becf", "#8c564b", 
 // stage-wise check (CPHEEO Table 2.1 p2-9): base year and the populations of the
 // base year and +15 years; the design population is +30 years. Empty populations = no stage check.
 // user decision 22-Oct-2026: base-year population + census -> the +15 / +30 years population and floating (server)
-function stageInputs() { return { base_year: $("byear").value, pop_initial: $("popb").value, census: $("census").value, pop_method: $("popmeth").value }; }
+function stageInputs() { return { base_year: $("byear").value, pop_initial: $("popb").value, census: $("census").value, pop_method: $("popmeth").value, floating_pct: $("popfl").value }; }
 function stageRestore(q) {
   if (q.base_year) $("byear").value = q.base_year;
+  $("popfl").value = q.floating_pct ?? 10;              // a run from before 11-Nov-2026: the 10 % it was made with
   $("popb").value = q.pop_initial ?? ""; $("census").value = q.census ?? ""; $("popmeth").value = q.pop_method || "geometrical";
 }
 function showForecast(r) { if (r && r.forecast) { $("popfc").textContent = r.forecast; $("popfc").className = "hint ok"; } }

@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Floating population is now a field in the population step of both apps ("Floating population (%)"),
+  10 % by default as before. CPHEEO's water manual (Annexure 2.8) suggests 1-3 % when no figures are available.
+  The DPR's floating share cell takes the value given; earlier runs keep their 10 %.
+
 ## 0.9.3 (beta) - 2026-11-10
 
 - Both apps' side panels are now in numbered steps, from top to bottom: Project, the map (or the DXF network),

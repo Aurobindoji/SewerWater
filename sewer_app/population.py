@@ -79,11 +79,31 @@ def ceil5(x):
     return math.ceil(x / 5.0 - 1e-9) * 5
 
 
-def forecast(base_year, base_pop, census=None, method=None, sewage_lpcd=None, S=None):
+FLOATING_MAX_PCT = 50.0
+
+
+def floating_share_of(pct):
+    """The page's floating population in % ('10', 10, '') -> share (0.10) or None (empty: the default of
+    dpr_sewer.json, 10 % of the Riverside DPR). User decision 11-Nov-2026: 10 % by default, editable per project
+    (CPHEEO water manual Annexure 2.8: 1-3 % when no figures are available)."""
+    if pct in (None, ""):
+        return None
+    try:
+        v = float(str(pct).replace("%", "").strip())
+    except ValueError:
+        raise ValueError(f"floating: '{pct}' अंक नहीं - प्रतिशत दें, जैसे 10")
+    if not 0.0 <= v <= FLOATING_MAX_PCT:
+        raise ValueError(f"floating: {v:g} % ठीक नहीं - 0 से {FLOATING_MAX_PCT:g} % तक दें")
+    return v / 100.0
+
+
+def forecast(base_year, base_pop, census=None, method=None, sewage_lpcd=None, S=None, floating_share=None):
     """The forecast dict: base_year, years, census, growth rows, X, Y, r (fraction per decade), per method the
     population of each stage, adopted method, pop (without floating), floating, equivalent floating, design (pop +
-    equivalent floating) - stages 'init' / 'mid' / 'ult'."""
-    S = S or settings()
+    equivalent floating) - stages 'init' / 'mid' / 'ult'. floating_share: the page's (else dpr_sewer.json)."""
+    S = dict(S or settings())
+    if floating_share is not None:
+        S["floating_share"] = float(floating_share)
     base_year, base_pop = int(base_year), float(base_pop)
     census = parse_census(census) if census else []
     rows, X, Y, r = growth(census) if len(census) >= 2 else ([], None, 0.0, None)
@@ -122,6 +142,7 @@ def forecast(base_year, base_pop, census=None, method=None, sewage_lpcd=None, S=
 def summary(f):
     """One line for the log / page."""
     src = (f"census {f['census'][0][0]}-{f['census'][-1][0]}, " if f["census"] else "no census - default ")
-    return (f"population forecast ({f['method']}, {src}r = {f['r'] * 100:.2f} % per decade): "
+    return (f"population forecast ({f['method']}, {src}r = {f['r'] * 100:.2f} % per decade; "
+            f"floating {f['floating_share'] * 100:g} %): "
             + ", ".join(f"{f['years'][t]} {f['pop'][t]:,.0f} + floating {f['equivalent'][t]:,.0f} = {f['design'][t]:,.0f}"
                         for t in ("init", "mid", "ult")))

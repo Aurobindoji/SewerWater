@@ -467,7 +467,8 @@ def design_inputs(stem, req):
     base = st.get("pop_initial") or (wards if not req.get("pop_total") else None)
     if base:
         f = population.forecast(st.get("base_year") or 2027, base, req.get("census") or None,
-                                req.get("pop_method") or None, sewage_lpcd=float(inp["sewage_lpcd"]))
+                                req.get("pop_method") or None, sewage_lpcd=float(inp["sewage_lpcd"]),
+                                floating_share=population.floating_share_of(req.get("floating_pct")))
         inp.update(base_year=f["base_year"], pop_initial=f["design"]["init"], pop_mid=f["design"]["mid"],
                    pop_total=f["design"]["ult"], forecast=f)
     else:
@@ -482,7 +483,7 @@ def design_inputs(stem, req):
     return inp
 
 
-STAGE_KEYS = ("base_year", "pop_initial", "pop_mid", "census", "pop_method")
+STAGE_KEYS = ("base_year", "pop_initial", "pop_mid", "census", "pop_method", "floating_pct")
 
 
 def stage_inputs(req):

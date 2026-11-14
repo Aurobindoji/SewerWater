@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.9 (beta) - 2026-11-14
+
+- The taskbar showed the icon of an older version after 0.9.8: the app now has its own name on the taskbar, its
+  windows take the icon file itself (every size), and the setup makes Windows read the icons again.
+- A **tray icon** while the app runs: a double click brings its windows forward; its menu opens the master folder,
+  the update check and About, and closes the app.
+
 ## 0.9.8 (beta) - 2026-11-14
 
 - Water supply, the two **Export DXF** buttons now make two drawings, and neither is called "zoning + design":

@@ -9,7 +9,8 @@ datas = [("data", "data"),                                   # sewer: criteria, 
          ("water_app/criteria.json", "water_app"), ("water_app/pipes.json", "water_app"),
          ("water_app/dpr_water.json", "water_app"), ("water_app/sor_2025_26.json", "water_app"),
          ("water_app/dpr_template.xlsx", "water_app"),
-         ("launcher/static", "launcher/static")]               # the start page (language, sewer / water)
+         ("launcher/static", "launcher/static"),               # the start page (language, sewer / water)
+         ("installer/SewerWater.ico", ".")]                    # the icon of the windows and of the tray (app.py)
 
 a = Analysis(
     ["app.py"],

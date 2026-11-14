@@ -55,3 +55,29 @@ def test_the_start_page_shows_it():
     finally:
         srv.shutdown()
         srv.server_close()
+
+
+def test_the_windows_the_taskbar_and_the_tray():
+    """The windows take the icon file itself (every size), the app has its own name on the taskbar - the same in
+    the setup's shortcuts - and the setup makes Explorer read the icons again (user 14-Nov-2026: the taskbar still
+    showed the icon of an older version); a tray icon whose menu works off the windows' thread."""
+    import threading as th
+
+    import app
+    assert os.path.isfile(app.icon_path()) and app.icon_path().endswith("SewerWater.ico")
+    with open(os.path.join(ROOT, "SewerWater.spec"), encoding="utf-8") as fh:
+        assert '("installer/SewerWater.ico", ".")' in fh.read()               # packed beside the program
+    with open(os.path.join(ROOT, "installer", "SewerWater.iss"), encoding="utf-8") as fh:
+        iss = fh.read()
+    assert "ChangesAssociations=yes" in iss and iss.count(f'AppUserModelID: "{app.APP_ID}"') == 2
+    with open(os.path.join(ROOT, "app.py"), encoding="utf-8") as fh:
+        src = fh.read()
+    assert "icon=icon" in src and "tray.close()" in src and "own_taskbar_name()" in src
+    done = th.Event()
+    seen = []
+    app.Tray._handler(lambda: (seen.append(th.current_thread() is th.main_thread()), done.set()))(None, None)
+    assert done.wait(5) and seen == [False]
+    t = app.Tray(api=None, icon=None)
+    t.attach(window=None)                                                      # no icon file: no tray, no error
+    t.close()
+    assert t.ni is None

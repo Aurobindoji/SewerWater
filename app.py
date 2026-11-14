@@ -28,6 +28,7 @@ import webview
 from webview.menu import Menu, MenuAction
 
 TITLE = "Sewer & Water network design"
+APP_ID = "Aurobindoji.SewerWater"                 # the app's name for the taskbar (the setup's shortcuts carry it too)
 START_URL = "http://127.0.0.1:8764/"              # the launcher's start page
 CONFIG = os.environ.get("APP_CONFIG") or os.path.join(os.environ.get("APPDATA") or os.path.expanduser("~"),
                                                       "SewerWater", "config.json")
@@ -82,6 +83,98 @@ def use_master(m):
         log = open(os.path.join(m, SUBDIRS["app"], "app.log"), "a", encoding="utf-8", buffering=1)
         log.write(f"\n--- {time.strftime('%d-%m-%Y %H:%M:%S')} ---\n")
         sys.stdout = sys.stderr = log
+
+
+# ---------------------------------------------------------------------------------------------- the icon, the tray
+def icon_path():
+    """The app icon file (all its sizes): packed beside the program, or installer\\SewerWater.ico of the source."""
+    base = getattr(sys, "_MEIPASS", None) or os.path.dirname(os.path.abspath(__file__))
+    for p in (os.path.join(base, "SewerWater.ico"), os.path.join(base, "installer", "SewerWater.ico")):
+        if os.path.isfile(p):
+            return p
+    return None
+
+
+def own_taskbar_name():
+    """The app's own identity on the taskbar (user 14-Nov-2026: the taskbar still showed the icon of before): its
+    button takes the windows' icon, not one Windows kept for the program's path from an older version."""
+    try:
+        import ctypes
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(APP_ID)
+    except Exception:
+        pass
+
+
+class Tray:
+    """The app's icon in the notification area (user request 14-Nov-2026) while the app runs: a double click brings
+    its windows forward; the menu: show, the master folder, updates, About, quit. Made with Windows Forms' own
+    NotifyIcon (the library of the app's windows - nothing more to install), on the windows' thread."""
+
+    def __init__(self, api, icon):
+        self.api, self.icon, self.ni = api, icon, None
+
+    def attach(self, window):
+        """Called when the first window is shown."""
+        if self.ni is not None or not self.icon or os.name != "nt":
+            return
+        try:
+            from System import Action
+            window.native.Invoke(Action(self._make))
+        except Exception as e:                               # no tray icon: the app works without it
+            print(f"tray icon not made: {type(e).__name__}: {e}")
+
+    def _make(self):
+        import System.Windows.Forms as WF
+        from System.Drawing import Icon
+        ni = WF.NotifyIcon()
+        ni.Icon = Icon(self.icon)
+        ni.Text = TITLE
+        menu = WF.ContextMenuStrip()
+        for label, fn in (("खोलें / Show", self.show),
+                          ("Master folder खोलें / Open the master folder", self.api.open_master),
+                          ("Update देखें… / Check for updates…", self.api.show_update),
+                          ("About", self.api.show_about),
+                          (None, None),
+                          ("बंद करें / Quit", self.quit)):
+            if label is None:
+                menu.Items.Add(WF.ToolStripSeparator())
+                continue
+            item = menu.Items.Add(label)
+            item.Click += self._handler(fn)
+        ni.ContextMenuStrip = menu
+        ni.DoubleClick += self._handler(self.show)
+        ni.Visible = True
+        self.ni, self._menu = ni, menu                       # kept: not collected while the app runs
+        print("tray icon on")
+
+    @staticmethod
+    def _handler(fn):
+        # off the windows' thread: the windows are asked from another thread, as the menu "App" does
+        return lambda sender, e: threading.Thread(target=fn, daemon=True).start()
+
+    @staticmethod
+    def show():
+        for w in list(webview.windows):
+            try:
+                w.restore()
+                w.show()
+            except Exception:
+                pass
+
+    @staticmethod
+    def quit():
+        for w in list(webview.windows):
+            w.destroy()
+
+    def close(self):
+        """The icon taken away with the app (else it stays until the mouse passes over it)."""
+        if self.ni is not None:
+            try:
+                self.ni.Visible = False
+                self.ni.Dispose()
+            except Exception:
+                pass
+            self.ni = None
 
 
 # ---------------------------------------------------------------------------------------------- the servers
@@ -358,7 +451,10 @@ def main():
     webview.settings["OPEN_EXTERNAL_LINKS_IN_BROWSER"] = True    # manuals, maps outside the app
     if os.environ.get("APP_DEBUG_PORT"):                         # checks from outside: the pages over CDP
         webview.settings["REMOTE_DEBUGGING_PORT"] = int(os.environ["APP_DEBUG_PORT"])
+    own_taskbar_name()
     api = Api()
+    icon = icon_path()
+    tray = Tray(api, icon)
     m = read_master()
     storage = None
     if m is not None:
@@ -377,11 +473,15 @@ def main():
         else:
             api._main = webview.create_window(TITLE, START_URL, js_api=api, min_size=(900, 600), **WINDOW)
     api._main.events.loaded += lambda: api._main.evaluate_js(OPEN_JS)
+    api._main.events.shown += lambda: tray.attach(api._main)
     menu = [Menu("App", [MenuAction("Master folder खोलें / Open the master folder", api.open_master),
                          MenuAction("Master folder बदलें… / Change the master folder…", api.change_master),
                          MenuAction("Update देखें… / Check for updates…", api.show_update),
                          MenuAction("About", api.show_about)])]
-    webview.start(private_mode=False, storage_path=storage, menu=menu)   # localStorage kept (in <master>\App)
+    try:                                                       # localStorage kept (in <master>\App); the windows'
+        webview.start(private_mode=False, storage_path=storage, menu=menu, icon=icon)   # icon: the file, every size
+    finally:
+        tray.close()
     sys.exit(0)                                                # every window closed: the servers end with the app
 
 

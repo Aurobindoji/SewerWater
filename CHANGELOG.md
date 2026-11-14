@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Water supply, the two **Export DXF** buttons now make two drawings, and neither is called "zoning + design":
+  the one beside "Zoning (OZ / DMA)" exports the zoning alone (`<project>_zoning_<date>_<time>.dxf`), also when a
+  design is there; the one beside "Design" exports the design made with the current zoning
+  (`<project>_design_...dxf`) and asks for a design first when there is none. The design's progress line reads
+  "Water design (with the current zoning)".
+
 ## 0.9.7 (beta) - 2026-11-14
 
 - Water supply: an **Export DXF** button beside "Zoning (OZ / DMA)" too, for the DXF right after a zoning, before

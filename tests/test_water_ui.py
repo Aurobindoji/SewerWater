@@ -55,7 +55,9 @@ def test_water_layout_zoning_design(server, sewer):
     page = call(url + "/water")
     assert "leaflet@1.9.4" in page                                         # the map page in water mode
     # the DXF export beside "Zoning" too (user request 14-Nov-2026), the same handler as the one beside "Design"
-    assert 'id="wexportz"' in page and '$("wexport").onclick = $("wexportz").onclick' in page
+    # each its own drawing: beside "Zoning" the zoning alone, beside "Design" the design with the current zoning
+    assert 'id="wexportz"' in page and '$("wexportz").onclick = () => exportDxf("zoning")' in page
+    assert '$("wexport").onclick = () => exportDxf("design")' in page and "zoning + design" not in page
     with open(SAMPLE, encoding="utf-8") as fh:
         kml = fh.read()
     r = call(url + "/api/w/layout", {"name": "wtest", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100})
@@ -409,10 +411,25 @@ def test_water_dxf_export(server):
     assert min(e.dxf.lineweight for e in oz) > 2 * max(e.dxf.lineweight for e in dma)
     assert all(e.dxf.flags & 128 and e.dxf.ltscale > 1 for e in oz + dma) and doc.header["$LWDISPLAY"] == 1
     assert {"W_OZ_DASHDOT", "W_DMA_DASHED"} <= {t.dxf.name for t in doc.linetypes} and not doc.audit().errors
+    # the design's own drawing: none before a design (user request 14-Nov-2026: zoning and design kept apart)
+    r = call(url + "/api/w/water_export", {"name": "wx", "what": "design"})
+    assert not r["ok"] and "Design" in r["log"]
+    r = call(url + "/api/w/water_export", {"name": "wx", "what": "zoning"})
+    assert r["ok"] and not r["counts"]["design"] and "_zoning_" in os.path.basename(r["path"])
     d = call(url + "/api/w/water_design", {"name": "wx", "pop_factor": 1.5})
     assert d["ok"], d.get("log")
     r = call(url + "/api/w/water_export", {"name": "wx"})
     assert r["ok"] and r["counts"]["design"] and r["counts"]["pipes"] == len(d["pipes"])
+    # with a design made: the zoning's drawing still holds the zoning alone; the design's holds the design
+    rz = call(url + "/api/w/water_export", {"name": "wx", "what": "zoning"})
+    rd = call(url + "/api/w/water_export", {"name": "wx", "what": "design"})
+    assert rz["ok"] and not rz["counts"]["design"] and rd["ok"] and rd["counts"]["design"]
+    assert "_zoning_" in os.path.basename(rz["path"]) and "_design_" in os.path.basename(rd["path"])
+    lz = {e.dxf.layer for e in ezdxf.readfile(rz["path"]).modelspace()}
+    ld = {e.dxf.layer for e in ezdxf.readfile(rd["path"]).modelspace()}
+    assert "W_FLOW_ARROW" in ld and "W_FLOW_ARROW" not in lz and "W_OZ_1" in lz and "W_OZ_1" in ld
+    title = lambda p: next(e.dxf.text for e in ezdxf.readfile(p).modelspace().query("TEXT") if e.dxf.layer == "W_TITLE")  # noqa: E731
+    assert "design" not in title(rz["path"]).split(" - ")[0] and "with the current zoning" in title(rd["path"])
     msp = ezdxf.readfile(r["path"]).modelspace()
     txt = [e.dxf.text for e in msp.query("TEXT")]
     p = next(p for p in d["pipes"] if p["nominal"])

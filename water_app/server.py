@@ -781,8 +781,9 @@ class Handler(BaseHTTPRequestHandler):
         from . import wdxf
 
         def export():
-            path, cnt = wdxf.export(safe_name(req.get("name")))
-            return {"ok": True, "path": path, "folder": os.path.dirname(path), "counts": cnt}
+            what = str(req.get("what") or "both")         # "zoning" / "design": each button its own drawing
+            path, cnt = wdxf.export(safe_name(req.get("name")), what=what)
+            return {"ok": True, "path": path, "folder": os.path.dirname(path), "counts": cnt, "what": what}
         with LOCK:
             return _answer(export, plain=ValueError)
 

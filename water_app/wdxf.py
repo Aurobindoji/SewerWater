@@ -95,12 +95,24 @@ def _text_height(stem, net):
     return cad.default_text_height(net), "from the pipe lengths"
 
 
-def export(stem, path=None):
-    """Writes the DXF (see the module text). Returns (path, counts)."""
+WHAT = ("both", "zoning", "design")
+
+
+def export(stem, path=None, what="both"):
+    """Writes the DXF (see the module text). Returns (path, counts).
+    what (user request 14-Nov-2026: the zoning's drawing and the design's kept apart, each from its own button) -
+    "zoning": the zoning alone, also when a design of it is there (<stem>_zoning_<date>_<time>.dxf);
+    "design": the design made with the current zoning - an error when there is none (<stem>_design_...);
+    "both": the zoning, and its design when there is one (<stem>_water_..., as before)."""
     import ezdxf
     from ezdxf.enums import TextEntityAlignment
     from . import ui_api
+    what = what if what in WHAT else "both"
     z, d = _kept(stem)
+    if what == "zoning":
+        d = None
+    elif what == "design" and not d:
+        raise ValueError("इस zoning का design नहीं है - पहले Design चलाएँ (no design of the current zoning yet)")
     net = ui_api.cut_net(stem, z.get("req"))                 # the pipes as cut at the barrier lines
     nodes = {n: v for n, v in net["nodes"].items() if v.get("xy")}
     to_xy = ui.converters_for(stem)[1]
@@ -303,8 +315,10 @@ def export(stem, path=None):
     # ---- title, opening view
     xs = [v["xy"][0] for v in nodes.values()]
     ys = [v["xy"][1] for v in nodes.values()]
-    what = "zoning (OZ / DMA) and design (PFR)" if d else "zoning (OZ / DMA) - no design of this zoning yet"
-    text(f"Water distribution network {stem}: {what} - zoning {z.get('time')}" + (f", design {d.get('time')}" if d else ""),
+    head = ("design (PFR) with the current zoning (OZ / DMA)" if d and what == "design" else
+            "zoning (OZ / DMA) and design (PFR)" if d else
+            "zoning (OZ / DMA)" if what == "zoning" else "zoning (OZ / DMA) - no design of this zoning yet")
+    text(f"Water distribution network {stem}: {head} - zoning {z.get('time')}" + (f", design {d.get('time')}" if d else ""),
          (min(xs), max(ys) + 10 * h), "W_TITLE", 4 * h, TextEntityAlignment.BOTTOM_LEFT)
     try:
         from ezdxf import zoom
@@ -315,7 +329,8 @@ def export(stem, path=None):
     if path is None:
         folder = os.path.join(ui.out_root(), stem)
         os.makedirs(folder, exist_ok=True)
-        path = os.path.join(folder, f"{stem}_water_{time.strftime('%Y%m%d_%H%M')}.dxf")
+        kind = {"zoning": "zoning", "design": "design"}.get(what, "water")
+        path = os.path.join(folder, f"{stem}_{kind}_{time.strftime('%Y%m%d_%H%M')}.dxf")
     doc.saveas(path)
     n.update(text_height=h, text_height_from=h_src, design=bool(d))
     return path, n

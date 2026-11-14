@@ -1,6 +1,6 @@
 [project]
 name = "sewer_app"
-version = "0.9.5"
+version = "0.9.6"
 description = "Gravity sewer and water supply network design to CPHEEO rules, without SewerGEMS / WaterGEMS"
 requires-python = ">=3.10"
 license = "GPL-3.0-or-later"

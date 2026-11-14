@@ -35,7 +35,13 @@ from . import rising as wrising
 from . import zoning as wz
 
 BOUNDARY_GAP_M = 400.0         # zone boundaries drawn across open land up to this between points
-STEP_M = 40.0                  # points along the pipes / the project boundary for drawing the zone boundaries
+STEP_M = 10.0                  # points along the pipes / the project boundary for drawing the zone boundaries: as
+                               # near each other as two mains along one road lie (40 m let a zone's line cut the
+                               # other zone's main between its points - user 14-Nov-2026)
+ALONE_M = 60.0                 # a pipe with no other pipe this near beside it (open land) is drawn in a strip
+STRIP_M = 20.0                 # ... this wide to each side: a zone reached by one pipe does not shrink to a point
+STRAIGHT_M = 25.0              # a zone boundary is straightened: its points up to this far off a straight line go
+                               # (user request 14-Nov-2026), where no point of the network changes its side by it
 
 
 def _project_area(stem):
@@ -75,21 +81,68 @@ def _mid_along(pts):
     return tuple(pts[0])
 
 
+def _enclosed(neighbors, keep, inside):
+    """The triangles left out for their length that the kept ones close in on every side (open land in the middle
+    of the zones - user 14-Nov-2026: the zones' lines made an empty figure there): True for those. Open land that
+    reaches the edge of all the points, or the outside of the project boundary, stays out."""
+    import numpy as np
+    n = len(keep)
+    out = np.zeros(n, dtype=bool)                             # open land reached from outside
+    stack = [i for i in range(n) if not keep[i] and (not inside[i] or (neighbors[i] < 0).any())]
+    out[stack] = True
+    while stack:
+        i = stack.pop()
+        for j in neighbors[i]:
+            if j >= 0 and not keep[j] and not out[j]:
+                out[j] = True
+                stack.append(j)
+    return ~keep & ~out & inside
+
+
 def _zone_tri(stem, net):
-    """Triangles for zone_regions, built once for OZs and DMAs: points along every pipe (each standing for the pipe's
-    start node) and along the project boundary (each standing for the node of the nearest pipe point); triangles
-    longer than BOUNDARY_GAP_M or with their middle outside the boundary dropped. Returns (tg, node of each point)."""
+    """Triangles for zone_regions, built once for OZs and DMAs: points along every pipe (each standing for the nearer
+    end of its pipe - a pipe between two zones is cut half way, where its valve is drawn) and along the project
+    boundary (each standing for the node of the nearest pipe point); triangles
+    longer than BOUNDARY_GAP_M (unless the zones close them in - _enclosed) or with their middle outside the boundary
+    dropped. Returns (tg, node of each point,
+    (X, Y) of the points on the pipes - the ones a straightened boundary must not pass)."""
     import numpy as np
     from matplotlib.path import Path
     import matplotlib.tri as mtri
     pts, who = [], []
+    way, of_pipe, way_of = [], [], []                         # the pipe's direction at each point; its pipe
     for c in net["conduits"]:
         vs = c.get("vertices") or [net["nodes"][c["start_node"]]["xy"], net["nodes"][c["stop_node"]]["xy"]]
-        for p in _along(vs, STEP_M):
+        run = _along(vs, STEP_M)
+        half, gone = sum(math.dist(a, b) for a, b in zip(run, run[1:])) / 2, 0.0
+        for i, p in enumerate(run):
+            a, b = run[max(0, i - 1)], run[min(len(run) - 1, i + 1)]
+            L = math.dist(a, b)
+            gone += math.dist(run[i - 1], p) if i else 0.0
             pts.append(p)
-            who.append(c["start_node"])
+            who.append(c["start_node"] if gone <= half else c["stop_node"])
+            way.append(((b[0] - a[0]) / L, (b[1] - a[1]) / L) if L > 1e-9 else None)
+            of_pipe.append(len(way_of))
+        way_of.append(c["label"])
     if len(pts) < 3:
-        return None, []
+        return None, [], None
+    n_pipe = len(pts)
+    # a pipe alone in open land: a point to each side of it, so its zone has a strip there, not a line of no width
+    from scipy.spatial import cKDTree
+    P1 = np.array(pts)
+    near = cKDTree(P1).query_ball_point(P1, ALONE_M)
+    pipe_of = np.array(of_pipe)
+    for i in range(n_pipe):
+        if way[i] is None:
+            continue
+        ux, uy = way[i]
+        other = [j for j in near[i] if pipe_of[j] != pipe_of[i]]
+        q = P1[other] - P1[i]
+        if len(other) and np.any(np.abs(q[:, 0] * -uy + q[:, 1] * ux) > STRIP_M * 0.6):
+            continue                                          # another pipe beside it
+        for sgn in (1.0, -1.0):
+            pts.append((pts[i][0] - sgn * uy * STRIP_M, pts[i][1] + sgn * ux * STRIP_M))
+            who.append(who[i])
     area = _project_area(stem)
     P0 = np.array(pts)
     for ring in area:
@@ -98,18 +151,21 @@ def _zone_tri(stem, net):
             who.append(who[int(np.argmin((P0[:, 0] - p[0]) ** 2 + (P0[:, 1] - p[1]) ** 2))])
     X = np.array([p[0] for p in pts])
     Y = np.array([p[1] for p in pts])
-    T = mtri.Triangulation(X, Y).triangles
+    tri = mtri.Triangulation(X, Y)
+    T = tri.triangles
     el = np.max(np.stack([np.hypot(X[T[:, i]] - X[T[:, j]], Y[T[:, i]] - Y[T[:, j]])
                           for i, j in ((0, 1), (1, 2), (2, 0))]), axis=0)
     keep = el <= BOUNDARY_GAP_M
+    inside = np.ones(len(T), dtype=bool)
     if area:
         mid = np.column_stack([X[T].mean(axis=1), Y[T].mean(axis=1)])
         inside = np.zeros(len(T), dtype=bool)
         for ring in area:
             inside |= Path(np.array(ring)).contains_points(mid)
         keep &= inside
+    keep |= _enclosed(tri.neighbors, keep, inside)
     ids = [f"p{i}" for i in range(len(pts))]
-    return (ids, X, Y, T[keep]), who
+    return (ids, X, Y, T[keep]), who, (X[:n_pipe], Y[:n_pipe])
 
 
 BULK_FAR_M = 200.0     # a bulk consumer farther than this from its junction: flagged
@@ -1357,13 +1413,10 @@ def _zoning_res(stem, folder, net, wnet, ohts, crit, z):
     ll = ui.to_latlng(stem)
     xy = {n: v["xy"] for n, v in wnet["nodes"].items()}
 
-    tg, who = _zone_tri(stem, net)
+    tg, who, on_pipes = _zone_tri(stem, net)
 
-    def regions(of_node):
-        """Boundaries of the groups (OZ or DMA) of the nodes: a pipe point belongs to its pipe's start node's group."""
-        groups = {f"p{i}": of_node.get(n) for i, n in enumerate(who)}
-        groups = {k: v for k, v in groups.items() if v is not None}
-        regs = szoning.zone_regions(tg, groups) if tg else {}
+    def shown(regs):
+        """The areas as the page draws them: rings (lat, lon; the small ones left out), a label point, the area."""
         out = {}
         for g, r in regs.items():
             rings = sorted(r.get("rings", []), key=lambda q: -abs(ui._ring_area(q)))
@@ -1374,12 +1427,30 @@ def _zoning_res(stem, folder, net, wnet, ohts, crit, z):
                       "label": ll(ui._interior(keep[0])) if keep else None, "area_ha": round(r.get("area", 0.0) / 1e4, 2)}
         return out
 
+    def regions():
+        """Boundaries of the OZs and of the DMAs: a pipe point belongs to its pipe's start node's OZ and DMA. The
+        OZs are made of their DMAs' areas (a part of an OZ in no DMA: an area of its own), so a line of an OZ and
+        of a DMA is the same line."""
+        fine, parent = {}, {}
+        for i, n in enumerate(who):
+            o, d = z["oz"].get(n), z["dma"].get(n)
+            if o is None and d is None:
+                continue
+            key = ("dma", d) if d is not None else ("oz", o)
+            fine[f"p{i}"] = key
+            if o is not None:
+                parent[key] = o
+        if not tg:
+            return {}, {}
+        small, large = szoning.zone_regions(tg, fine, straighten=STRAIGHT_M, guard=on_pipes, parent=parent)
+        return shown(large), shown({k[1]: v for k, v in small.items() if k[0] == "dma"})
+
     def density(x, reg):
         """Area (ha, of the region drawn) and persons per ha of an OZ / DMA - to check the population as spread
         (user request 30-Oct-2026: a checking map)."""
         a = (reg or {}).get("area_ha") or 0.0
         return {"area_ha": a, "density": round(x["population"] / a, 1) if a > 0 else None}
-    oz_regs, dma_regs = regions(z["oz"]), regions(z["dma"])
+    oz_regs, dma_regs = regions()
     pipe_zone = {lab: z["oz"].get(p["a"]) for lab, p in wnet["pipes"].items()}
     pipe_dma = {lab: z["dma"].get(p["a"]) if z["dma"].get(p["a"]) == z["dma"].get(p["b"]) else None
                 for lab, p in wnet["pipes"].items()}

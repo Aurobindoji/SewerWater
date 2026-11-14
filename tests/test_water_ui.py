@@ -396,8 +396,16 @@ def test_water_dxf_export(server):
     assert z["ok"]
     r = call(url + "/api/w/water_export", {"name": "wx"})
     assert r["ok"] and not r["counts"]["design"] and os.path.isfile(r["path"])
-    layers = {e.dxf.layer for e in ezdxf.readfile(r["path"]).modelspace()}
+    doc = ezdxf.readfile(r["path"])
+    layers = {e.dxf.layer for e in doc.modelspace()}
     assert {"W_OZ_1", "W_DMA_BOUNDARY", "W_OHT", "W_PIPE", "W_JUNCTION", "W_JUNCTION_TEXT", "W_TITLE"} <= layers
+    # an OZ boundary and a DMA boundary told apart (user request 14-Nov-2026): thick dash-dot, thin dashed
+    oz = [e for e in doc.modelspace().query("LWPOLYLINE") if e.dxf.layer.startswith("W_OZ_")]
+    dma = [e for e in doc.modelspace().query("LWPOLYLINE") if e.dxf.layer == "W_DMA_BOUNDARY"]
+    assert oz and dma and {e.dxf.linetype for e in oz} == {"W_OZ_DASHDOT"} and {e.dxf.linetype for e in dma} == {"W_DMA_DASHED"}
+    assert min(e.dxf.lineweight for e in oz) > 2 * max(e.dxf.lineweight for e in dma)
+    assert all(e.dxf.flags & 128 and e.dxf.ltscale > 1 for e in oz + dma) and doc.header["$LWDISPLAY"] == 1
+    assert {"W_OZ_DASHDOT", "W_DMA_DASHED"} <= {t.dxf.name for t in doc.linetypes} and not doc.audit().errors
     d = call(url + "/api/w/water_design", {"name": "wx", "pop_factor": 1.5})
     assert d["ok"], d.get("log")
     r = call(url + "/api/w/water_export", {"name": "wx"})

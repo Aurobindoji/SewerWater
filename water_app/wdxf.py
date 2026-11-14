@@ -5,8 +5,9 @@
 One drawing, in the drawing's own coordinates (a DXF network: those of the original drawing - XREF / INSERT it there;
 a layout: UTM metres), its layers switched on / off in AutoCAD:
     zoning (the last zoning kept for the page):
-        W_OZ_<n>         boundary of OZ n (one colour each) and its name, population, OHT capacity
-        W_DMA_BOUNDARY   DMA boundaries (dashed) and names, population, connections
+        W_OZ_<n>         boundary of OZ n (one colour each; a thick dash-dot line) and its name, population, OHT
+                         capacity
+        W_DMA_BOUNDARY   DMA boundaries (a thin dashed line) and names, population, connections
         W_VALVE          the pipes closed at OZ / DMA boundaries: a valve symbol (circle with a cross) on the pipe
         W_DMA_INLET      the one inlet of a DMA: bulk meter + FCV + isolation valve (CPHEEO Table 2.7 S.No.21, 24, 26)
         W_OHT            the OHTs (a square) with name, capacity, staging
@@ -37,6 +38,15 @@ LAYERS = {"W_PIPE": 5, "W_PIPE_CLOSED": 1, "W_PIPE_TEXT": 4, "W_FLOW_ARROW": 5, 
 OZ_COLOURS = [1, 3, 5, 6, 30, 4, 2, 140, 200, 40, 90, 170, 230, 10, 110, 60, 250]     # AutoCAD colour index per OZ
 LEADER = 3.0                  # x the text height: leader line of a pipe label that does not fit on its pipe
 RESIDUAL_HEAD_M = 17.0        # below this a junction is drawn on W_JUNCTION_LOW (CPHEEO Table 2.7 S.No.4)
+# the boundaries told apart at a glance (user request 14-Nov-2026): an OZ boundary thick and dash-dot, a DMA
+# boundary thin and dashed. Patterns in units of BOUNDARY_LT_SCALE x the text height (the drawing is in metres:
+# AutoCAD's own DASHED, 1.3 m long, looks like a full line there); lineweights in 1/100 mm, shown on the screen too
+OZ_LINETYPE, DMA_LINETYPE = "W_OZ_DASHDOT", "W_DMA_DASHED"
+LINETYPES = {OZ_LINETYPE: ("OZ boundary ____ . ____ . ____ .", [10.0, 6.0, -2.0, 0.0, -2.0]),
+             DMA_LINETYPE: ("DMA boundary __ __ __ __ __ __", [4.5, 3.0, -1.5])}
+BOUNDARY_LT_SCALE = 6.0
+OZ_LINEWEIGHT, DMA_LINEWEIGHT = 80, 25
+PLINEGEN = 128                # LWPOLYLINE flag: the pattern runs on through the corners
 
 
 def pipe_text(label, nominal, length, chord, h, r):
@@ -99,7 +109,11 @@ def export(stem, path=None):
     doc = ezdxf.new("R2010", setup=True)
     for name, col in LAYERS.items():
         doc.layers.add(name, color=col)
-    doc.layers.get("W_DMA_BOUNDARY").dxf.linetype = "DASHED"
+    for name, (desc, pattern) in LINETYPES.items():
+        doc.linetypes.add(name, pattern=pattern, description=desc)
+    dma_layer = doc.layers.get("W_DMA_BOUNDARY")
+    dma_layer.dxf.linetype, dma_layer.dxf.lineweight = DMA_LINETYPE, DMA_LINEWEIGHT
+    doc.header["$LWDISPLAY"] = 1                             # the lineweights seen on the screen, not only plotted
     msp = doc.modelspace()
     n = {"oz": 0, "dma": 0, "valves": 0, "inlets": 0, "ohts": 0, "pipes": 0, "junctions": 0, "leaders": 0, "low": 0,
          "barriers": 0}
@@ -110,26 +124,34 @@ def export(stem, path=None):
     def ring_xy(ring):
         return [tuple(p) for p in to_xy(ring)]
 
+    def boundary(ring, layer, linetype, lineweight):
+        """A closed boundary line in its own line style (set on the line itself too: seen in any viewer)."""
+        pl = msp.add_lwpolyline(ring_xy(ring), close=True,
+                                dxfattribs={"layer": layer, "linetype": linetype, "lineweight": lineweight,
+                                            "ltscale": round(BOUNDARY_LT_SCALE * h, 3)})
+        pl.dxf.flags |= PLINEGEN
+
     # ---- zoning: OZ and DMA boundaries and names
+    # the DMA boundaries first: where one runs along an OZ boundary, the OZ's thick line lies over it
+    for x in z["dmas"]:
+        for ring in x.get("rings") or []:
+            boundary(ring, "W_DMA_BOUNDARY", DMA_LINETYPE, DMA_LINEWEIGHT)
+        if x.get("label"):
+            at = to_xy([x["label"]])[0]
+            text(x["name"].split("/")[-1], (at[0], at[1] - 1.6 * h), "W_DMA_BOUNDARY", 1.6 * h)
+            text(f"pop {x['population']:,}, {x['connections']:,} conn", (at[0], at[1] - 3.2 * h), "W_DMA_BOUNDARY", h)
+        n["dma"] += 1
     for i, x in enumerate(z["zones"]):
         lay = f"W_OZ_{i + 1}"
-        doc.layers.add(lay, color=OZ_COLOURS[i % len(OZ_COLOURS)], lineweight=50)
+        doc.layers.add(lay, color=OZ_COLOURS[i % len(OZ_COLOURS)])
         for ring in x.get("rings") or []:
-            msp.add_lwpolyline(ring_xy(ring), close=True, dxfattribs={"layer": lay})
+            boundary(ring, lay, OZ_LINETYPE, OZ_LINEWEIGHT)
         if x.get("label"):
             at = to_xy([x["label"]])[0]
             kl = f"{x['capacity_kl']:g} KL" if x.get("capacity_kl") else f"new {x['required_kl']:g} KL"
             text(x["name"], (at[0], at[1] + 2.2 * h), lay, 2.5 * h)
             text(f"pop {x['population']:,}, {x['connections']:,} conn, OHT {kl}, {x['dma_count']} DMA", at, lay, 1.2 * h)
         n["oz"] += 1
-    for x in z["dmas"]:
-        for ring in x.get("rings") or []:
-            msp.add_lwpolyline(ring_xy(ring), close=True, dxfattribs={"layer": "W_DMA_BOUNDARY"})
-        if x.get("label"):
-            at = to_xy([x["label"]])[0]
-            text(x["name"].split("/")[-1], (at[0], at[1] - 1.6 * h), "W_DMA_BOUNDARY", 1.6 * h)
-            text(f"pop {x['population']:,}, {x['connections']:,} conn", (at[0], at[1] - 3.2 * h), "W_DMA_BOUNDARY", h)
-        n["dma"] += 1
 
     # ---- the pipes: as drawn (vertices), else straight between their junctions
     def pts_of(c):

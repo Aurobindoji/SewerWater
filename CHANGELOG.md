@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.9.6 (beta) - 2026-11-14
+
+- Water supply, the DXF of the zoning and design: an OZ boundary and a DMA boundary no longer look alike. An OZ
+  boundary is a thick dash-dot line, a DMA boundary a thin dashed line, and where both run together the OZ's lies
+  on top. The dashes are sized for a drawing in metres, and the drawing shows the lineweights on the screen.
+- Water supply, the zone boundaries on the map and in the DXF are straight where they can be, with no needless
+  zig-zag. Between two zones a boundary now runs half way in a straight line, and every stretch is straightened as
+  long as no pipe changes its side by it. An OZ's line is the very line of its DMAs. A zone reached by one pipe
+  across open land is drawn with a strip along that pipe, so its outline no longer shrinks to a point and crosses.
+  A zone's line also no longer cuts the other zone's main where two mains run along one road: the lines are now
+  worked out from points every 10 m along the pipes (40 m before), and a pipe between two zones is cut half way,
+  where its valve is drawn.
+  Open land that the zones close in on every side now belongs to them, so their lines meet there in one line
+  instead of leaving an empty figure. The area of a zone (and its persons per hectare) changes with these.
+
 ## 0.9.5 (beta) - 2026-11-14
 
 - Water supply, a network from a DXF: **junctions only where pipes join**. A drawing with a point every 20-30 m

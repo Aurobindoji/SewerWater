@@ -107,5 +107,10 @@ def test_open_land_the_zones_close_in_is_theirs():
     assert back[middle & ~keep].all() and (middle & ~keep).any()          # the middle: shut in, comes back
     assert not back[(cx > 400.0)].any()                                    # towards the far point: open, stays out
     assert not (back & keep).any()
+    # a size limit: the middle (about 28 ha) is too large to be a block between streets - it stays empty land
+    a2 = np.abs((X[T][:, 1] - X[T][:, 0]) * (Y[T][:, 2] - Y[T][:, 0])
+                - (X[T][:, 2] - X[T][:, 0]) * (Y[T][:, 1] - Y[T][:, 0])) / 2
+    assert not ui_api._enclosed(tri.neighbors, keep, np.ones(len(T), dtype=bool), a2, 30000.0).any()
+    assert ui_api._enclosed(tri.neighbors, keep, np.ones(len(T), dtype=bool), a2, 400000.0)[middle & ~keep].all()
     # the same middle outside the project boundary: stays out
     assert not ui_api._enclosed(tri.neighbors, keep, ~middle).any()

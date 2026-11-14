@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.9.7 (beta) - 2026-11-14
+
+- Water supply: an **Export DXF** button beside "Zoning (OZ / DMA)" too, for the DXF right after a zoning, before
+  any design. It is the same export as the button beside "Design".
+- Water supply: a zone's line now goes round empty land instead of running on into it. The zones are drawn across
+  open land only up to 120 m (400 m before) - the blocks between streets - and land they close in on every side
+  is theirs only up to 3 ha; wider empty land stays outside every zone. A zone's line also runs 20 m beside its
+  outer pipes, not on them. The area of a zone (and its persons per hectare) is smaller by the empty land.
+
 ## 0.9.6 (beta) - 2026-11-14
 
 - Water supply, the DXF of the zoning and design: an OZ boundary and a DMA boundary no longer look alike. An OZ

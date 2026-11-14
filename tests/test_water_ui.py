@@ -52,7 +52,10 @@ def call(url, body=None):
 
 def test_water_layout_zoning_design(server, sewer):
     url, tmp = server
-    assert "leaflet@1.9.4" in call(url + "/water")                         # the map page in water mode
+    page = call(url + "/water")
+    assert "leaflet@1.9.4" in page                                         # the map page in water mode
+    # the DXF export beside "Zoning" too (user request 14-Nov-2026), the same handler as the one beside "Design"
+    assert 'id="wexportz"' in page and '$("wexport").onclick = $("wexportz").onclick' in page
     with open(SAMPLE, encoding="utf-8") as fh:
         kml = fh.read()
     r = call(url + "/api/w/layout", {"name": "wtest", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100})

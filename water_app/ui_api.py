@@ -34,12 +34,16 @@ from . import prv as wprv
 from . import rising as wrising
 from . import zoning as wz
 
-BOUNDARY_GAP_M = 400.0         # zone boundaries drawn across open land up to this between points
+BOUNDARY_GAP_M = 120.0         # zone boundaries drawn across open land up to this between points - the blocks
+                               # between streets; wider empty land stays outside the zones, their lines go round
+                               # it (user 14-Nov-2026; 400 m before, which drew the zones on into empty land)
+BLOCK_MAX_M2 = 30000.0         # land the zones close in on every side is theirs up to this size (a large block)
 STEP_M = 10.0                  # points along the pipes / the project boundary for drawing the zone boundaries: as
                                # near each other as two mains along one road lie (40 m let a zone's line cut the
                                # other zone's main between its points - user 14-Nov-2026)
-ALONE_M = 60.0                 # a pipe with no other pipe this near beside it (open land) is drawn in a strip
-STRIP_M = 20.0                 # ... this wide to each side: a zone reached by one pipe does not shrink to a point
+ALONE_M = 60.0                 # a pipe with no other pipe this near on one side of it (open land there) gets
+STRIP_M = 20.0                 # ... a strip this wide on that side: the zone's line runs beside its outer pipes,
+                               # not on them, and a zone reached by one pipe does not shrink to a point
 STRAIGHT_M = 25.0              # a zone boundary is straightened: its points up to this far off a straight line go
                                # (user request 14-Nov-2026), where no point of the network changes its side by it
 
@@ -81,22 +85,34 @@ def _mid_along(pts):
     return tuple(pts[0])
 
 
-def _enclosed(neighbors, keep, inside):
-    """The triangles left out for their length that the kept ones close in on every side (open land in the middle
-    of the zones - user 14-Nov-2026: the zones' lines made an empty figure there): True for those. Open land that
-    reaches the edge of all the points, or the outside of the project boundary, stays out."""
+def _enclosed(neighbors, keep, inside, area=None, max_area=None):
+    """The triangles left out for their length that the kept ones close in on every side: True for those - a block
+    between streets belongs to its zones. Open land that reaches the edge of all the points, or the outside of the
+    project boundary, stays out; and so does open land larger than max_area (m2, with area = each triangle's) -
+    user 14-Nov-2026: a zone's line goes round empty land, the zones are not drawn on into it to meet there."""
     import numpy as np
     n = len(keep)
-    out = np.zeros(n, dtype=bool)                             # open land reached from outside
-    stack = [i for i in range(n) if not keep[i] and (not inside[i] or (neighbors[i] < 0).any())]
-    out[stack] = True
-    while stack:
-        i = stack.pop()
-        for j in neighbors[i]:
-            if j >= 0 and not keep[j] and not out[j]:
-                out[j] = True
-                stack.append(j)
-    return ~keep & ~out & inside
+    comp = np.full(n, -1)
+    open_ = []                                               # per piece of left-out land: reaches the outside?
+    size = []
+    for i0 in range(n):
+        if keep[i0] or comp[i0] >= 0:
+            continue
+        k = len(open_)
+        comp[i0] = k
+        stack, out, a = [i0], False, 0.0
+        while stack:
+            i = stack.pop()
+            out = out or not inside[i] or bool((neighbors[i] < 0).any())
+            a += float(area[i]) if area is not None else 0.0
+            for j in neighbors[i]:
+                if j >= 0 and not keep[j] and comp[j] < 0:
+                    comp[j] = k
+                    stack.append(j)
+        open_.append(out)
+        size.append(a)
+    ok = np.array([not o and (max_area is None or a <= max_area) for o, a in zip(open_, size)], dtype=bool)
+    return (comp >= 0) & ok[np.maximum(comp, 0)] & inside if len(ok) else np.zeros(n, dtype=bool)
 
 
 def _zone_tri(stem, net):
@@ -127,7 +143,7 @@ def _zone_tri(stem, net):
     if len(pts) < 3:
         return None, [], None
     n_pipe = len(pts)
-    # a pipe alone in open land: a point to each side of it, so its zone has a strip there, not a line of no width
+    # open land beside a pipe: a point on that side of it, so its zone has a strip there, not a line of no width
     from scipy.spatial import cKDTree
     P1 = np.array(pts)
     near = cKDTree(P1).query_ball_point(P1, ALONE_M)
@@ -138,9 +154,10 @@ def _zone_tri(stem, net):
         ux, uy = way[i]
         other = [j for j in near[i] if pipe_of[j] != pipe_of[i]]
         q = P1[other] - P1[i]
-        if len(other) and np.any(np.abs(q[:, 0] * -uy + q[:, 1] * ux) > STRIP_M * 0.6):
-            continue                                          # another pipe beside it
+        side = q[:, 0] * -uy + q[:, 1] * ux if len(other) else np.zeros(0)       # + to the left of the pipe
         for sgn in (1.0, -1.0):
+            if np.any(sgn * side > STRIP_M * 0.6):
+                continue                                      # another pipe on this side of it
             pts.append((pts[i][0] - sgn * uy * STRIP_M, pts[i][1] + sgn * ux * STRIP_M))
             who.append(who[i])
     area = _project_area(stem)
@@ -163,7 +180,9 @@ def _zone_tri(stem, net):
         for ring in area:
             inside |= Path(np.array(ring)).contains_points(mid)
         keep &= inside
-    keep |= _enclosed(tri.neighbors, keep, inside)
+    x, y = X[T], Y[T]
+    a2 = np.abs((x[:, 1] - x[:, 0]) * (y[:, 2] - y[:, 0]) - (x[:, 2] - x[:, 0]) * (y[:, 1] - y[:, 0])) / 2
+    keep |= _enclosed(tri.neighbors, keep, inside, a2, BLOCK_MAX_M2)
     ids = [f"p{i}" for i in range(len(pts))]
     return (ids, X, Y, T[keep]), who, (X[:n_pipe], Y[:n_pipe])
 

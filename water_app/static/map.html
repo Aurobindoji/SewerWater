@@ -511,7 +511,8 @@
         <input type="text" id="winflow" value="5-12, 13-22" placeholder="5-12, 13-22" style="width:9em"></div>
       <div class="row"><label title="drawing के दो अलग टुकड़े (कोई pipe नहीं जोड़ता) इतनी दूरी या कम पर हों तो Zoning चेतावनी देती है (नक्शे पर लाल बिंदीदार रेखा) - शायद drawing में छूटा जोड़">Gap की चेतावनी (m तक)</label>
         <input type="number" id="wnearm" value="50" min="1" max="1000" step="1"></div>
-      <div class="stepact"><button id="wzrun" class="primary">Zoning (OZ / DMA)</button></div>
+      <div class="stepact"><button id="wzrun" class="primary">Zoning (OZ / DMA)</button>
+        <button id="wexportz" title="Zoning की DXF (उस पर design बना हो तो वह भी) - AutoCAD के लिए">Export DXF</button></div>
       <div class="status" id="wstatus"></div>
       <div id="wzbox"></div>
       <div class="stepbar">Design</div>
@@ -3003,7 +3004,8 @@ $("wdrun").onclick = () => longTask(tr("पेयजल design", "Water design")
      wDesign.checks.every(c => c.ok) ? "ok" : "warn"]);
 
 // DXF of the last zoning and, when made on it, its design (user request 21-Oct-2026)
-$("wexport").onclick = () => {
+// the same button beside "Zoning" (user request 14-Nov-2026: the DXF right after a zoning, before any design)
+$("wexport").onclick = $("wexportz").onclick = () => {
   let r = null;
   longTask(tr("DXF export (zoning + design)", "DXF export (zoning + design)"), async () => {
     r = await api("/api/water_export", { name: $("pname").value });
@@ -4436,6 +4438,8 @@ const TIPS = [
              "Design the pipe sizes and the tank stagings - 17 m residual head at every junction (CPHEEO Table 2.7)"],
   ["#wplace", "Zoning में सुझाई नई टंकियाँ नक्शे पर रखें", "Put the new tanks the zoning proposes onto the map"],
   ["#wexport", "पिछली zoning (OZ / DMA सीमा, बंद valves, DMA inlet, OHT) और उस पर बना design (pipe size, लंबाई, flow, GL / HGL / residual head) एक DXF में - drawing वाले coordinates",
+               "The last zoning (OZ / DMA boundaries, closed valves, DMA inlets, OHTs) and its design (pipe sizes, lengths, flow, GL / HGL / residual head) in one DXF - the drawing's coordinates"],
+  ["#wexportz", "पिछली zoning (OZ / DMA सीमा, बंद valves, DMA inlet, OHT) और उस पर बना design (pipe size, लंबाई, flow, GL / HGL / residual head) एक DXF में - drawing वाले coordinates",
                "The last zoning (OZ / DMA boundaries, closed valves, DMA inlets, OHTs) and its design (pipe sizes, lengths, flow, GL / HGL / residual head) in one DXF - the drawing's coordinates"],
   // the pipe / manhole table
   ["#tbltabs button", "तालिका बदलें: conduits / junctions (पेयजल: pipes / junctions)", "Switch table: conduits / junctions (water: pipes / junctions)"],

@@ -474,7 +474,8 @@ def _interior(ring, n=14):
 
 # ---------------------------------------------------------------------------------------- the page's calls (HTTP)
 LOCAL_HOSTS = ("127.0.0.1", "localhost")
-PAGES = {"/water": ("map.html", "text/html; charset=utf-8"), "/i18n.js": ("i18n.js", "text/javascript; charset=utf-8")}
+PAGES = {"/water": ("map.html", "text/html; charset=utf-8"), "/i18n.js": ("i18n.js", "text/javascript; charset=utf-8"),
+         "/favicon.ico": ("favicon.ico", "image/x-icon")}        # the app icon on the tab (14-Nov-2026)
 # a DXF network's own drawing, each kind a list kept as projects\<name>.<kind>.json:
 # GET /api/<kind>?name=... reads it, POST /api/<kind>_save writes it
 LISTS = ("ohts", "barriers", "loops", "crossings", "wards", "bulk", "prv", "tw")

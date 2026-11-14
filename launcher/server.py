@@ -28,6 +28,7 @@ STATIC = os.path.join(HERE, "static")
 # module -> (its port, its page)
 MODULES = {"sewer": (8765, "/sewer"), "water": (8766, "/water")}
 ORIGINS = {f"http://{h}:{p}" for h in ("127.0.0.1", "localhost") for p in (PORT, 8765, 8766)}
+ICONS = {"/favicon.ico": "image/x-icon", "/icon.png": "image/png"}
 _LOCK = threading.Lock()
 _STARTED = {}                                   # module -> the version its server must answer with
 
@@ -106,6 +107,9 @@ class Handler(BaseHTTPRequestHandler):
         if u.path in ("/", "/index.html"):
             with open(os.path.join(STATIC, "start.html"), "rb") as fh:
                 return self._send(200, fh.read(), "text/html; charset=utf-8")
+        if u.path in ICONS:                              # the app icon: on the tab, and on the start page
+            with open(os.path.join(STATIC, u.path[1:]), "rb") as fh:
+                return self._send(200, fh.read(), ICONS[u.path])
         if u.path == "/about":                           # the About page (10-Nov-2026)
             from . import about
             return self._send(200, about.about_html().encode("utf-8"), "text/html; charset=utf-8")

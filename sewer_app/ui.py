@@ -1182,7 +1182,8 @@ def _sewer_checks(d, R, s_min, cov):
 
 # ---------------------------------------------------------------------------------------- the page's calls (HTTP)
 LOCAL_HOSTS = ("127.0.0.1", "localhost")
-PAGES = {"/sewer": ("map.html", "text/html; charset=utf-8"), "/i18n.js": ("i18n.js", "text/javascript; charset=utf-8")}
+PAGES = {"/sewer": ("map.html", "text/html; charset=utf-8"), "/i18n.js": ("i18n.js", "text/javascript; charset=utf-8"),
+         "/favicon.ico": ("favicon.ico", "image/x-icon")}        # the app icon on the tab (14-Nov-2026)
 # a DXF network's zoning tools (27-Oct-2026), each a list kept as projects\<name>.<kind>.json:
 # GET /api/<kind>?name=... reads it, POST /api/<kind>_save writes it
 LISTS = ("barriers", "loops", "crossings")

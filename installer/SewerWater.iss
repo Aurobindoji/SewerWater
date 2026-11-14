@@ -9,7 +9,7 @@
 #define AppExe "SewerWater.exe"
 #ifndef AppVersion
   ; build_setup.bat passes launcher\about.py APP_VERSION (/DAppVersion=...); this only when ISCC runs alone
-  #define AppVersion "0.9.7"
+  #define AppVersion "0.9.8"
 #endif
 
 [Setup]
@@ -31,6 +31,7 @@ OutputBaseFilename=SewerWater_Setup_{#AppVersion}
 Compression=lzma2/max
 SolidCompression=yes
 WizardStyle=modern
+SetupIconFile=SewerWater.ico
 UninstallDisplayIcon={app}\{#AppExe}
 UninstallDisplayName={#AppName}
 CloseApplications=yes

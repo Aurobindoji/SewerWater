@@ -20,5 +20,7 @@ a = Analysis(
     excludes=["tkinter", "pytest", "IPython"],
 )
 pyz = PYZ(a.pure)
-exe = EXE(pyz, a.scripts, [], exclude_binaries=True, name="SewerWater", console=False)
+# the app icon (user request 14-Nov-2026): the exe, its windows and the shortcuts the setup makes
+exe = EXE(pyz, a.scripts, [], exclude_binaries=True, name="SewerWater", console=False,
+          icon="installer/SewerWater.ico")
 coll = COLLECT(exe, a.binaries, a.datas, name="SewerWater")

@@ -6,7 +6,7 @@ A Windows desktop app for planning and designing urban **sewerage** and **water 
 CPHEEO manuals (Government of India). You start from a map or a CAD drawing. The app gives you a checked
 network design, CAD drawings and a DPR cost estimate in Excel. You do not need SewerGEMS or WaterGEMS.
 
-> **Beta (v0.9.4).** The app is a design aid. A qualified engineer must check every result before it is used
+> **Beta (v0.9.5).** The app is a design aid. A qualified engineer must check every result before it is used
 > for tender or construction. This applies most of all to the structural design of the Intze tanks.
 
 ## Features
@@ -85,7 +85,7 @@ network design, CAD drawings and a DPR cost estimate in Excel. You do not need S
 - An internet connection for the map background (optional).
 
 **Steps:**
-1. Download `SewerWater_Setup_0.9.4.exe` from the [Releases](../../releases) page.
+1. Download `SewerWater_Setup_0.9.5.exe` from the [Releases](../../releases) page.
 2. Run it. The setup installs for your user account only, so it needs no administrator rights.
 3. The setup is not code-signed. If Windows SmartScreen warns you, click **More info**, then **Run anyway**.
 4. On the first start, choose a folder for your data. The app makes `Sewer`, `Water` and `App` sub-folders in

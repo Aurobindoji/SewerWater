@@ -220,8 +220,9 @@ def dxf_layers(path, water=False):
 
 
 def import_dxf(out_root, stem, path, pipe_layers, mh_layers=(), level_layers=(), epsg=32644, log=print, z_mode="auto",
-               node_prefix=None, pipe_prefix=None):
-    """dxf_extract.extract -> working state (network, problems of the drawing, settings) - saved and returned."""
+               node_prefix=None, pipe_prefix=None, joints_only=False):
+    """dxf_extract.extract -> working state (network, problems of the drawing, settings) - saved and returned.
+    joints_only: junctions only where pipes join (through_merge) - those between two pipes are taken out."""
     from . import dxf_extract, dxf_inspect as di, network
     ex = dxf_extract.extract(path, list(pipe_layers), list(mh_layers), list(level_layers), z_mode=z_mode, node_prefix=node_prefix, pipe_prefix=pipe_prefix)
     for ln in ex["summary"]:
@@ -239,6 +240,12 @@ def import_dxf(out_root, stem, path, pipe_layers, mh_layers=(), level_layers=(),
     for k in st["net"]["conduits"]:
         k["id"] = st["next_id"]
         st["next_id"] += 1
+    if joints_only:
+        gone = through_merge(st["net"])
+        if gone:
+            _log(st, THROUGH, f"{len(gone)} junctions", "at the import")
+            log(f"   junctions only where pipes join: {len(gone)} junctions between two pipes removed - "
+                f"{len(st['net']['nodes'])} junctions, {len(st['net']['conduits'])} pipes")
     if st["epsg"] is None:                                       # local drawing: map around the middle
         xs = [v["xy"][0] for v in st["net"]["nodes"].values() if v.get("xy")]
         ys = [v["xy"][1] for v in st["net"]["nodes"].values() if v.get("xy")]
@@ -995,6 +1002,74 @@ def merge_pairs(net):
         deg[keep] += deg[drop]
         out.append((keep, drop, d))
     return out
+
+
+THROUGH = "junctions between two pipes removed (junctions only where pipes join)"
+
+
+def through_merge(net, keep=()):
+    """Junctions only where pipes join (user request 14-Nov-2026, water only): a junction with exactly two pipes - a
+    point along one line, as a drawing with a point every 30 m has them - goes; its two pipes become one, through
+    its place (a vertex now), the lengths added, the first pipe's name kept. Junctions with one pipe (ends) and
+    three or more (joints) stay, and so do those in `keep` (an OHT, a tube well, a bulk consumer stands there), a
+    ring's last junction, and one whose going would lay a second pipe between the same two junctions. Pipes with and
+    without house connections are not joined. Works on the network in place -> the junctions removed."""
+    nodes, conds = net["nodes"], net["conduits"]
+    keep = set(keep) | set(net.get("outfalls") or [])
+    at = collections.defaultdict(list)                    # junction -> its pipes
+    pairs = collections.Counter()
+    for k in conds:
+        at[k["start_node"]].append(k)
+        at[k["stop_node"]].append(k)
+        pairs[frozenset((k["start_node"], k["stop_node"]))] += 1
+    gone, dead = [], set()
+    for n in list(nodes):
+        if n in keep or len(at[n]) != 2:
+            continue
+        a, b = at[n]
+        if a is b or bool(a.get("no_conn")) != bool(b.get("no_conn")):
+            continue
+        far_a = a["stop_node"] if a["start_node"] == n else a["start_node"]
+        far_b = b["stop_node"] if b["start_node"] == n else b["start_node"]
+        if far_a == far_b or far_a == n or far_b == n or pairs[frozenset((far_a, far_b))]:
+            continue
+        va = [list(p) for p in a.get("vertices") or []]
+        vb = [list(p) for p in b.get("vertices") or []]
+        if a["start_node"] == n:                          # a: far_a -> n
+            va.reverse()
+        if b["stop_node"] == n:                           # b: n -> far_b
+            vb.reverse()
+        here = nodes[n].get("xy")
+        if not va and here and nodes[far_a].get("xy"):
+            va = [list(nodes[far_a]["xy"]), list(here)]
+        if not vb and here and nodes[far_b].get("xy"):
+            vb = [list(here), list(nodes[far_b]["xy"])]
+        pairs[frozenset((far_a, n))] -= 1
+        pairs[frozenset((far_b, n))] -= 1
+        pairs[frozenset((far_a, far_b))] += 1
+        a["start_node"], a["stop_node"] = far_a, far_b
+        a["vertices"] = va + vb[1:] if va and vb else va + vb
+        a["length_m"] = round(float(a["length_m"]) + float(b["length_m"]), 3)
+        if a.get("auto_join") and not b.get("auto_join"):
+            del a["auto_join"]
+        at[far_b] = [a if k is b else k for k in at[far_b]]
+        dead.add(id(b))
+        del at[n], nodes[n]
+        gone.append(n)
+    if dead:
+        conds[:] = [k for k in conds if id(k) not in dead]
+    return gone
+
+
+def joints_only(st, keep=()):
+    """through_merge on the working network: one undo step, logged. Returns the number of junctions removed."""
+    _snapshot(st)
+    gone = through_merge(st["net"], keep)
+    if gone:
+        _log(st, THROUGH, f"{len(gone)} junctions", f"{len(st['net']['nodes'])} junctions, "
+                                                   f"{len(st['net']['conduits'])} pipes left")
+    store(st)
+    return len(gone)
 
 
 def auto_repair(st, join_gap_m=1.0, tjoint_m=0.5, loops=False, gl=True, merge=True):

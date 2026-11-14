@@ -124,7 +124,8 @@ def net_import(req):
         st = netedit.import_dxf(out_root(), stem, path, pipes, req.get("mh_layers") or [], req.get("level_layers") or [],
                                 epsg_of(req), log=lines.append, z_mode=zm,
                                 node_prefix=name_prefix(req.get("node_prefix"), "J-"),
-                                pipe_prefix=name_prefix(req.get("pipe_prefix"), "P-"))
+                                pipe_prefix=name_prefix(req.get("pipe_prefix"), "P-"),
+                                joints_only=bool(req.get("joints_only")))
     except Exception as e:
         return {"ok": False, "log": "\n".join(lines) + f"\n{type(e).__name__}: {e}"}
     NETS[stem] = st
@@ -134,6 +135,26 @@ def net_import(req):
     out = netedit.page_data(st)
     out["log"] = "\n".join(lines)
     return out
+
+
+PLACED = ("ohts", "tw", "bulk")       # what the page places on a junction of a DXF network
+
+
+def placed_nodes(stem, st):
+    """The junctions an OHT, a tube well or a bulk consumer of the project stands on (the nearest to each): they
+    stay when the junctions between two pipes are taken out."""
+    from . import netedit
+    pts = []
+    for kind in PLACED:
+        for it in read_list(stem, kind):
+            ll = it.get("latlng") or [it.get("lat"), it.get("lng")] if isinstance(it, dict) else None
+            if ll and None not in ll[:2]:
+                pts.append([float(ll[0]), float(ll[1])])
+    nodes = [(n, v["xy"]) for n, v in st["net"]["nodes"].items() if v.get("xy")]
+    if not pts or not nodes:
+        return set()
+    return {min(nodes, key=lambda nv: (nv[1][0] - x) ** 2 + (nv[1][1] - y) ** 2)[0]
+            for x, y in netedit.converters(st)[1](pts)}
 
 
 def net_call(path, req, query):
@@ -161,6 +182,11 @@ def net_call(path, req, query):
             out = netedit.page_data(st)
             cnt = collections.Counter(r["repair"] for r in rows)
             out["log"] = "अपने-आप सुधार: " + (", ".join(f"{k} {v}" for k, v in cnt.most_common()) or "कुछ नहीं मिला")
+            return out
+        if path == "/api/net_joints":            # junctions only where pipes join (user request 14-Nov-2026)
+            n = netedit.joints_only(st, placed_nodes(stem, st))
+            out = netedit.page_data(st)
+            out["removed"] = n                    # the page says so, in its language
             return out
         if path == "/api/net_place":
             moved = netedit.place(st, req["from"], req["to"], req.get("points") or [])
@@ -764,7 +790,7 @@ class Handler(BaseHTTPRequestHandler):
             "/api/dxf_preview": _post_dxf_preview, "/api/dxf_layers": _post_dxf_layers,
             "/api/dxf_gl_options": _post_dxf_gl_options, "/api/dxf_import": _post_dxf_import,
             "/api/net_edit": _post_net, "/api/net_undo": _post_net, "/api/net_repair": _post_net,
-            "/api/net_save": _post_net, "/api/net_place": _post_net, "/api/projection": _post_projection,
+            "/api/net_save": _post_net, "/api/net_place": _post_net, "/api/net_joints": _post_net, "/api/projection": _post_projection,
             "/api/ward_kml_table": _post_ward_kml_table, "/api/city_wards_xlsx": _post_city_wards_xlsx,
             "/api/city_wards_import": _post_city_wards_import, "/api/water_join_plan": _post_water_join_plan,
             "/api/water_zoning": _post_water_zoning, "/api/water_design": _post_water_design,

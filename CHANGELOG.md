@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.5 (beta) - 2026-11-14
+
+- Water supply, a network from a DXF: **junctions only where pipes join**. A drawing with a point every 20-30 m
+  (as a sewer's manholes) used to give a junction on each. Tick the option when importing, or press
+  "Junction केवल joints पर" on a network already imported: a junction where only two pipes meet is removed and its
+  two pipes become one, with the same route and length. Ends, joints, and the junctions of an OHT, a tube well or
+  a bulk consumer stay. Undo takes it back. The ground levels of the removed junctions are no longer checked.
+
 ## 0.9.4 (beta) - 2026-11-11
 
 - Floating population is now a field in the population step of both apps ("Floating population (%)"),

@@ -7,6 +7,8 @@ import openpyxl
 
 from sewer_app import pumping, rising_main, zoning
 
+from sewer_app import zoning_out
+
 from synthetic import INP, synth
 
 
@@ -51,7 +53,7 @@ def test_zoning_costs_include_pumping_stations_and_rising_mains(tmp_path):
     crit["sewer"]["max_depth_project_m"]["value"] = 3.0
     z = zoning.run(synth(), INP, crit=crit, stp="OUT", max_zones=3, log=lambda s: None)
     assert any(ev["m"]["pumping stations"] for ev in z["rank"])
-    p = zoning.cost_workbook(z, str(tmp_path / "costs.xlsx"))
+    p = zoning_out.cost_workbook(z, str(tmp_path / "costs.xlsx"))
     wb = openpyxl.load_workbook(p, read_only=True)
     assert "Pumping stations" in wb.sheetnames and "SPS components" in wb.sheetnames
     groups = {str(r[2]) for r in list(wb["Items"].iter_rows(values_only=True))[1:]}

@@ -7,6 +7,8 @@ import ezdxf
 
 from sewer_app import cad, pipeline, zoning
 
+from sewer_app import zoning_out
+
 from synthetic import INP, synth
 
 
@@ -83,7 +85,7 @@ def test_short_pipe_label_on_a_leader(tmp_path):
 
 def test_zoning_outputs(tmp_path):
     z = zoning.run(synth(), INP, log=lambda s: None)
-    f = zoning.write_outputs(z, str(tmp_path / "zoning"), source="synthetic")
+    f = zoning_out.write_outputs(z, str(tmp_path / "zoning"), source="synthetic")
     for k in ("xlsx", "costs", "gl_png", "boundary_dxf"):
         assert f[k] and os.path.isfile(f[k]), k
     assert len(f["option_png"]) == len(f["network_dxf"]) == len(z["rank"])

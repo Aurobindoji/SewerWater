@@ -24,10 +24,10 @@ LAYERS = {
     },
     "sewer_app": {
         "core": "barriers check criteria design edits flows geo hindi hydraulics network pipeline population pumping "
-                "rising_main spacing zoning",
+                "quantities rising_main spacing zoning",
         "net": "dxf_extract dxf_inspect layout netedit repair",
         "project": "inputs project results",
-        "output": "cad dpr dpr_em dpr_format dpr_front dpr_more lsection report zone_export",
+        "output": "cad dpr dpr_em dpr_format dpr_front dpr_more lsection report zone_export zoning_out",
         "service": "design_run layout_cmd zoning_run",
         "web": "ui __main__",
     },
@@ -35,7 +35,7 @@ LAYERS = {
 # the breaks of today (15-Nov-2026), each to go in a stage of the restructure
 KNOWN = {
     "water_app": set(),
-    "sewer_app": {("zoning", "cad"), ("zoning", "report")},
+    "sewer_app": set(),
 }
 
 

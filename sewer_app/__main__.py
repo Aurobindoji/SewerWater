@@ -183,6 +183,7 @@ def cmd_design(argv):
 
 def cmd_zoning(argv):
     from . import zoning
+    from . import zoning_out
     ap = argparse.ArgumentParser(prog="python -m sewer_app zoning")
     network_args(ap)
     ap.add_argument("--stp", help="node where the STP is (fixed outlet, no pumping station)")
@@ -215,7 +216,7 @@ def cmd_zoning(argv):
         except ValueError:
             sys.exit(f"--ref-gl: '{ref}' is neither a level (m) nor a manhole label of this network")
     try:
-        f = zoning.write_outputs(z, base, source=src, network_dxf=a.network_dxf,
+        f = zoning_out.write_outputs(z, base, source=src, network_dxf=a.network_dxf,
                                  source_dxf=os.path.abspath(a.dxf) if a.dxf else None, band_map_on=not a.no_band_map,
                                  gl_ref=ref, gl_bands=a.gl_bands or inp.get("gl_bands"))
     except ValueError as e:

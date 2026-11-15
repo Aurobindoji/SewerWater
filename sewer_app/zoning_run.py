@@ -248,6 +248,7 @@ def run_zoning(name, req):
     for the page the ranked options with their costs, and for each option the zone of every sewer, the outlets
     (STP / pumping stations) and the cut sewers."""
     from . import zoning
+    from . import zoning_out
     from .zoning import VSEP
     stem = safe_name(name)
     folder, f_mh, _, _ = paths(stem)
@@ -264,7 +265,7 @@ def run_zoning(name, req):
                                 req.get("max_depth"), req.get("bend_drop"), req.get("edits"), req.get("mh_spacing"),
                                 req.get("bend_angle"), req.get("barriers"), req.get("loops"), req.get("crossings"))
         base = os.path.join(folder, f"{stem}_zoning_{time.strftime('%Y%m%d_%H%M')}")
-        f = zoning.write_outputs(z, base, source=_source(stem), network_dxf="best")
+        f = zoning_out.write_outputs(z, base, source=_source(stem), network_dxf="best")
     except Exception as e:
         return {"ok": False, "log": "\n".join(lines) + f"\n{type(e).__name__}: {e}"}
     ll = to_latlng(stem)

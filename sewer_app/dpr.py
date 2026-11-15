@@ -45,7 +45,7 @@ def settings():
 
 
 def nominal_mm(d):
-    from .report import nominal_mm as nom
+    from .quantities import nominal_mm as nom
     return nom(d)
 
 

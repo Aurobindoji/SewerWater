@@ -5,6 +5,8 @@ import copy
 import openpyxl
 
 from sewer_app import zoning
+
+from sewer_app import zoning_out
 from sewer_app.criteria import load_criteria
 
 from synthetic import INP, synth
@@ -18,8 +20,8 @@ def test_options_ranked_and_written(tmp_path):
     for ev in rank:                                   # every node in exactly one zone, every zone has an outlet
         assert set(ev["zone"]) == set(z["adj"])
         assert set(ev["zone"].values()) <= set(z["adj"])
-    p = zoning.write_workbook(z, str(tmp_path / "zoning.xlsx"), source="synthetic")
-    c = zoning.cost_workbook(z, str(tmp_path / "zoning_costs.xlsx"), source="synthetic")
+    p = zoning_out.write_workbook(z, str(tmp_path / "zoning.xlsx"), source="synthetic")
+    c = zoning_out.cost_workbook(z, str(tmp_path / "zoning_costs.xlsx"), source="synthetic")
     assert "Options" in openpyxl.load_workbook(p, read_only=True).sheetnames
     assert "Comparison" in openpyxl.load_workbook(c, read_only=True).sheetnames
 
@@ -83,16 +85,16 @@ def test_gl_band_map(tmp_path):
     """GL band map (from the original scripts zoning.py): ranges above a reference GL; every manhole and every metre of sewer
     falls in exactly one row (below / range / gap)."""
     import pytest
-    assert zoning.parse_bands("0-1.5, 1.5-3, 3-4.5, 4.5+") == [(0.0, 1.5), (1.5, 3.0), (3.0, 4.5), (4.5, None)]
+    assert zoning_out.parse_bands("0-1.5, 1.5-3, 3-4.5, 4.5+") == [(0.0, 1.5), (1.5, 3.0), (3.0, 4.5), (4.5, None)]
     with pytest.raises(ValueError):
-        zoning.parse_bands("1.5-0")
+        zoning_out.parse_bands("1.5-0")
     z = zoning.run(synth(), INP, log=lambda s: None)
     ref = round(min(z["gl"].values()) + 0.4, 2)
-    png, rows, text = zoning.band_outputs(z, str(tmp_path / "bands.png"), ref, "0-0.5, 0.7+")
+    png, rows, text = zoning_out.band_outputs(z, str(tmp_path / "bands.png"), ref, "0-0.5, 0.7+")
     assert png and (tmp_path / "bands.png").is_file() and f"{ref:.2f}" in text
     assert [r["kind"] for r in rows] == ["below", "range", "gap", "range"]
     assert sum(r["manholes"] for r in rows) == len(z["gl"])
     total = sum(e["L"] for e in z["E"].values())
     assert abs(sum(r["sewer length (m)"] for r in rows) - total) < 0.5
-    p = zoning.write_workbook(z, str(tmp_path / "zoning.xlsx"), source="synthetic")
+    p = zoning_out.write_workbook(z, str(tmp_path / "zoning.xlsx"), source="synthetic")
     assert "GL bands" in openpyxl.load_workbook(p, read_only=True).sheetnames

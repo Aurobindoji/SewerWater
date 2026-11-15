@@ -37,6 +37,6 @@ def test_own_pages_and_servers():
     from water_app import server
     assert os.path.dirname(ui.STATIC) != os.path.dirname(server.STATIC)
     assert server.PORT != 8765 and ui.PROJECTS != server.proj_dir() and ui.OUT_ROOT != server.out_root()
-    for f, mod in ((os.path.join(ui.STATIC, "map.html"), "sewer"), (os.path.join(server.STATIC, "map.html"), "water")):
+    for f, mod in ((os.path.join(ui.STATIC, "map.html"), "sewer"), (os.path.join(server.STATIC, "js", "core.js"), "water")):
         with open(f, encoding="utf-8") as fh:
             assert f'const MODULE = "{mod}";' in fh.read()

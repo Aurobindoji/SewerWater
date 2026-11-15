@@ -214,7 +214,11 @@ def run_layout(name, kml, gl_mode="spots", flat_gl=None, snap=1.0, spacing=30.0,
 # ---------------------------------------------------------------------------------------- the page's calls (HTTP)
 LOCAL_HOSTS = ("127.0.0.1", "localhost")
 PAGES = {"/water": ("map.html", "text/html; charset=utf-8"), "/i18n.js": ("i18n.js", "text/javascript; charset=utf-8"),
-         "/favicon.ico": ("favicon.ico", "image/x-icon")}        # the app icon on the tab (14-Nov-2026)
+         "/favicon.ico": ("favicon.ico", "image/x-icon"),        # the app icon on the tab (14-Nov-2026)
+         "/map.css": ("map.css", "text/css; charset=utf-8")}
+# the page's scripts (restructure stage 4, 15-Nov-2026: map.html's one script split into static/js/*.js)
+PAGES.update({f"/js/{f}": (f"js/{f}", "text/javascript; charset=utf-8")
+              for f in sorted(os.listdir(os.path.join(STATIC, "js"))) if f.endswith(".js")})
 # a DXF network's own drawing, each kind a list kept as projects\<name>.<kind>.json:
 # GET /api/<kind>?name=... reads it, POST /api/<kind>_save writes it
 LISTS = ("ohts", "barriers", "loops", "crossings", "wards", "bulk", "prv", "tw")

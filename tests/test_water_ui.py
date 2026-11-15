@@ -60,6 +60,10 @@ def call(url, body=None):
 def test_water_layout_zoning_design(server, sewer):
     url, tmp = server
     page = call(url + "/water")
+    import re
+    for src in re.findall(r'<script src="(js/[a-z_]+\.js)"></script>', page):     # its scripts (stage 4, 15-Nov-2026)
+        page += call(url + "/" + src)
+    assert call(url + "/map.css").startswith("/*")
     assert "leaflet@1.9.4" in page                                         # the map page in water mode
     # the DXF export beside "Zoning" too (user request 14-Nov-2026), the same handler as the one beside "Design"
     # each its own drawing: beside "Zoning" the zoning alone, beside "Design" the design with the current zoning

@@ -4,15 +4,15 @@ water estimate (user decision 26-Oct-2026):
     abstracts(B)       ABS Com (civil + E&M), ABS Civil, Breakup, Form J Com. (comprehensive), Form J Civil
     om_economics(B)    Repair on Works, A.Ex. Staff, Chemical, Electicity, Cess, Ann. Expe, Income, Economics,
                        5 Yr O&M Civil, 5Yr O&M Com
-    checklist(B)       Checklist (the other front pages: dpr_front.py)
+    checklist(B)       Checklist (the other front pages: front.py)
 
 The parts of the project the design does not give (WTP, feeder main) are yellow lump sums (0 lakh) in ABS Com, to be
 filled in; the civil lines in the order of the Riverside water DPR's abstract, the pump houses, site development,
-staff quarters, GW recharge, MCS, panel rooms and repairs of OHTs from their estimates (dpr_civil.py); the E&M works,
-power connections and their O&M from sheets EM and EM O&M (dpr_em.py). B = dpr.Book after the network, civil and E&M
+staff quarters, GW recharge, MCS, panel rooms and repairs of OHTs from their estimates (civil.py); the E&M works,
+power connections and their O&M from sheets EM and EM O&M (em.py). B = dpr.Book after the network, civil and E&M
 sheets.
 """
-from .dpr import q, size_key
+from .base import q, size_key
 
 HH_ROW = 10                 # sheet Income: the row of the household connections of each stage
 OMC_CIVIL, OMC_TOTAL = 13, 23   # sheet 5Yr O&M Com: the civil works' total, the total (Riverside water DPR p57)
@@ -185,7 +185,7 @@ def _abs_com(B):
     B.cell(ws, x, 2, "E & M WORKS", bold=True)
     x += 1
     em0 = x
-    for i, (lab, cell, head, qty) in enumerate(B.EM["parts"], 1):    # sheet EM (dpr_em.py, R3 format)
+    for i, (lab, cell, head, qty) in enumerate(B.EM["parts"], 1):    # sheet EM (em.py, R3 format)
         B.cell(ws, x, 1, i)
         B.cell(ws, x, 2, lab)
         B.cell(ws, x, 3, qty)

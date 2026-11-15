@@ -16,7 +16,7 @@ R3 linear between them (beyond: by the size ratio, the exponent of the end pair)
 """
 import re
 
-from .dpr import motor_margin, standby
+from .base import motor_margin, standby
 
 PARTS = [("tw", "Construction of new tube wells", "Miscellaneous"),
          ("tw_pp", "Tube well pumping plants", "Machinery works"),
@@ -160,10 +160,10 @@ def write(B):
     M = B.S["em"]
     interp, fixed = _rates(B, M)
     col, f0, f1 = _ts(B, M)
-    B.EMTS = {"col": col, "first": f0}                  # for the panel and booster rooms (dpr_civil.buildings)
+    B.EMTS = {"col": col, "first": f0}                  # for the panel and booster rooms (civil.buildings)
     T = lambda k, i: f"'EM TS'!${col[k]}${f0 + i}"
-    from . import dpr_emd                               # the E&M design sheets give the cost (user decision 6-Nov-2026)
-    X = dpr_emd.write(B, T)
+    from . import emd  # the E&M design sheets give the cost (user decision 6-Nov-2026)
+    X = emd.write(B, T)
     ws = B.sheet("EM", "ABSTRACT OF COST - E&M WORKS (TUBE WELLS, PUMPING PLANTS, AUTOMATION, CWR, POWER CONNECTIONS)", 8)
     B.header(ws, 5, ["Sl. No.", "Description of work", "Qty.", "Unit", "Rate (Rs lakh)", "Amount (Rs lakh)", "Part", ""],
              [7, 70, 9, 8, 14, 16, 10, 2])

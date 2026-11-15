@@ -26,7 +26,8 @@ import urllib.request
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SAMPLE = os.path.join(ROOT, "samples", "sample_area.kml")
 TS = [(re.compile(r"\d{8}_\d{4,6}"), "<TS>"), (re.compile(r"\d{2}-\d{2}-\d{4} \d{2}:\d{2}"), "<TIME>"),
-      (re.compile(r"\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2})?"), "<TIME>")]
+      (re.compile(r"\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2})?"), "<TIME>"),
+      (re.compile(r"\(\d+(\.\d+)? s\)"), "(<S> s)")]                      # run times in the logs
 DROP = {"time", "modified", "mtime", "made", "version", "pid", "net_rev", "code_version", "stamp", "dpr_rates"}
 
 
@@ -244,6 +245,12 @@ def snap(out):
     print(f"{R.n} outputs in {out}")
 
 
+def _mask(s):
+    for rx, to in TS:
+        s = rx.sub(to, s)
+    return s
+
+
 def _walk(a, b, path, out, limit=25):
     if len(out) >= limit:
         return
@@ -260,6 +267,8 @@ def _walk(a, b, path, out, limit=25):
             out.append(f"{path}: {len(a)} items -> {len(b)}")
         for i, (x, y) in enumerate(zip(a, b)):
             _walk(x, y, f"{path}[{i}]", out, limit)
+    elif isinstance(a, str) and _mask(a) == _mask(b):
+        return                                          # (a mask added after the older snapshot was taken)
     elif a != b:
         out.append(f"{path}: {str(a)[:120]!r} -> {str(b)[:120]!r}")
 

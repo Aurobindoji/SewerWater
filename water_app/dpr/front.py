@@ -3,7 +3,7 @@ Nigam, AMRUT 2.0, the 443 scanned pages; user request 7-Nov-2026: page by page a
 
     Cover                       p20   the title page: U.P. Jal Nigam (Urban), the scheme, the programme, estimated
                                       cost, O&M cost, the Executive Engineer
-    Checklist                   p21-23 (dpr_more.checklist)
+    Checklist                   p21-23 (more.checklist)
     Certificate                 p24
     Coverage                    p25
     Title - Index, Index        p35, p36
@@ -22,8 +22,8 @@ from types import SimpleNamespace
 from openpyxl.styles import Alignment, Border, Font, Side
 from openpyxl.worksheet.pagebreak import Break
 
-from . import dpr_more
-from .dpr import size_key
+from . import more
+from .base import size_key
 
 TITLES = [("Title - Index", "INDEX"), ("Title - Salient", "SALIENT FEATURES"),
           ("Title - Project Report", "PROJECT REPORT"), ("Title - Financial", "FINANCIAL STATEMENT"),
@@ -573,7 +573,7 @@ def write(B):
     B.keep_look = set()                               # sheets laid out here whose fonts dpr_format keeps
     B.own_page = set()                                # ... and their page setup too
     cover(B)
-    dpr_more.checklist(B)
+    more.checklist(B)
     certificate(B)
     coverage(B)
     for name, text in TITLES:

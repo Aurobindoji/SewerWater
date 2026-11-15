@@ -13,9 +13,9 @@ counts by operation zone (sheets TW, EM TS) and the unit estimates of the Elmwoo
                               the nearer (p256-272)
 
 The counts and measurements are yellow - change them to the project's; B.CIV = {key: Rs lakh cell} for ABS Com.
-B = dpr.Book after the E&M sheets (dpr_em.write: B.EMTS).
+B = dpr.Book after the E&M sheets (em.write: B.EMTS).
 """
-from .dpr import q
+from .base import q
 
 STAGE_NOTE = "Riverside water DPR (U.P. Jal Nigam 2026)"
 

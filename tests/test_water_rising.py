@@ -12,7 +12,7 @@ from test_dxf_extract import make_dxf
 from test_water_ui import dpr_of, call, server  # noqa: F401  (the fixture)
 from water_app import design as wd
 from water_app import dpr as wdpr
-from water_app import dpr_rm
+from water_app.dpr import rising_main as dpr_rm
 from water_app import netedit
 from water_app import rising
 

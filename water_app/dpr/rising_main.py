@@ -10,8 +10,8 @@
 """
 import math
 
-from . import design as wd
-from .dpr import ROADS, SOR_RNG, q, size_key
+from .. import design as wd
+from .base import ROADS, SOR_RNG, q, size_key
 
 
 def _done(B):
@@ -23,7 +23,7 @@ def laid_rate(S):
     """(size, class) -> Rs / m laid: the UPJN supply rate + carting / laying (HDPE AOR, DI SOR); a DI main in K9 at
     the K9 supply rate (M.193, pipe_supply_k9), the laying alike - for the economical size too (rising.economic;
     CPHEEO 6.7.4: the DSR price is good enough)."""
-    from . import rates
+    from .. import rates
     sor = {str(c): r for c, _, _, r in rates.sor()["items"] if c and r is not None}     # with the user's rates
 
     def rate(s, cls="K7"):

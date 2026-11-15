@@ -7,7 +7,7 @@ from . import project as ui
 from . import demand as dm
 from . import design as wd
 from . import dpr as wdpr
-from . import dpr_rm as wdpr_rm
+from .dpr import rising_main as wdpr_rm
 from . import hydraulics as hy
 from . import prv as wprv
 from . import rising as wrising

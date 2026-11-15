@@ -74,7 +74,8 @@ def rate_export(stem, open_it=True):
     except (OSError, pickle.UnpicklingError, EOFError, AttributeError, ImportError):
         info = None
     if info is not None:
-        use = rates.used(info)
+        from .dpr.usage import used
+        use = used(info)
         r = last_results(stem).get("design") or {}
         note = f"Design {r.get('time') or ''} ({stem})"
     else:

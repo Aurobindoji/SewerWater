@@ -29,13 +29,14 @@ PORT = 8766
 
 
 def code_version():
-    """Changes when any .py file of water_app changes: a running server with other code is an old one."""
+    """Changes when any .py file of water_app (its packages too) changes: a running server with other code is an old
+    one."""
     import glob
     import hashlib
     here = os.path.dirname(os.path.abspath(__file__))
     h = hashlib.md5()
-    for f in sorted(glob.glob(os.path.join(here, "*.py"))):
-        h.update(f"{os.path.basename(f)}:{os.path.getmtime(f)}".encode())
+    for f in sorted(glob.glob(os.path.join(here, "**", "*.py"), recursive=True)):
+        h.update(f"{os.path.relpath(f, here)}:{os.path.getmtime(f)}".encode())
     return h.hexdigest()[:12]
 
 

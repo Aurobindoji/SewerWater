@@ -22,8 +22,8 @@ write(B) makes them all (a sheet with nothing to show is left out). B = dpr.Book
 """
 import re
 
-from .dpr import q
-from .wards import FAR_OPEN, WARD_DENS
+from .base import q
+from ..wards import FAR_OPEN, WARD_DENS
 
 DPR = "Riverside water DPR (U.P. Jal Nigam 2026)"
 YEARS = (("init", "base_year"), ("mid", "mid_year"), ("ult", "design_year"))
@@ -452,7 +452,7 @@ def pipe_table(B):
     pipes = T.get("pipes") or []
     if not pipes:
         return None
-    from .design import load_pipes
+    from ..design import load_pipes
     C = {s["name"]: s.get("C") for s in load_pipes()}
     T1 = B.T1
     ws = B.sheet("Pipe Table", "DISTRIBUTION DESIGN AND PIPE TABLE OF EACH OPERATION ZONE", 10)

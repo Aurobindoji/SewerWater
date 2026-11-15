@@ -17,8 +17,8 @@ LAYERS = {
         "core": "barriers demand design geo hindi hydraulics intze intze_calc network population prv rising spacing "
                 "zone_geom zoning",
         "net": "cad dxf_extract dxf_inspect layout netedit repair",
-        "project": "city_wards project wards",
-        "output": "dpr dpr_civil dpr_em dpr_emd dpr_format dpr_front dpr_more dpr_rm dpr_tech intze_dwg rates",
+        "project": "city_wards project rates wards",
+        "output": "dpr intze_dwg",
         "service": "design_run intze_api layout_cmd results wdxf zone_lines zoning_run",
         "web": "server __main__",
     },
@@ -40,18 +40,26 @@ KNOWN = {
 
 
 def imports(pkg):
+    """{module: the package's modules it imports}; a subpackage (water_app/dpr/) is one module, its parts' imports
+    of each other not counted."""
     out = {}
     folder = os.path.join(ROOT, pkg)
-    for f in sorted(os.listdir(folder)):
-        if not f.endswith(".py") or f == "__init__.py":
+    for dirpath, _, files in os.walk(folder):
+        sub = os.path.relpath(dirpath, folder)
+        if "__pycache__" in sub:
             continue
-        with open(os.path.join(folder, f), encoding="utf-8") as fh:
-            tree = ast.parse(fh.read())
-        names = set()
-        for n in ast.walk(tree):
-            if isinstance(n, ast.ImportFrom) and n.level == 1:
-                names.update([n.module.split(".")[0]] if n.module else [a.name for a in n.names])
-        out[f[:-3]] = names - PACKAGE
+        top = 1 if sub == "." else 2                     # the level of `from .X import` that reaches the package
+        for f in sorted(files):
+            if not f.endswith(".py") or (sub == "." and f == "__init__.py"):
+                continue
+            with open(os.path.join(dirpath, f), encoding="utf-8") as fh:
+                tree = ast.parse(fh.read())
+            names = set()
+            for n in ast.walk(tree):
+                if isinstance(n, ast.ImportFrom) and n.level == top:
+                    names.update([n.module.split(".")[0]] if n.module else [a.name for a in n.names])
+            mod = f[:-3] if sub == "." else sub.split(os.sep)[0]
+            out.setdefault(mod, set()).update(names - PACKAGE - {mod})
     return out
 
 

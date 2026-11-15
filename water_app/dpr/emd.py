@@ -328,14 +328,14 @@ def hp_transformer(B, T, E):
 
 
 def _q(name):
-    from .dpr import q
+    from .base import q
     return q(name)
 
 
 def cwr(B, T, E, hp):
     C, L, P = E["cwr_el"], E["load"], E["cwr_pipe"]
     eff = B.S["em"]["rules"]["cwr_efficiency"]
-    from .dpr import motor_margin
+    from .base import motor_margin
     g = Grid(B, "EMD CWR", "TECHNICAL STATEMENT - CWR PUMPING PLANT: POWER, TRANSFORMER, PIPES, BREAKERS, CABLES "
                            "(Riverside water DPR p350-351, p361)")
     nr = lambda x: _next(x, L["ratings"])

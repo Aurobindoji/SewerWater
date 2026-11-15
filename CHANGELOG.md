@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.9.13 (beta) - 2026-11-15
+
+- Water supply: the **DPR workbook is made only by the Export DPR (xlsx) button**, no longer with every design. The
+  design keeps what the DPR needs; the first click writes the workbook and opens it, the next clicks open the same
+  file (until the next design, or until the rates change).
+- Water supply: **Export rate xlsx / Import rate xlsx…** under Design, for when the rates change. The xlsx has the
+  schedule of rates (sheet SOR: item no., description, unit, rate) and the U.P. Jal Nigam rates by size (pipe supply
+  HDPE / DI K-7, DI K-9, HDPE carting, NRV, PRV); the rates the DPR of the project's last design uses are
+  **yellow**. Change the Rate column and import it: the changed rates are kept in the master folder for every
+  project (an update of the app keeps them) and go into the DPR and the rising mains' cost from then on; items the
+  app does not have are left out and told. **"मूल rates वापस"** goes back to the app's own rates.
+
 ## 0.9.12 (beta) - 2026-11-15
 
 - Water supply: **✕ on the app's own suggestions** too, beside "move" in the hover card. A suggested OHT taken away

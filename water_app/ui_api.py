@@ -16,6 +16,7 @@ import csv
 import json
 import math
 import os
+import pickle
 import time
 
 from . import barriers as wb
@@ -1154,10 +1155,11 @@ def _keep(stem, kind, res, req):
     with open(os.path.join(folder, f"{stem}_w{kind}_ui.json"), "w", encoding="utf-8") as fh:
         json.dump(keep, fh, ensure_ascii=False, separators=(",", ":"))
     if kind == "zoning":
-        try:
-            os.remove(os.path.join(folder, f"{stem}_wdesign_ui.json"))
-        except OSError:
-            pass
+        for f in (f"{stem}_wdesign_ui.json", f"{stem}_wdesign_dpr.pkl"):
+            try:
+                os.remove(os.path.join(folder, f))
+            except OSError:
+                pass
 
 
 def _pieces(wnet, nodes):
@@ -1194,13 +1196,25 @@ def _unserved_note(wnet, nodes, hi=False):
 
 
 def dpr_file(stem, open_it=True):
-    """The DPR workbook of the project's last design (written with it, _dpr) - opened in its program (Excel) on this
-    PC when asked (user request 15-Nov-2026: an Export DPR button beside Export DXF). Raises ValueError when there is
-    none."""
+    """The DPR workbook of the project's last design - written here, on the Export DPR button, from the data the design
+    kept (_keep_dpr; user 15-Nov-2026: not with every design), once per design (a second click opens the same file) -
+    and opened in its program (Excel) on this PC when asked. Raises ValueError when there is no design."""
     r = last_results(stem).get("design") or {}
     path = (r.get("files") or {}).get("dpr")
     if not path or not os.path.isfile(path):
-        raise ValueError("DPR नहीं मिली - पहले Design चलाएँ / no DPR: run the Design first")
+        folder = os.path.join(ui.out_root(), stem)
+        try:
+            with open(_dpr_data(folder, stem), "rb") as fh:
+                info = pickle.load(fh)
+        except (OSError, pickle.UnpicklingError, EOFError, AttributeError, ImportError):
+            raise ValueError("DPR का data नहीं मिला - पहले Design चलाएँ / no DPR data: run the Design first") from None
+        path = _dpr(folder, stem, info)
+        f = os.path.join(folder, f"{stem}_wdesign_ui.json")            # the design remembers its DPR
+        with open(f, encoding="utf-8") as fh:
+            keep = json.load(fh)
+        keep.setdefault("files", {})["dpr"] = path
+        with open(f, "w", encoding="utf-8") as fh:
+            json.dump(keep, fh, ensure_ascii=False, separators=(",", ":"))
     if open_it and hasattr(os, "startfile"):
         try:
             os.startfile(path)
@@ -1677,10 +1691,10 @@ def run_design(name, req):
         res["files"] = {"excel": _excel(zz[0], stem, res, z, crit)}
     except Exception as e:                                         # the design stands without its Excel
         res["log"] += f"\nExcel not written: {type(e).__name__}: {e}"
-    try:
-        res.setdefault("files", {})["dpr"] = _dpr(zz[0], stem, res, z, crit, req, zz[2], zz[1])
+    try:                       # the DPR's data only - its workbook on Export DPR (dpr_file; user 15-Nov-2026)
+        _keep_dpr(zz[0], stem, _dpr_info(stem, res, z, crit, req, zz[2], zz[1]))
     except Exception as e:                                         # nor without its DPR
-        res["log"] += f"\nDPR Excel not written: {type(e).__name__}: {e}"
+        res["log"] += f"\nDPR data not kept: {type(e).__name__}: {e}"
     # the Intze drawings: no longer with the DPR - one tank at a time by its button (user decision 10-Nov-2026)
     for c in res["checks"]:                                        # their Hindi for the page (30-Oct-2026)
         hindi.check_hi(c)
@@ -2176,9 +2190,9 @@ def _design_once(stem, req, folder, net, wnet, ohts, crit, z, lines):
             "hopeless": {n for n in r.get("hopeless", []) if res_h["pressure"].get(n, rh) < rh - 0.005}}
 
 
-def _dpr(folder, stem, res, z, crit, req, wnet=None, net=None):
-    """The DPR workbook in the format of the Elmwood estimate (dpr.py, user decision 26-Oct-2026), next to the design
-    report; the Project texts of the previous DPR of the project are kept."""
+def _dpr_info(stem, res, z, crit, req, wnet=None, net=None):
+    """What the DPR workbook (format of the Elmwood estimate, dpr.py, user decision 26-Oct-2026) needs from a design -
+    kept with the design (_keep_dpr), the workbook written only on Export DPR (dpr_file, user 15-Nov-2026)."""
     info = wdpr.dpr_info(z["zones"], res["pipes"], res["outlets"], z["dmas"], z["closed_pipes"], ui.stage_inputs(req),
                          crit, stem)
     info["bulk"] = res.get("bulk") or []
@@ -2191,8 +2205,22 @@ def _dpr(folder, stem, res, z, crit, req, wnet=None, net=None):
         drawn = {str(w.get("ward_no") or "").strip() for w in req.get("wards") or []}
         info["ward_table"] = dict(wt, rows=[dict(r, on_map=r["no"] in drawn) for r in wt["rows"]])
         info["town"] = _town_list(req, wt)
+    return info
+
+
+def _dpr_data(folder, stem):
+    return os.path.join(folder, f"{stem}_wdesign_dpr.pkl")
+
+
+def _keep_dpr(folder, stem, info):
+    with open(_dpr_data(folder, stem), "wb") as fh:
+        pickle.dump(info, fh, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def _dpr(folder, stem, info):
+    """The DPR workbook next to the design report; the Project texts of the previous DPR of the project are kept."""
     prev = wdpr.previous_dpr(folder, stem)
-    path = os.path.join(folder, f"{stem}_water_design_{time.strftime('%Y%m%d_%H%M')}_DPR.xlsx")
+    path = os.path.join(folder, f"{stem}_water_design_{time.strftime('%Y%m%d_%H%M%S')}_DPR.xlsx")
     return wdpr.write_dpr(info, path, previous=prev)
 
 

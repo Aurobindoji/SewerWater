@@ -31,9 +31,26 @@ def design(tmp_path, monkeypatch):
         req = dict({"name": "wdpr", "ohts": [old], "pop_factor": 3, "base_year": 2027, "pop_initial": 20000,
                     "pop_mid": 24000}, **kw)
         d = ui_api.run_design("wdpr", req)
-        assert d["ok"] and d["files"].get("dpr"), d.get("log")
+        assert d["ok"] and not (d.get("files") or {}).get("dpr"), d.get("log")      # not with the design
+        d["files"]["dpr"] = ui_api.dpr_file("wdpr", open_it=False)["path"]           # on Export DPR
         return d
     return run
+
+
+def test_dpr_written_on_export_only(design):
+    """User 15-Nov-2026: the DPR workbook only on the Export DPR button - once per design (a second click opens the
+    same file); a new zoning forgets the design and its DPR data."""
+    import glob
+    d = design()
+    folder = os.path.dirname(d["files"]["dpr"])
+    assert ui_api.dpr_file("wdpr", open_it=False)["path"] == d["files"]["dpr"]
+    n = len(glob.glob(os.path.join(folder, "wdpr_water_design_*_DPR.xlsx")))
+    assert os.path.isfile(os.path.join(folder, "wdpr_wdesign_dpr.pkl"))
+    ui_api._keep("wdpr", "zoning", {"ok": True}, {})
+    assert not os.path.isfile(os.path.join(folder, "wdpr_wdesign_dpr.pkl"))
+    with pytest.raises(ValueError):
+        ui_api.dpr_file("wdpr", open_it=False)
+    assert len(glob.glob(os.path.join(folder, "wdpr_water_design_*_DPR.xlsx"))) == n
 
 
 def test_dpr_sheets_and_formulas(design):

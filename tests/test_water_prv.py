@@ -7,7 +7,7 @@ import openpyxl
 import pytest
 
 from test_dxf_extract import make_dxf
-from test_water_ui import call, server  # noqa: F401  (the fixture)
+from test_water_ui import dpr_of, call, server  # noqa: F401  (the fixture)
 from water_app import hydraulics as hy
 from water_app import netedit
 from water_app import prv
@@ -108,7 +108,7 @@ def test_design_with_a_prv_on_the_map(server):  # noqa: F811
     assert r["ok"] and r["prvs"] == [] and r["prv_suggest"] == [] and r["prv_option"] is False
     off = next(c for c in r["checks"] if c["check"] == "PRV")
     assert off["ok"] and "2 PRVs on the map not used" in off["detail"] and "विकल्प बंद" in off["detail_hi"]
-    ws = openpyxl.load_workbook(r["files"]["dpr"])["D2 DS Estimate"]
+    ws = openpyxl.load_workbook(dpr_of("wprv"))["D2 DS Estimate"]
     assert not any(row[2] and "Pressure reducing valves" in str(row[2]) for row in ws.iter_rows(values_only=True))
     req["use_prv"] = "1"
     r = call(url + "/api/w/water_design", req)
@@ -124,7 +124,7 @@ def test_design_with_a_prv_on_the_map(server):  # noqa: F811
     assert not c2["ok"] and "कोई pipe नहीं" in c2["detail_hi"]
     assert not next(c for c in r["checks"] if c["check"].startswith("residual head >="))["ok"]
     # the DPR: the PRV at a yellow quotation rate in D2
-    ws = openpyxl.load_workbook(r["files"]["dpr"])["D2 DS Estimate"]
+    ws = openpyxl.load_workbook(dpr_of("wprv"))["D2 DS Estimate"]
     rows = [[c.value for c in row] for row in ws.iter_rows(min_row=6, max_col=12)]
     t = next(i for i, x in enumerate(rows) if x[2] and "Pressure reducing valves (PRV)" in str(x[2]))
     prv_, sv_, fix_, ch_ = rows[t + 1: t + 5]

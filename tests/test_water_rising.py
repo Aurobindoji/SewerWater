@@ -9,7 +9,7 @@ import openpyxl
 import pytest
 
 from test_dxf_extract import make_dxf
-from test_water_ui import call, server  # noqa: F401  (the fixture)
+from test_water_ui import dpr_of, call, server  # noqa: F401  (the fixture)
 from water_app import design as wd
 from water_app import dpr as wdpr
 from water_app import dpr_rm
@@ -159,7 +159,7 @@ def test_design_and_dpr_with_a_tube_well(server):  # noqa: F811
     assert t["size"] and t["path"][0] == pytest.approx(m5) and t["path"][-1] == pytest.approx(a)
     chk = next(c for c in r["checks"] if c["check"] == "rising mains")
     assert "1 on the map" in chk["detail"] and "नक्शे पर" in chk["detail_hi"]
-    wb = openpyxl.load_workbook(r["files"]["dpr"])
+    wb = openpyxl.load_workbook(dpr_of("wrm"))
     assert {"T15 Rising Main", "D5 Rising Main"} <= set(wb.sheetnames)
     names = wb.sheetnames
     assert names.index("T15 Rising Main") < names.index("D1 Pipe & Road") < names.index("D5 Rising Main") < \

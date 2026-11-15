@@ -42,6 +42,12 @@ def sewer(tmp_path, monkeypatch):
     srv.server_close()
 
 
+def dpr_of(name):
+    """The DPR workbook of the project's last design - written on Export DPR, not with the design (15-Nov-2026)."""
+    from water_app import ui_api
+    return ui_api.dpr_file(name, open_it=False)["path"]
+
+
 def call(url, body=None):
     req = urllib.request.Request(url, data=None if body is None else json.dumps(body).encode("utf-8"),
                                  headers={"Content-Type": "application/json"})
@@ -282,7 +288,7 @@ def test_water_network_from_a_dxf(server, sewer):
     assert w["ok"], w.get("log")
     st = {s["stage"]: s["pop"] for s in w["stages"]}
     assert st == {"init": round(1200 * 1.0932), "mid": round(1200 * 1.9183), "ult": round(1200 * 3.3282)}
-    wb = openpyxl.load_workbook(w["files"]["dpr"])
+    wb = openpyxl.load_workbook(dpr_of("wsmall"))
     t8 = wb["T16 Ward Population"]
     row = next(r for r in t8.iter_rows(values_only=True) if r[1] == "Ward 7")
     assert row[2] == "Low (Far-open)" and row[3] == 1200       # the old name sent: the new one (9-Nov-2026) and row[5:8] == (1312, 2302, 3994)
@@ -308,7 +314,7 @@ def test_water_network_from_a_dxf(server, sewer):
     assert w["ok"], w.get("log")
     st = {s["stage"]: s["pop"] for s in w["stages"]}
     assert st["init"] == pytest.approx(pj["pop"]["init"], abs=2) and st["ult"] == pytest.approx(pj["pop"]["ult"], abs=2)
-    wb = openpyxl.load_workbook(w["files"]["dpr"])
+    wb = openpyxl.load_workbook(dpr_of("wsmall"))
     t8 = [r for r in wb["T16 Ward Population"].iter_rows(values_only=True)]
     lah = next(r for r in t8 if r[1] == "Riverside")
     assert lah[2] == "7" and lah[3] == 2000 and lah[8] == 0.5 and lah[13] == "-" and lah[14] == "yes"
@@ -332,7 +338,7 @@ def test_water_network_from_a_dxf(server, sewer):
     assert w["ok"], w.get("log")
     st = {s["stage"]: s["pop"] for s in w["stages"]}
     assert st == {t: pytest.approx(v, abs=2) for t, v in want.items()}
-    wb = openpyxl.load_workbook(w["files"]["dpr"])
+    wb = openpyxl.load_workbook(dpr_of("wsmall"))
     t8 = wb["T16 Ward Population"]
     x = next(c.row for c in t8["B"] if c.value == "Sikraul")
     g = next(c.row for c in t8["B"] if c.value == "Low (Far-open)")
@@ -353,8 +359,8 @@ def test_water_network_from_a_dxf(server, sewer):
     w = call(url + "/api/w/water_design", rq3)
     assert w["ok"], w.get("log")
     assert {s["stage"]: s["pop"] for s in w["stages"]} == {t: pytest.approx(v, abs=2) for t, v in want.items()}
+    t8 = openpyxl.load_workbook(dpr_of("wsmall"))["T16 Ward Population"]       # before a zoning forgets the design
     assert any("Far-open" in f["text"] and "balanced" in f["text"] for f in w.get("flags", []) + call(url + "/api/w/water_zoning", rq3)["flags"])
-    t8 = openpyxl.load_workbook(w["files"]["dpr"])["T16 Ward Population"]
     g = next(c.row for c in t8["B"] if c.value == "Low (Far-open)")
     tg = next(c.row for c in t8["B"] if c.value == "The town by the adopted projection")
     assert t8.cell(g, 7).value == 200 and str(t8.cell(g, 4).value).startswith(f"=(D{tg}-")
@@ -367,11 +373,11 @@ def test_water_network_from_a_dxf(server, sewer):
     w = call(url + "/api/w/water_design", sq)
     assert w["ok"], w.get("log")
     assert {s["stage"]: s["pop"] for s in w["stages"]} == {t: pytest.approx(v, abs=2) for t, v in want.items()}
+    t8 = openpyxl.load_workbook(dpr_of("wsmall"))["T16 Ward Population"]       # before a zoning forgets the design
     fl = w.get("flags", []) + call(url + "/api/w/water_zoning", sq)["flags"]
     assert any("saturation" in f["text"] for f in fl)
     # CPHEEO Annexure 2.7 p974 (8-Nov-2026): the core's factor 1.50 above 1.10 warned of; the clauses in T8's note
     assert any(f["text"].startswith("Saturated (Core) x 1.50") and "p974" in f["text"] for f in fl)
-    t8 = openpyxl.load_workbook(w["files"]["dpr"])["T16 Ward Population"]
     x = next(c.row for c in t8["B"] if c.value == "Riverside")
     assert t8.cell(x, 16).value == f'=IFERROR(H{x}*M{x}/J{x},"")'
     assert t8.cell(x, 17).value.startswith(f'=IF(P{x}="","",IF(P{x}>$P$')

@@ -6,7 +6,7 @@ import openpyxl
 import pytest
 
 from test_dxf_extract import make_dxf
-from test_water_ui import SAMPLE, call, server  # noqa: F401  (the fixture)
+from test_water_ui import dpr_of, SAMPLE, call, server  # noqa: F401  (the fixture)
 from test_water_zoning import grid
 from water_app import demand as dm
 from water_app import netedit
@@ -77,7 +77,7 @@ def test_bulk_consumer_on_a_dxf_network(server, tmp_path):  # noqa: F811
     assert q(w, "MH-3") == pytest.approx(q(w0, "MH-3") + 220.0 * 3 / 86.4, abs=0.01)
     assert any(c["check"] == "bulk consumers" and "Hospital 200 KLD x 3 at MH-3" in c["detail"] for c in w["checks"])
     # DPR T1: the bulk column (yellow, KLD of the OZ) in the demands; the consumers listed below
-    ws = openpyxl.load_workbook(w["files"]["dpr"])["T10 OZ Demand"]
+    ws = openpyxl.load_workbook(dpr_of("wbk"))["T10 OZ Demand"]
     head = {ws.cell(5, c).value: c for c in range(1, ws.max_column + 1)}
     cb = head["Bulk consumers (KLD without losses, every year)"]
     col = openpyxl.utils.get_column_letter(cb)

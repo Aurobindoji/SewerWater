@@ -6,7 +6,7 @@ import openpyxl
 import pytest
 
 from test_dxf_extract import make_dxf
-from test_water_ui import call, server  # noqa: F401  (the fixture)
+from test_water_ui import dpr_of, call, server  # noqa: F401  (the fixture)
 from water_app import netedit
 from water_app import population as P
 
@@ -86,7 +86,7 @@ def test_zoning_and_design_on_a_projection(server):  # noqa: F811
     assert st["init"]["pop"] == pytest.approx(1200, abs=1) and st["mid"]["pop"] == pytest.approx(f["pop"]["mid"], abs=1)
     assert st["ult"]["pop"] == pytest.approx(f["pop"]["ult"], abs=1)
     # DPR sheet T: the census, X / Y / r, the five methods, the adopted
-    wb = openpyxl.load_workbook(w["files"]["dpr"])
+    wb = openpyxl.load_workbook(dpr_of("wpj"))
     # the technical statement starts with it, the example technical.xlsx's sheets after it, T10 OZ Demand later
     assert wb.sheetnames.index("T1 Population") == wb.sheetnames.index("Title - Technical") + 1
     assert wb.sheetnames.index("T1 Population") < wb.sheetnames.index("T10 OZ Demand")

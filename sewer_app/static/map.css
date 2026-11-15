@@ -1,0 +1,241 @@
+/* The sewer map page's styles (restructure stage 4, 15-Nov-2026: out of map.html). */
+  :root {
+    --bg: #ffffff; --panel: #f6f6f4; --text: #1f1f1d; --muted: #6b6a66; --line: #d9d8d3;
+    --accent: #1f6feb; --danger: #c62828; --ok: #2e7d32;
+    --road: #d32f2f; --barrier: #37474f; --zloop: #ad1457; --xing: #00a152; --boundary: #b8860b; --ward: #2e7d32; --spot: #6a1b9a; --stp: #0d47a1;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }      /* .row etc. set display: flex - 'hidden' must still hide */
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+    font: 14px/1.4 "Segoe UI", "Nirmala UI", system-ui, sans-serif; }
+  #app { display: flex; height: 100%; }
+  #side { width: 360px; min-width: 300px; overflow-y: auto; background: var(--panel); border-right: 1px solid var(--line);
+    padding: 12px 14px 40px; }
+  #map { flex: 1; }
+  /* map: plain arrow instead of the white grab hand (features keep the pointer hand; dragging the map keeps grabbing) */
+  .leaflet-container.leaflet-grab { cursor: default; }
+  .leaflet-dragging .leaflet-container.leaflet-grab { cursor: grabbing; }
+  /* drawing: denser, smaller guide dots (with guidelineDistance below) */
+  /* vertex boxes while drawing / editing: small; a diamond on a line (road), an upright square on an area */
+  .vx { background: transparent; border: none; }
+  .vx i { position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; margin: -4px 0 0 -4px; background: #fff;
+    border: 1px solid #555; box-sizing: border-box; }
+  .vx-line i { transform: rotate(45deg); }
+  .leaflet-draw-guide-dash { width: 3px !important; height: 3px !important; margin: -1px 0 0 -1px; opacity: .85; border-radius: 50%; }
+  /* manhole name / GL written next to the layout's manholes (zoomed in) */
+  .mhlab { background: none; border: none; pointer-events: none; }
+  .mhlab div { font: 600 10px/1.15 "Segoe UI", sans-serif; color: #0d47a1; white-space: nowrap;
+    text-shadow: 0 0 2px #fff, 0 0 2px #fff, 0 0 3px #fff; }
+  .mhlab div span { font-weight: 400; color: #333; }
+  .colab div { font: italic 600 9.5px/1.1 "Segoe UI", sans-serif; color: #6a1b9a; white-space: nowrap; text-align: center;
+    text-shadow: 0 0 2px #fff, 0 0 2px #fff, 0 0 3px #fff; }
+  .flowarrow { background: none; border: none; pointer-events: none; }
+  .flowarrow i { position: absolute; left: 50%; top: 50%; width: 0; height: 0; margin: -5px 0 0 -4px;
+    border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-left: 9px solid #263238;
+    filter: drop-shadow(0 0 1px #fff); transform-origin: 4px 5px; }
+  #splitter { flex: none; width: 7px; cursor: col-resize; background: var(--line); position: relative; touch-action: none; }
+  #splitter::after { content: ""; position: absolute; top: 50%; left: 2px; width: 3px; height: 36px; margin-top: -18px;
+    border-left: 1px solid #999; border-right: 1px solid #999; }
+  #splitter:hover, #splitter.drag { background: var(--accent); }
+  body.resizing { cursor: col-resize; user-select: none; }
+  h1 { font-size: 17px; margin: 0 0 2px; }
+  h2 { font-size: 13px; margin: 16px 0 6px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  .sub { color: var(--muted); font-size: 12px; margin-bottom: 8px; }
+  .row { display: flex; gap: 6px; align-items: center; margin: 4px 0; flex-wrap: wrap; }
+  .row label { min-width: 92px; color: var(--muted); font-size: 12.5px; }
+  input[type=text], input[type=number], select { flex: 1; min-width: 0; padding: 5px 7px; border: 1px solid var(--line);
+    border-radius: 5px; font: inherit; background: #fff; color: var(--text); }
+  button { padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--text);
+    font: inherit; cursor: pointer; }
+  button:hover { border-color: #aaa; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.danger { color: var(--danger); }
+  button.on { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .tools { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .tools button { text-align: left; display: flex; gap: 8px; align-items: center; }
+  .sw { width: 14px; height: 14px; border-radius: 3px; flex: none; }
+  .hint { font-size: 12px; color: var(--muted); margin: 6px 0; }
+  #drawbar { display: none; gap: 6px; margin-top: 6px; }
+  #drawbar.show, #editbar.show { display: flex; }
+  #editbar { display: none; gap: 6px; margin-top: 6px; }
+  #props { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
+  #props.empty { color: var(--muted); font-size: 12.5px; }
+  table.sum { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.sum td { padding: 2px 0; border-bottom: 1px solid var(--line); }
+  table.sum td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+  .warn { color: var(--danger); font-size: 12.5px; }
+  pre#log { white-space: pre-wrap; font-size: 11.5px; background: #fff; border: 1px solid var(--line); border-radius: 6px;
+    padding: 8px; max-height: 260px; overflow: auto; margin: 6px 0 0; }
+  .status { font-size: 12.5px; margin-top: 6px; min-height: 18px; }
+  .status.ok { color: var(--ok); } .status.err { color: var(--danger); } .status { white-space: pre-line; }
+  .spot-icon { background: #fff; border: 2px solid var(--spot); border-radius: 50%; }
+  .stp-icon { background: var(--stp); color: #fff; font: bold 10px/18px sans-serif; text-align: center; border-radius: 4px; }
+  .sel-icon { box-shadow: 0 0 0 3px #ffeb3b; }
+  .leaflet-tooltip.gl { font-size: 11px; padding: 1px 4px; }
+  table.opts { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 6px; }
+  table.opts th, table.opts td { padding: 3px 4px; border-bottom: 1px solid var(--line); text-align: center; white-space: nowrap;
+    font-variant-numeric: tabular-nums; }
+  table.opts th:first-child, table.opts td:first-child { text-align: left; }
+  table.opts tr.opt { cursor: pointer; }
+  table.opts tr.opt:hover { background: #eef3fb; }
+  table.opts tr.cur { background: #dce8fb; }
+  table.opts button { padding: 1px 6px; font-size: 11.5px; }
+  .legend { font-size: 12px; margin-top: 6px; }
+  /* the sidebar in numbered steps (user decision 10-Nov-2026): a bar with the step's name between the steps; the
+     number counts only the steps shown (a DXF network has no layout step) */
+  #side { counter-reset: step; }
+  .stepbar { counter-increment: step; display: flex; align-items: center; gap: 8px; margin: 18px -14px 10px;
+    padding: 7px 14px; background: #e6edf9; border-top: 1px solid #c8d5ee; border-bottom: 1px solid #c8d5ee;
+    font-weight: 700; font-size: 13.5px; color: #123d84; letter-spacing: .02em; }
+  .stepbar::before { content: counter(step); flex: none; display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%; background: #1f6feb; color: #fff; font-size: 12.5px; }
+  .stepbar:first-of-type { margin-top: 10px; }
+  .stepact { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 6px; }
+  /* the view switch and the legend over the map */
+  #mapwrap { flex: 1; min-height: 0; position: relative; display: flex; }
+  #mapwrap #map { flex: 1; }
+  #mapwrap #viewseg { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; margin: 0;
+    background: #fff; border-radius: 8px; box-shadow: 0 1px 6px #0003; }
+  #mapwrap #legend { position: absolute; left: 10px; bottom: 26px; z-index: 1000; margin: 0; max-width: 46%;
+    max-height: 45%; overflow: auto; background: rgba(255,255,255,.93); padding: 6px 9px; border-radius: 6px;
+    box-shadow: 0 1px 6px #0003; }
+  #mapwrap #legend:empty { display: none; }
+  .legend span.k { display: inline-block; width: 18px; height: 4px; vertical-align: middle; margin-right: 4px; }
+  .box { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; margin-top: 6px; font-size: 12.5px; }
+  .seg { display: flex; gap: 0; margin: 6px 0; }
+  .seg button { border-radius: 0; flex: 1; padding: 4px 6px; font-size: 12.5px; }
+  .seg button:first-child { border-radius: 6px 0 0 6px; } .seg button:last-child { border-radius: 0 6px 6px 0; }
+  .seg button.on { background: var(--accent); color: #fff; border-color: var(--accent); outline: none; }
+  .wmark { color: #f2b705; font-weight: 700; text-shadow: 0 0 1px #8a6500; }
+  .zlabel { font: 700 15px/1.1 "Segoe UI", "Nirmala UI", sans-serif; color: #1f1f1d; white-space: nowrap;
+    text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 3px #fff; transform: translate(-50%, -50%); }
+  .zlabel.sub { font-weight: 600; font-size: 12px; color: #444; }
+  .ovx { color: #d50000; font: bold 20px/22px sans-serif; text-align: center; text-shadow: 0 0 2px #fff, 0 0 2px #fff; }
+  .ovx.rev { color: #9e9e9e; }
+  .netpick .ovx { pointer-events: none !important; }   /* merge / move / connect ...: the click reaches the manhole under it */
+  .ps-icon { background: #e65100; color: #fff; font: bold 9px/16px sans-serif; text-align: center; border-radius: 3px; border: 1px solid #fff; }
+  table.lay { width: 100%; border-collapse: collapse; font-size: 11.5px; margin-top: 6px; }
+  table.lay th, table.lay td { padding: 2px 3px; border-bottom: 1px solid var(--line); text-align: right; }
+  table.lay th:first-child, table.lay td:first-child { text-align: left; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .grp { display: flex; justify-content: space-between; gap: 6px; padding: 3px 6px; border: 1px solid var(--line);
+    border-radius: 5px; margin: 3px 0; background: #fff; cursor: pointer; font-size: 12.5px; }
+  .grp.open { border-color: var(--accent); background: #eef3fb; }
+  .grp .n { font-variant-numeric: tabular-nums; color: var(--danger); font-weight: 600; }
+  .grp.low .n, .grp.done .n { color: var(--muted); font-weight: 400; }
+  .ilist { max-height: 220px; overflow: auto; border: 1px solid var(--line); border-radius: 5px; background: #fff; margin: 2px 0 6px; }
+  .ilist div { padding: 2px 6px; font-size: 12px; cursor: pointer; border-bottom: 1px solid #f0f0ee; }
+  .ilist div:hover { background: #eef3fb; } .ilist div.rv { color: var(--muted); text-decoration: line-through; }
+  .txtbtn { font-size: 11.5px; padding: 1px 6px; margin: 2px; }
+  .dxftext { color: #444; font: 10px/1 sans-serif; white-space: nowrap; text-shadow: 0 0 2px #fff, 0 0 2px #fff; }
+  #busybar { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 2000; display: none;
+    align-items: center; gap: 10px; padding: 8px 16px; border-radius: 22px; background: #1f3a68; color: #fff;
+    box-shadow: 0 4px 16px rgba(0,0,0,.3); font-size: 14px; }
+  #busybar.show { display: flex; }
+  .spinner { width: 18px; height: 18px; border: 3px solid rgba(255,255,255,.35); border-top-color: #fff; border-radius: 50%;
+    animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  /* the main CPHEEO guidelines: full screen, scrolled, closed with the cross */
+  #guide { position: fixed; inset: 0; z-index: 2800; display: none; background: rgba(0,0,0,.45); }
+  #guide.show { display: block; }
+  #guide .gbox { position: absolute; inset: 3vh 3vw; background: #fff; color: var(--text); border-radius: 12px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.4); display: flex; flex-direction: column; overflow: hidden; }
+  #guide .ghead { display: flex; align-items: flex-start; gap: 12px; padding: 16px 20px 10px; border-bottom: 1px solid var(--line); }
+  #guide .ghead h2 { margin: 0; font-size: 19px; color: #1f3a68; flex: 1; }
+  #guide .ghead .hint { margin: 4px 0 0; }
+  #guide .gx { font-size: 22px; line-height: 1; width: 38px; height: 38px; border-radius: 50%; padding: 0; flex: none; }
+  #guide .gbody { overflow-y: auto; padding: 8px 20px 4px; flex: 1; }
+  #guide ol { margin: 0; padding-left: 0; list-style: none; counter-reset: g; }
+  #guide li { counter-increment: g; display: grid; grid-template-columns: 34px 1fr; gap: 2px 8px; padding: 9px 0;
+    border-bottom: 1px solid #eee; font-size: 14px; line-height: 1.45; }
+  #guide li::before { content: counter(g); grid-row: span 2; width: 26px; height: 26px; border-radius: 50%; background: #1f3a68;
+    color: #fff; font: 600 12.5px/26px "Segoe UI", sans-serif; text-align: center; }
+  #guide li b { color: #1f3a68; }
+  #guide li .ref { font-size: 11.5px; color: var(--muted); }
+  #guide li.upjn .ref { color: #b26a00; }
+  #guide li.gsec { counter-increment: none; display: block; padding: 14px 0 6px; font: 700 15px/1.3 "Segoe UI", "Nirmala UI", sans-serif;
+    color: #1f3a68; border-bottom: 2px solid #1f3a68; }
+  #guide li.gsec::before { content: none; }
+  #guide .gfoot { padding: 10px 20px; border-top: 1px solid var(--line); display: flex; justify-content: space-between;
+    align-items: center; gap: 12px; flex-wrap: wrap; }
+  #guide .gfoot .hint { margin: 0; flex: 1; min-width: 240px; }
+  /* loading: the page greyed out and not clickable, a spinner in the middle */
+  #loading { position: fixed; inset: 0; z-index: 2500; display: none; align-items: center; justify-content: center;
+    background: rgba(235,235,232,.55); backdrop-filter: grayscale(1) blur(1.5px); -webkit-backdrop-filter: grayscale(1) blur(1.5px);
+    cursor: progress; }
+  #loading.show { display: flex; }
+  #loading .box { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 22px 30px; border-radius: 14px;
+    background: #1f3a68; color: #fff; box-shadow: 0 8px 30px rgba(0,0,0,.35); font: 15px "Segoe UI", sans-serif; min-width: 220px; }
+  #loading .spinner { width: 44px; height: 44px; border-width: 5px; }
+  #loading .sub { font-size: 12px; opacity: .8; }
+  #loading button { display: none; font-size: 12px; padding: 3px 10px; }
+  #loading.slow button { display: inline-block; }
+  #busybar .bar { width: 120px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.25); overflow: hidden; }
+  #busybar .bar i { display: block; width: 40%; height: 100%; background: #fff; animation: slide 1.2s ease-in-out infinite; }
+  @keyframes slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(260%); } }
+  #modal, #urlmodal { position: fixed; inset: 0; z-index: 3000; background: rgba(0,0,0,.35); display: none; align-items: center; justify-content: center; }
+  #modal.show, #urlmodal.show { display: flex; }
+  #modal .box, #urlmodal .box { background: #fff; color: var(--text); border-radius: 10px; padding: 18px 20px; width: min(460px, 92vw);
+    box-shadow: 0 10px 40px rgba(0,0,0,.35); }
+  #urlmodal .box { width: min(560px, 94vw); }
+  #urlmodal h3 { margin: 0 0 8px; font-size: 17px; }
+  #urlmodal .row label { min-width: 110px; }
+  #urlmodal input[type=text] { flex: 1; min-width: 200px; }
+  #urlmodal input[type=number] { width: 64px !important; flex: none; }
+  #urlmodal select { flex: 1; min-width: 180px; }
+  #urlmodal .maps div { display: flex; justify-content: space-between; gap: 8px; font-size: 12.5px; padding: 2px 0;
+    border-bottom: 1px solid var(--line); }
+  #urlmodal .maps span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #urlmodal a.ex { cursor: pointer; text-decoration: underline; }
+  .urlbtn a { font: 600 12px/26px "Segoe UI", sans-serif !important; width: auto !important; padding: 0 7px; }
+  #modal h3 { margin: 0 0 8px; font-size: 17px; }
+  #modal h3.ok { color: var(--ok); } #modal h3.err { color: var(--danger); } #modal h3.warn { color: #b26a00; }
+  #modal .msg { white-space: pre-wrap; font-size: 13.5px; max-height: 50vh; overflow: auto; }
+  #modal .act { text-align: right; margin-top: 14px; }
+  #modal .act button { min-width: 90px; }
+  .leaflet-marker-icon:focus, .leaflet-marker-icon:focus-visible { outline: none; }
+  /* the reason tooltips: as wide as their text up to 360 px - near the map's edge the browser shrank them to a
+     word per line (user report 30-Oct-2026) */
+  .findbox { background: #fff; padding: 2px; }
+  .findbox input { width: 210px; font-size: 13px; border: 0; outline: none; padding: 5px 7px; }
+  #findres { max-height: 300px; overflow: auto; }
+  #findres div { padding: 3px 7px; cursor: pointer; font-size: 12px; white-space: nowrap; }
+  #findres div.on, #findres div:hover { background: #fff3c4; }
+  .why-tip { width: max-content; max-width: 360px; white-space: normal; }
+  .why-line { width: max-content; max-width: 340px; white-space: normal; margin-top: 3px; color: #555; font-size: 11.5px; }
+  .cut-icon { color: #37474f; font-size: 13px; font-weight: 700; line-height: 14px; text-align: center; text-shadow: 0 0 2px #fff, 0 0 2px #fff; }   /* no black focus box (Esc / keys) */
+  .lprev.on { background: #ffd600; border-color: #c7a500; }
+  /* a text of a previewed layer, written as it is (zoomed in), in the layer's colour */
+  .prevtxt { background: none; border: none; pointer-events: none; }
+  .prevtxt div { font: 600 10px/1.1 "Segoe UI", sans-serif; white-space: nowrap;
+    text-shadow: 0 0 2px #fff, 0 0 2px #fff, 0 0 3px #fff; }
+  table.wz { width: 100%; border-collapse: collapse; font-size: 11.5px; margin-top: 6px; }
+  table.wz th, table.wz td { padding: 2px 3px; border-bottom: 1px solid var(--line); text-align: right; }
+  table.wz th:first-child, table.wz td:first-child { text-align: left; }
+  /* pipe / manhole tables of a design: a drawer under the map */
+  #mapcol { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  #map { min-height: 0; }
+  #tbl { flex: none; height: 38%; min-height: 140px; display: flex; flex-direction: column; border-top: 2px solid var(--line);
+    background: var(--bg); font-size: 12px; }
+  #tblbar { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; padding: 4px 8px; background: var(--panel);
+    border-bottom: 1px solid var(--line); }
+  #tblbar button { padding: 3px 8px; font-size: 12px; }
+  #tblbar input[type=text] { flex: 0 1 160px; padding: 3px 6px; font-size: 12px; }
+  #tblsum { color: var(--muted); font-size: 11.5px; flex: 1 1 200px; }
+  #tblsum b { color: var(--danger); font-weight: 600; }
+  #tblwrap { flex: 1; overflow: auto; position: relative; }
+  table.ft { border-collapse: collapse; white-space: nowrap; table-layout: fixed; }
+  table.ft th, table.ft td { overflow: hidden; text-overflow: ellipsis; }
+  table.ft th { position: sticky; top: 0; z-index: 1; background: #ecebe7; padding: 3px 6px; border-bottom: 1px solid var(--line);
+    text-align: center; cursor: pointer; user-select: none; font-weight: 600; }
+  table.ft th.sorted { color: var(--accent); }
+  table.ft th .rsz { position: absolute; top: 0; right: 0; width: 7px; height: 100%; cursor: col-resize;
+    border-right: 2px solid #c9c7c0; }
+  table.ft th .rsz:hover { border-right-color: var(--accent); background: rgba(31, 111, 235, .15); }
+  table.ft td { padding: 0 6px; height: 22px; border-bottom: 1px solid #eeede9; text-align: center; }
+  table.ft tr.trow:hover td { background: #f3f7ff; }
+  table.ft tr.sel td { background: #fff5c2; }
+  table.ft td.ed { cursor: text; text-decoration: underline dotted #999; }
+  table.ft td.chg { background: #fff3a8; font-weight: 600; }
+  table.ft td.bad { color: var(--danger); }
+  table.ft td input, table.ft td select { width: 84px; padding: 0 3px; font-size: 12px; height: 20px; }
+  @media (max-width: 760px) { #app { flex-direction: column; } #side { width: auto !important; height: 45%; } #splitter { display: none; } }

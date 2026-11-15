@@ -41,6 +41,10 @@ def call(url, body=None, host=None):
 
 def test_page_and_projects(server):
     page = call(server + "/sewer")
+    import re
+    for src in re.findall(r'<script src="(js/[a-z_]+\.js)"></script>', page):     # its scripts (stage 8, 15-Nov-2026)
+        page += call(server + "/" + src)
+    assert call(server + "/map.css").startswith("/*")
     assert "leaflet@1.9.4" in page and "leaflet-draw@1.0.4" in page and "i18n.js" in page
     assert "I18N_EN" in call(server + "/i18n.js")
     # nothing of the water module or the start page here (user decision 10-Nov-2026): "/" is the sewer page itself,

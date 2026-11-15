@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.9.11 (beta) - 2026-11-15
 
 - Water supply, the zone lines: **no ring round empty land inside the zones** any more. Land the zones close in on
   every side is now theirs whatever its size (3 ha before - larger land got a line of its own round it, in the map

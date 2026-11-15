@@ -214,9 +214,11 @@ def test_a_cwr_zone_s_tube_wells_fill_the_cwr(server):  # noqa: F811
     # the tube wells lift to the ground level at the CWR (MH-1's GL), not to the staging 20 m (Riverside water DPR
     # p136-195: TW to CWR staging 0, depth of water 0 - user decision 6-Nov-2026)
     assert R["top"]["OHT-1"] == pytest.approx(85.50, abs=0.01)
+    # TW 5 lies in the OZ of the zoning's own OHT: taken, as the small network has no site 100 m from the OHT for a
+    # suggested one (user decision 15-Nov-2026: a proposed OHT's tube wells suggested with it, the map's where none)
     gl = {"TW 2": 85.20, "TW 5": 84.60}
     tws = {x["name"]: x for x in R["tws"] if x["placed"]}
-    assert set(tws) == set(gl) and {t["oz"] for t in tws.values()} == {"OHT-1", "Prop-OHT-1"}
+    assert set(tws) == set(gl) and {t["oz"] for t in tws.values()} == {"OHT-1", "Prop-OHT-1"} and not R["dropped"]
     for n, t in tws.items():                  # water 15 m below GL + seasonal 5 + depression 4.5 (DPR, 6-Nov-2026)
         assert t["static_m"] == pytest.approx(R["top"][t["oz"]] - (gl[n] - 24.5), abs=0.01)
         assert t["gl"] == gl[n]
@@ -231,3 +233,31 @@ def test_a_cwr_zone_s_tube_wells_fill_the_cwr(server):  # noqa: F811
     assert 84.60 + 3 + cone <= R["top"]["Prop-OHT-1"] - o["staging_m"] <= 85.70 + 5 + cone   # GL 84.60-85.70
     chk = next(c for c in r["checks"] if c["check"] == "rising mains")
     assert "OHT-1 (a CWR) to the CWR" in chk["detail"] and "(CWR) CWR तक" in chk["detail_hi"]
+
+
+def test_only_as_many_tube_wells_as_the_oz_needs():
+    """User decision 15-Nov-2026: the map's tube wells of an OZ whose OHT the zoning proposed are left out (suggested
+    with the OHT); in an OZ of the user's OHT, only as many as it needs - the nearest to the OHT along the roads."""
+    wnet, z = _line()
+    rate = lambda s, c="K7": 1000.0
+    oht = [{"name": "OHT-1", "node": "J0"}]
+    mapped = [{"name": "TW far", "xy": (361.0, 0.0)}, {"name": "TW near", "xy": (121.0, 1.0)},
+              {"name": "TW mid", "xy": (241.0, 0.0)}]
+    # the user's OHT, 2 needed: the two nearest along the roads (J2 120 m, J4 240 m); J6 left out
+    R = rising.plan(wnet, z, oht, mapped, CRIT, SIZES, rate, {"OHT-1": 110.0}, {"OHT-1": 2})
+    assert [(t["name"], t["placed"]) for t in R["tws"]] == [("TW near", True), ("TW mid", True)]
+    assert [(d["name"], d["why"]) for d in R["dropped"]] == [("TW far", "extra")] and R["oz"]["OHT-1"]["n"] == 2
+    # the zoning's OHT: none of the map's; 2 suggested near the OHT, marked as the proposed OHT's
+    R = rising.plan(wnet, z, oht, mapped, CRIT, SIZES, rate, {"OHT-1": 110.0}, {"OHT-1": 2}, auto={"OHT-1"})
+    assert [(t["node"], t["placed"], t["auto"]) for t in R["tws"]] == [("J2", False, True), ("J4", False, True)]
+    assert sorted(d["name"] for d in R["dropped"]) == ["TW far", "TW mid", "TW near"]
+    assert all(d["why"] == "auto" for d in R["dropped"])
+    # fewer on the map than needed: all kept, the rest suggested
+    R = rising.plan(wnet, z, oht, mapped[:1], CRIT, SIZES, rate, {"OHT-1": 110.0}, {"OHT-1": 2})
+    assert [t["placed"] for t in R["tws"]] == [True, False] and not R["dropped"]
+    # the zoning's OHT, but no site for a suggested one (2 needed, the spacing wider than the network): the map's
+    # nearest after all, the third left out
+    wide = dict(CRIT, tubewell_spacing_m={"value": 1000.0, "ref": "test"})
+    R = rising.plan(wnet, z, oht, mapped, wide, SIZES, rate, {"OHT-1": 110.0}, {"OHT-1": 2}, auto={"OHT-1"})
+    assert [(t["name"], t["placed"]) for t in R["tws"]] == [("TW near", True), ("TW mid", True)] and not R["flags"]
+    assert [(d["name"], d["why"]) for d in R["dropped"]] == [("TW far", "auto")]

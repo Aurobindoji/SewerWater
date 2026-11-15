@@ -2821,7 +2821,7 @@ function drawPrvs(r) {
 function rmBox(r) {
   const R = r.rising, T = (R && R.tws) || [];
   if (!T.length) return "";
-  const sug = T.filter(t => !t.placed).length;
+  const sug = T.filter(t => !t.placed && !t.auto).length, D = (R && R.dropped) || [];
   const row = t => `<tr><td>${esc(t.name)}${t.placed ? "" : ` <span class="hint">${tr("सुझाव", "suggested")}</span>`}</td><td>${esc(t.oz)}</td>` +
     (t.size ? `<td>${fmt(t.length_m)}</td><td><b>${esc(t.size)}</b>${t.cls === "K9" ? ` <span style="color:#6a1b9a">K9</span>` : ""}</td><td>${fmt(t.v, 2)}</td><td>${fmt(t.hf_m, 2)}</td><td>${fmt(t.head_m, 1)}</td>` +
               `<td${t.surge_ok ? "" : ' style="color:#c62828"'}>${fmt(t.max_m, 0)} / ${fmt(t.rating_m, 0)}</td></tr>`
@@ -2830,6 +2830,11 @@ function rmBox(r) {
     `<table class="wz"><tr><th>TW</th><th>OZ</th><th>${tr("लंबाई m", "length m")}</th><th>size</th><th>V m/s</th><th>${tr("घर्षण m", "friction m")}</th><th>head m</th>` +
     `<th title="${tr("pump head + surge (h = cV/g) / pipe का working pressure", "pump head + surge (h = cV/g) / the pipe's working pressure")}">surge m</th></tr>` +
     T.map(row).join("") + `</table>` +
+    (D.length ? `<div class="hint" style="margin-top:4px">${tr(`नक्शे के ${D.length} tube wells नहीं लिए (हर OZ में सिर्फ़ ज़रूरत भर)`, `${D.length} tube wells of the map not taken (each OZ only as many as it needs)`)}:<br>` +
+      [...new Set(D.map(d => d.oz))].sort().map(oz => { const g = D.filter(d => d.oz === oz), need = (R.need || {})[oz];
+        return `<b>${esc(oz)}</b> (${g[0].why === "auto" ? tr("OHT zoning की", "the zoning's OHT") : tr(`${need ?? "?"} चाहिए`, `${need ?? "?"} needed`)}): ` +
+          g.map(d => esc(d.name)).join(", "); }).join("<br>") +
+      `<br>${tr("Proposed OHT वाले OZ के tube wells OHT के साथ सुझाए जाते हैं; नक्शे वाले तब लिए जाते हैं जब OHT भी नक्शे पर रखी हो (या सुझाने को जगह न मिले)।", "In an OZ of a proposed OHT the tube wells are suggested with the OHT; the map's are taken when the OHT too is placed on the map (or no site is found).")}</div>` : "") +
     (sug ? `<div class="row" style="margin-top:4px"><button id="wtwplace">${tr(`सुझाए ${sug} tube wells नक्शे पर रखें`, `Place the ${sug} suggested tube wells on the map`)}</button></div>` : "") +
     `<div class="hint">${tr("हर नए TW की अपनी main सड़क के रास्ते OHT तक; size = economic (pipe + pumps + 30 वर्ष की बिजली का सबसे कम, CPHEEO 6.7 / Annexure 6.1); surge = pump रुकने पर (CPHEEO 6.16.4)। सुझाए TW OHT के पास, आपस में 100 m दूर - उपलब्ध ज़मीन पर खिसकाएँ। DPR: T15 Rising Main, D5 Rising Main।",
       "Each new tube well its own main along the roads to the OHT; size = economical (least pipe + pumps + 30 years of energy, CPHEEO 6.7 / Annexure 6.1); surge = on a pump stop (CPHEEO 6.16.4). Suggested tube wells near the OHT, 100 m apart - move them to available land. DPR: T15 Rising Main, D5 Rising Main.")}</div></div>`;
@@ -2902,7 +2907,7 @@ function renderWDesign(r, note) {
   drawRising(r);
   if ($("wtwplace")) $("wtwplace").onclick = () => {     // the suggested sites become tube wells of the drawing
     let n = countOf("tw");
-    for (const t of (r.rising && r.rising.tws) || []) if (!t.placed && t.latlng)
+    for (const t of (r.rising && r.rising.tws) || []) if (!t.placed && !t.auto && t.latlng)   // a proposed OHT's: with it
       addFeature(L.marker(t.latlng), "tw", { name: `TW ${++n}`, discharge_lpm: "" });
     changed();
     $("wtwplace").replaceWith(Object.assign(document.createElement("div"), { className: "hint", style: "color:var(--ok)",

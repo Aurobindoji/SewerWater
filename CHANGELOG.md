@@ -6,6 +6,11 @@
   pages' work stay; a double click on the tray icon brings the windows back. The first time a notice says so. The app
   ends from the tray menu ("Quit") or from the new "Quit" in the menu "App". Windows shutting down or logging off
   still closes the app, and the one-click update still closes it before the setup runs.
+- Water supply, new tube wells: **only as many as each OZ needs** (the zoning's new + standby). In an OZ whose OHT the
+  zoning proposed, the tube wells are suggested with the OHT and the map's are left out (taken only where no site is
+  found); in an OZ of an OHT placed on the map, the map's tube wells nearest to the OHT along the roads are taken and
+  the rest left out. The design lists the tube wells left out, per OZ. Before, every tube well on the map was designed,
+  however many the OZ needed.
 
 ## 0.9.9 (beta) - 2026-11-14
 

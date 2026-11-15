@@ -1720,8 +1720,9 @@ def _rising(stem, req, wnet, z, ohts, res, crit):
             for zn in z["zones"] if zn["name"] in top}          # standby tube wells too: each its own main
     if not placed and not any(need.values()):
         return None
+    auto = {o["name"] for o in res["outlets"] if o.get("proposed")}     # the zoning's OHTs: their tube wells too
     R = wrising.plan(wnet, z, [o for o in ohts if o["name"] in top], placed, crit, wd.load_pipes(), wdpr_rm.laid_rate(S),
-                     top, need, below=_tw_below(S))
+                     top, need, below=_tw_below(S), auto=auto)
     r2 = lambda x, d=2: round(x, d) if isinstance(x, float) else x
     tws = []
     for t in R["tws"]:
@@ -1737,6 +1738,8 @@ def _rising(stem, req, wnet, z, ohts, res, crit):
     out = {"tws": tws, "oz": {k: {kk: r2(vv) if not isinstance(vv, dict) else {s: round(L, 1) for s, L in vv.items()}
                                   for kk, vv in v.items()} for k, v in R["oz"].items()},
            "flags": R["flags"], "top": {k: round(v, 2) for k, v in top.items()}, "cwr": sorted(cwr),
+           "dropped": [{"name": d["name"], "oz": d["oz"], "why": d["why"], "latlng": ll(d["xy"])} for d in R["dropped"]],
+           "need": need,
            "gl": {k: round(v, 2) for k, v in gls.items() if v is not None}}           # each OHT's ground (DPR static head)
     done = [t for t in tws if t.get("size")]
     if done:
@@ -1757,6 +1760,19 @@ def _rising(stem, req, wnet, z, ohts, res, crit):
             "check_hi": "rising mains",
             "detail_hi": f"{len(done)} नए tube wells ({npl} नक्शे पर, {len(done) - npl} सुझाए), हर एक की अपनी main सड़क के "
                          f"रास्ते OHT तक{cw_hi}: {L:,.0f} m - {sz}; economical size, घर्षण अधिकतम {max(t['hf_m'] for t in done):.2f} m"})
+        if R["dropped"]:
+            au = sorted({d["oz"] for d in R["dropped"] if d["why"] == "auto"})
+            ex = sorted({d["oz"] for d in R["dropped"] if d["why"] == "extra"})
+            res["checks"].append({
+                "check": "tube wells of the map left out", "ok": True, "note": True,
+                "ref": "user decision 15-Nov-2026: only as many tube wells as the OZ needs",
+                "detail": f"{len(R['dropped'])} not taken"
+                          + (f"; {', '.join(au)}: OHT proposed by the zoning - its tube wells suggested with it" if au else "")
+                          + (f"; {', '.join(ex)}: more on the map than needed - the nearest to the OHT taken" if ex else ""),
+                "check_hi": "नक्शे के tube wells छोड़े",
+                "detail_hi": f"{len(R['dropped'])} नहीं लिए"
+                             + (f"; {', '.join(au)}: OHT zoning ने proposed की - उसके tube wells भी उसी के साथ सुझाए" if au else "")
+                             + (f"; {', '.join(ex)}: ज़रूरत से ज़्यादा - OHT के सबसे पास वाले लिए" if ex else "")})
         k9 = [t for t in done if t.get("cls") == "K9"]
         if k9:
             s = (f"{len(k9)} DI mains in K9: K-7's AOP 0.8 / MOP 1.25 MPa exceeded by the head / head + surge (" +

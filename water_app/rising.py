@@ -2,9 +2,12 @@
 OZ's OHT filled by its own; every new tube well has a rising main of its own to its OHT, along the roads (the shortest
 path along the network's pipes, CPHEEO 6.8 p403: pipes laid along the roads).
 
-    sites    the new tube wells of each OZ: those placed on the map (the OZ of their nearest junction), and where the
-             zoning needs more (tubewells_new), suggested ones - the junctions of the OZ nearest along the roads to its
-             OHT, at least tubewell_spacing_m from the OHT and from every other tube well
+    sites    the new tube wells of each OZ (the zoning's tubewells_new + standby): those placed on the map (the OZ of
+             their nearest junction), and where the zoning needs more, suggested ones - the junctions of the OZ nearest
+             along the roads to its OHT, at least tubewell_spacing_m from the OHT and from every other tube well. Only
+             as many as the OZ needs (user decision 15-Nov-2026): in an OZ whose OHT the zoning proposed (not placed by
+             the user) the map's tube wells are left out - all its tube wells suggested with the OHT, as it is; in an
+             OZ of the user's OHT, the map's nearest to the OHT along the roads, the rest left out (`dropped`)
     size     the economical size (CPHEEO 6.7 p400-402, Annexure 6.1 p1157-1159): of the catalog's sizes within the
              velocity range, the least of pipe cost (+ specials) + pump sets (+ standby, replaced after 15 years at
              present worth) + capitalised energy (two stages of 15 years) - the tube well pumping its discharge its
@@ -125,7 +128,7 @@ def economic(L, q_m3s, static, sizes, rate, crit):
     return out
 
 
-def plan(wnet, z, ohts, placed, crit, sizes, rate, top, need, below=6.0):
+def plan(wnet, z, ohts, placed, crit, sizes, rate, top, need, below=6.0, auto=()):
     """The new tube wells and their rising mains.
         wnet   nodes {n: {xy, elev}}, pipes {lab: {a, b, length}} (the roads: closed pipes too)
         z      the zoning (z["oz"]: junction -> OZ)
@@ -135,7 +138,9 @@ def plan(wnet, z, ohts, placed, crit, sizes, rate, top, need, below=6.0):
         need   {OZ: new tube wells the zoning asks for}
         rate   (size name, class) -> Rs per m laid (supply + laying; K9 at its own supply rate)
         below  the water level of a tube well under its ground (m)
-    {"tws": [...], "oz": {OZ: {friction_m, length_m, n}}, "flags": [...]}
+        auto   the OZs whose OHT the zoning proposed: the map's tube wells there left out
+    {"tws": [...], "oz": {OZ: {friction_m, length_m, n}}, "flags": [...],
+     "dropped": [{name, oz, xy, why: "auto" | "extra"}] - the map's tube wells not taken}
     The candidate sizes: those of the materials of crit rising_main_material (DI only - user decision 7-Nov-2026)."""
     mats = (crit.get("rising_main_material") or {}).get("value") or ["DI"]
     sizes = [s for s in sizes if any(s["name"].startswith(m) for m in mats)]
@@ -162,6 +167,21 @@ def plan(wnet, z, ohts, placed, crit, sizes, rate, top, need, below=6.0):
     for oz, src in ohtn.items():
         if src in adj:
             route[oz] = _dijkstra(adj, src)
+    # only as many as the OZ needs (user decision 15-Nov-2026), the map's nearest to the OHT along the roads first; in
+    # an OZ of the zoning's own OHT the map's wait (`spare`) - its tube wells suggested with it, the map's only where
+    # no site is found
+    auto, dropped, kept, spare = set(auto), [], [], {}
+    for oz in sorted({t["oz"] for t in tws}):
+        dist = route.get(oz, ({}, {}))[0]
+        mine = sorted((t for t in tws if t["oz"] == oz), key=lambda t: (dist.get(t["node"], math.inf) + t["snap_m"],
+                                                                        t["name"]))
+        if oz in auto:
+            spare[oz] = mine
+            continue
+        k = int(need.get(oz) or 0)
+        kept += mine[:k]
+        dropped += [{"name": t["name"], "oz": oz, "xy": t["xy"], "why": "extra"} for t in mine[k:]]
+    tws = [t for t in tws if t in kept]                  # the map's order
     for oz, k in sorted(need.items()):                   # suggested sites where the map has fewer than needed
         have = sum(1 for t in tws if t["oz"] == oz)
         if k <= have or oz not in route:
@@ -176,12 +196,18 @@ def plan(wnet, z, ohts, placed, crit, sizes, rate, top, need, below=6.0):
                 break
             if all(math.dist(xy[n], p) >= spacing for p in taken):
                 tws.append({"name": f"TW-{oz}-{have + made + 1}", "node": n, "oz": oz, "xy": tuple(xy[n]), "snap_m": 0.0,
-                            "lpm": q_new, "placed": False})
+                            "lpm": q_new, "placed": False, "auto": oz in auto})
                 taken.append(xy[n])
                 made += 1
-        if made < k - have:
-            flags.append(f"{oz}: {k - have - made} of the {k} new tube wells found no site {spacing:g} m from the others "
+        short = k - have - made
+        if short > 0 and spare.get(oz):                  # no site for them: the map's after all
+            use, spare[oz] = spare[oz][:short], spare[oz][short:]
+            tws += use
+            short -= len(use)
+        if short > 0:
+            flags.append(f"{oz}: {short} of the {k} new tube wells found no site {spacing:g} m from the others "
                          f"- place them on the map")
+    dropped += [{"name": t["name"], "oz": oz, "xy": t["xy"], "why": "auto"} for oz, ts in spare.items() for t in ts]
     per_oz = {}
     for t in tws:
         dist, prev = route.get(t["oz"], ({}, {}))
@@ -207,4 +233,4 @@ def plan(wnet, z, ohts, placed, crit, sizes, rate, top, need, below=6.0):
         g["length_m"] += L
         g["n"] += 1
         g["by_size"][b["size"]] = g["by_size"].get(b["size"], 0.0) + L
-    return {"tws": tws, "oz": per_oz, "flags": flags}
+    return {"tws": tws, "oz": per_oz, "flags": flags, "dropped": dropped}

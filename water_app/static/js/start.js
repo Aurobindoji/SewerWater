@@ -268,7 +268,6 @@ const TIPS = [
   ["#sugall", "हर बिना label वाले junction को पास का बचा हुआ drawing label (और GL) लगाएँ - Undo से वापस", "Give every junction without a label the nearest unused drawing label (and GL) - Undo takes it back"],
   // message boxes
   ["#mok", "यह संदेश बंद करें (Enter)", "Close this message (Enter)"],
-  ["#loadskip", "लोड पूरा होने का इंतज़ार किए बिना page इस्तेमाल करें", "Use the page without waiting for the loading"],
   ["#gclose", "Guidelines बंद करें", "Close the guidelines"],
   ["#u_name", "इस नक्शे का नाम (सूची में दिखेगा)", "Name of this map (shown in the list)"],
   ["#u_url", "Tiles का URL: XYZ ({z}/{x}/{y}), ArcGIS …/MapServer, या WMS", "URL of the tiles: XYZ ({z}/{x}/{y}), ArcGIS …/MapServer, or WMS"],

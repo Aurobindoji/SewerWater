@@ -106,16 +106,14 @@ fetch("/api/ping").catch(() => { }); setInterval(() => fetch("/api/ping").catch(
 // ---------------------------------------------------------------- loading cover
 // shown from the first moment of the page (in the HTML) until the last project is open again; and while a file /
 // project loads. Nested loads keep it until the last one ends.
-let LOADING = 1, loadT0 = Date.now(), loadSlow = null;
+let LOADING = 1, loadT0 = Date.now();
 function loading(on, text) {
   LOADING = Math.max(0, LOADING + (on ? 1 : -1));
   const el = document.getElementById("loading");
   if (LOADING) {
     if (on) { if (text) document.getElementById("loadtext").textContent = text; if (LOADING === 1) loadT0 = Date.now(); }
     el.classList.add("show");
-    clearTimeout(loadSlow);
-    loadSlow = setTimeout(() => { if (LOADING) el.classList.add("slow"); }, 20000);   // something hangs: a way out
-  } else { el.classList.remove("show", "slow"); clearTimeout(loadSlow); }
+  } else el.classList.remove("show");
 }
 async function withLoading(text, fn) { loading(true, text); try { return await fn(); } finally { loading(false); } }
 document.addEventListener("keydown", e => {               // no keys reach the page under the cover
@@ -125,9 +123,7 @@ document.addEventListener("keydown", e => {               // no keys reach the p
   if (LOADING && !document.getElementById("modal").classList.contains("show")) { e.preventDefault(); e.stopImmediatePropagation(); }
 }, true);
 setInterval(() => { if (LOADING) document.getElementById("loadsub").textContent = Math.round((Date.now() - loadT0) / 1000) + " s"; }, 1000);
-document.getElementById("loadskip").onclick = () => { LOADING = 1; loading(false); };
 document.getElementById("loadtext").textContent = tr("लोड हो रहा है …", "Loading …");
-document.getElementById("loadskip").textContent = tr("इंतज़ार न करें", "Don't wait");
 
 // ---------------------------------------------------------------- main CPHEEO guidelines
 // [Hindi, English, reference]; "UPJN:" in the reference = a UPJN rule, not CPHEEO. Values as used by the app

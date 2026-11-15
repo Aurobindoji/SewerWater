@@ -173,8 +173,6 @@
     background: #1f3a68; color: #fff; box-shadow: 0 8px 30px rgba(0,0,0,.35); font: 15px "Segoe UI", sans-serif; min-width: 220px; }
   #loading .spinner { width: 44px; height: 44px; border-width: 5px; }
   #loading .sub { font-size: 12px; opacity: .8; }
-  #loading button { display: none; font-size: 12px; padding: 3px 10px; }
-  #loading.slow button { display: inline-block; }
   #busybar .bar { width: 120px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.25); overflow: hidden; }
   #busybar .bar i { display: block; width: 40%; height: 100%; background: #fff; animation: slide 1.2s ease-in-out infinite; }
   @keyframes slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(260%); } }

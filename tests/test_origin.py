@@ -10,14 +10,16 @@ from http.server import ThreadingHTTPServer
 import pytest
 
 from sewer_app import ui
+from water_app import project as wproject
 from water_app import server as wserver
 
 
 @pytest.fixture(params=["sewer", "water"])
 def base(request, tmp_path, monkeypatch):
     mod = ui if request.param == "sewer" else wserver
-    monkeypatch.setattr(mod, "PROJECTS", str(tmp_path / "projects"))
-    monkeypatch.setattr(mod, "OUT_ROOT", str(tmp_path / "output"))
+    files = ui if request.param == "sewer" else wproject                   # where the module keeps its folders
+    monkeypatch.setattr(files, "PROJECTS", str(tmp_path / "projects"))
+    monkeypatch.setattr(files, "OUT_ROOT", str(tmp_path / "output"))
     srv = ThreadingHTTPServer(("127.0.0.1", 0), mod.Handler)
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     yield f"http://127.0.0.1:{srv.server_address[1]}", tmp_path / "projects"

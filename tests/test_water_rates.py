@@ -73,8 +73,8 @@ def test_export_import_reset(design, mine):  # noqa: F811
 
 
 def test_export_without_a_design_and_bad_files(tmp_path, monkeypatch, mine):
-    from water_app import server as wserver
-    monkeypatch.setattr(wserver, "OUT_ROOT", str(tmp_path / "o"))
+    from water_app import project as wproject
+    monkeypatch.setattr(wproject, "OUT_ROOT", str(tmp_path / "o"))
     r = ui_api.rate_export("none", open_it=False)
     assert r["ok"] and not r["design"] and r["sor_used"] == 0 and r["upjn_used"] == 0
     with pytest.raises(ValueError):

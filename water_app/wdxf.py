@@ -30,7 +30,7 @@ import os
 import time
 
 from . import cad
-from . import server as ui
+from . import project as ui
 
 LAYERS = {"W_PIPE": 5, "W_PIPE_CLOSED": 1, "W_PIPE_TEXT": 4, "W_FLOW_ARROW": 5, "W_JUNCTION": 3, "W_JUNCTION_LOW": 1,
           "W_JUNCTION_TEXT": 7, "W_OHT": 6, "W_VALVE": 1, "W_DMA_INLET": 2, "W_DMA_BOUNDARY": 8, "W_TITLE": 7,

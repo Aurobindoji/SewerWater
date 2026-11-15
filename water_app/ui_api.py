@@ -22,7 +22,7 @@ import time
 from . import barriers as wb
 from . import geo as wgeo
 from . import hindi
-from . import server as ui
+from . import project as ui
 from . import zone_geom as szoning
 
 from . import demand as dm
@@ -380,7 +380,7 @@ def _load(stem, req=None):
     """The project's network (the layout, or the DXF network as it is now on the map - saved or not) and its
     population per node: of the wards (layout; on a DXF network the wards drawn on the map, net["ward_note"]), else
     the total given on the page spread by pipe length (half of each pipe to each of its ends)."""
-    folder, f_mh, f_co, f_pop = ui._paths(stem)
+    folder, f_mh, f_co, f_pop = ui.paths(stem)
     if not ui.has_network(stem):
         raise ValueError("पहले Layout बनाएँ" if not ui.is_dxf(stem) else "पहले DXF network खोलें")
     net = cut_net(stem, req)
@@ -612,7 +612,7 @@ def _loops(stem, req, wnet, crit=None, keep_out=frozenset(), net=None):
         if len(ring) < 3:
             continue
         xy = [tuple(p) for p in to_xy(ring)]
-        nodes = {n for n, v in wnet["nodes"].items() if n not in taken and v.get("xy") and ui._inside(v["xy"], xy)}
+        nodes = {n for n, v in wnet["nodes"].items() if n not in taken and v.get("xy") and wgeo.inside(v["xy"], xy)}
         mode = str(lp.get("on_limit") or "")
         x = {"name": _loop_name(lp, i), "latlngs": ring, "xy": xy, "nodes": nodes, "through": [],
              "mode": mode if mode in LOOP_MODES else "keep", "answered": mode in LOOP_MODES, "pieces": None}
@@ -1256,7 +1256,7 @@ def rate_export(stem, open_it=True):
 def last_results(stem):
     """As the sewer server's last_results: network_saved = there is a network to zone; a result of another state of the
     network than the one now is 'stale'."""
-    folder, f_mh, _, _ = ui._paths(stem)
+    folder, f_mh, _, _ = ui.paths(stem)
     out = {"ok": True, "network_saved": ui.has_network(stem), "network_current": True}
     if not out["network_saved"]:
         return out
@@ -1552,12 +1552,12 @@ def _zoning_res(stem, folder, net, wnet, ohts, crit, z):
         """The areas as the page draws them: rings (lat, lon; the small ones left out), a label point, the area."""
         out = {}
         for g, r in regs.items():
-            rings = sorted(r.get("rings", []), key=lambda q: -abs(ui._ring_area(q)))
+            rings = sorted(r.get("rings", []), key=lambda q: -abs(wgeo.ring_area(q)))
             keep = [q for q in rings if len(q) >= 3]
-            big = abs(ui._ring_area(keep[0])) if keep else 0
-            keep = [q for q in keep if abs(ui._ring_area(q)) >= 0.01 * big]
+            big = abs(wgeo.ring_area(keep[0])) if keep else 0
+            keep = [q for q in keep if abs(wgeo.ring_area(q)) >= 0.01 * big]
             out[g] = {"rings": [[ll(p) for p in q] for q in keep],
-                      "label": ll(ui._interior(keep[0])) if keep else None, "area_ha": round(r.get("area", 0.0) / 1e4, 2)}
+                      "label": ll(wgeo.interior(keep[0])) if keep else None, "area_ha": round(r.get("area", 0.0) / 1e4, 2)}
         return out
 
     def regions():

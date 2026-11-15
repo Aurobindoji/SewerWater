@@ -13,6 +13,7 @@ import pytest
 
 from sewer_app import ui
 from water_app import server as wserver
+from water_app import project as wproject
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SAMPLE = os.path.join(HERE, "samples", "sample_area.kml")
@@ -21,8 +22,8 @@ SAMPLE = os.path.join(HERE, "samples", "sample_area.kml")
 @pytest.fixture
 def server(tmp_path, monkeypatch):
     """The water module's own server (isolation of sewer and water, 21-Oct-2026), in tmp folders."""
-    monkeypatch.setattr(wserver, "PROJECTS", str(tmp_path / "w_projects"))
-    monkeypatch.setattr(wserver, "OUT_ROOT", str(tmp_path / "w_output"))
+    monkeypatch.setattr(wproject, "PROJECTS", str(tmp_path / "w_projects"))
+    monkeypatch.setattr(wproject, "OUT_ROOT", str(tmp_path / "w_output"))
     srv = ThreadingHTTPServer(("127.0.0.1", 0), wserver.Handler)
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     yield f"http://127.0.0.1:{srv.server_address[1]}", tmp_path

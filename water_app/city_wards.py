@@ -34,8 +34,8 @@ CEN_ROW = 11
 
 def folder():
     """<the module's data folder>\\cities - beside projects\\ (the master folder's Water, as the projects)."""
-    from . import server
-    return os.path.join(os.path.dirname(server.PROJECTS), "cities")
+    from . import project
+    return os.path.join(os.path.dirname(project.proj_dir()), "cities")
 
 
 def _slug(city):

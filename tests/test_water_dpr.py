@@ -9,6 +9,7 @@ import pytest
 
 from water_app import dpr as wdpr
 from water_app import server as wserver
+from water_app import project as wproject
 from water_app import ui_api
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -18,8 +19,8 @@ REF = re.compile(r"(?:'((?:[^']|'')+)'|([A-Za-z_][\w\.]*))!")
 
 @pytest.fixture
 def design(tmp_path, monkeypatch):
-    monkeypatch.setattr(wserver, "PROJECTS", str(tmp_path / "p"))
-    monkeypatch.setattr(wserver, "OUT_ROOT", str(tmp_path / "o"))
+    monkeypatch.setattr(wproject, "PROJECTS", str(tmp_path / "p"))
+    monkeypatch.setattr(wproject, "OUT_ROOT", str(tmp_path / "o"))
     with open(SAMPLE, encoding="utf-8") as fh:
         kml = fh.read()
     r = wserver.run_layout("wdpr", kml, gl_mode="spots", snap=1, spacing=100)

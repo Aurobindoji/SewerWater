@@ -16,7 +16,7 @@ import time
 
 from . import intze
 from . import intze_dwg
-from . import server as ui
+from . import project as ui
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 _LOCK = threading.Lock()

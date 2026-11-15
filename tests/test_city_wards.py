@@ -6,12 +6,12 @@ import openpyxl
 import pytest
 
 from water_app import city_wards as cw
-from water_app import server as wserver
+from water_app import project as wproject
 
 
 @pytest.fixture
 def home(tmp_path, monkeypatch):
-    monkeypatch.setattr(wserver, "PROJECTS", str(tmp_path / "projects"))
+    monkeypatch.setattr(wproject, "PROJECTS", str(tmp_path / "projects"))
     return tmp_path
 
 

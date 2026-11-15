@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.9.10 (beta) - 2026-11-15
 
 - A window's **close button (✕) or Alt+F4 now hides it to the tray**: the app keeps running, its servers and the
   pages' work stay; a double click on the tray icon brings the windows back. The first time a notice says so. The app

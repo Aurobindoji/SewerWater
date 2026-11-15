@@ -550,6 +550,12 @@
       <div class="stepact"><button id="wdrun" class="primary">Design</button>
         <button id="wexport" title="Design की DXF, मौजूदा zoning पर - AutoCAD के लिए">Export DXF</button>
         <button id="wexportdpr" title="आख़िरी Design की DPR (Excel) - इसी बटन से बनती है (Design के साथ नहीं) और Excel में खुलती है">Export DPR (xlsx)</button></div>
+      <!-- the rates of the DPR, changeable (rates.py, user decisions 15-Nov-2026) -->
+      <div class="stepact"><button id="wrexp" title="DPR के rates की xlsx: SOR 2025-26 और UPJN rates (pipe supply HDPE / DI K-7, K-9, HDPE carting, NRV, PRV) - पीले = इस project की आख़िरी Design की DPR में उपयोग हो रहे। Excel में खुलती है; Rate column बदलकर 'Import rate xlsx…' से लें">Export rate xlsx</button>
+        <button id="wrimp" title="बदली हुई rate xlsx: उसके rates सब projects की DPR में लगेंगे (master folder में रखे जाते हैं, app update के बाद भी)। अगली Export DPR / Design से लागू">Import rate xlsx…</button>
+        <input type="file" id="wrfile" accept=".xlsx" hidden>
+        <button id="wrreset" title="Import किए rates हटाकर app के अपने (SOR 2025-26 / dpr_water.json) rates वापस">मूल rates वापस</button></div>
+      <div class="hint" id="wrst"></div>
       <div id="wdbox"></div>
       <div class="stepact" id="tblrow" hidden><button id="tblbtn" title="Design के हर pipe / junction की तालिका: manual की जाँच, बदलाव, CSV">☷ Pipe / junction तालिका</button>
         <span class="hint" id="tbledits"></span></div>
@@ -3301,6 +3307,49 @@ $("wexportdpr").onclick = () => {                 // the DPR of the last design,
             `The DPR of the design of ${r.time || ""}` + (r.opened ? " - opening in Excel." : " - Excel did not open; open it from the folder.")) +
          (r.stale ? "\n\n" + tr("⚠ Network उस Design के बाद बदला है - नई DPR के लिए Design दोबारा चलाएँ।", "⚠ The network changed after that design - run the Design again for a new DPR.") : ""),
          r.stale ? "warn" : "ok"]);
+};
+
+// ---- the DPR's rates: Export / Import rate xlsx (rates.py, user decisions 15-Nov-2026)
+function wrStatus(s) {
+  if (!s) return;
+  $("wrst").textContent = s.changed
+    ? tr(`आपके rates लागू: ${s.changed} rate बदले (${s.file || "xlsx"}, ${s.time})`, `Your rates in use: ${s.changed} rates changed (${s.file || "xlsx"}, ${s.time})`)
+    : tr("App के अपने rates (SOR 2025-26, UPJN)", "The app's own rates (SOR 2025-26, UPJN)");
+  $("wrreset").disabled = !s.changed;
+}
+api("/api/water_rates", { act: "status" }).then(r => r && r.ok && wrStatus(r.status)).catch(() => {});
+$("wrexp").onclick = () => {
+  let r = null;
+  longTask(tr("Rate xlsx", "Rate xlsx"), async () => { r = await api("/api/water_rates", { act: "export", name: $("pname").value }); },
+    () => !r || !r.ok ? [tr("Rate xlsx नहीं बनी", "No rate xlsx"), (r && r.log) || "error", "err"]
+      : [tr("Rate xlsx तैयार", "Rate xlsx ready"), `folder: ${r.folder}\n\nExcel : ${r.path.split(/[\\/]/).pop()}\n` +
+         (r.design ? tr(`पीले: SOR ${r.sor_used} item, UPJN ${r.upjn_used} rate (आख़िरी Design की DPR में उपयोग)`, `Yellow: ${r.sor_used} SOR items, ${r.upjn_used} UPJN rates (used by the last design's DPR)`)
+                   : tr("इस project का Design नहीं - कोई पीला नहीं।", "No design of this project - none yellow.")) +
+         (r.changed ? "\n" + tr(`${r.changed} rate आपके import किए हुए।`, `${r.changed} rates are your imported ones.`) : "") + "\n" +
+         tr(r.opened ? "Excel में खुल रही है। Rate column बदलकर सहेजें, फिर 'Import rate xlsx…'।" : "Excel नहीं खुला, folder से खोलें।",
+            r.opened ? "Opening in Excel. Change the Rate column, save, then 'Import rate xlsx…'." : "Excel did not open; open it from the folder."),
+         "ok"]);
+};
+$("wrimp").onclick = () => $("wrfile").click();
+$("wrfile").onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  loading(true, tr(`${f.name} पढ़ रहे हैं …`, `Reading ${f.name} …`));
+  try {
+    const u8 = new Uint8Array(await f.arrayBuffer());
+    let bin = ""; for (let i = 0; i < u8.length; i += 0x8000) bin += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));
+    const r = await api("/api/water_rates", { act: "import", file: f.name, b64: btoa(bin) });
+    if (!r.ok) { $("wrst").textContent = tr("Rate xlsx नहीं पढ़ी: ", "Rate xlsx not read: ") + (r.log || ""); return; }
+    wrStatus(r.status);
+    $("wrst").innerHTML += `<div class="hint">${esc(tr(`${f.name}: SOR ${r.sor_changed}, UPJN ${r.upjn_changed} rate app से अलग - सब projects की अगली Design / Export DPR में लगेंगे`,
+      `${f.name}: ${r.sor_changed} SOR, ${r.upjn_changed} UPJN rates differ from the app's - in every project's next design / Export DPR`))}</div>` +
+      (r.notes || []).map(n => `<div class="wflag warn">⚠ ${esc(EN ? n[1] : n[0])}</div>`).join("");
+  } catch (err) { $("wrst").textContent = tr("Rate xlsx नहीं पढ़ी: ", "Rate xlsx not read: ") + err.message; }
+  finally { loading(false); }
+};
+$("wrreset").onclick = async () => {
+  if (!confirm(tr("Import किए सब rates हटाकर app के अपने rates वापस लें?", "Remove all imported rates and go back to the app's own?"))) return;
+  const r = await api("/api/water_rates", { act: "reset" });
+  if (r && r.ok) wrStatus(r.status);
 };
 
 // ---- Intze OHT drawings of the new OHTs of the last design (intze_api, user decisions 9-Nov-2026)

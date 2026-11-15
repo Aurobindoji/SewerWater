@@ -8,11 +8,10 @@
                return valve at each tube well, air valves (one a km), a scour valve each, thrust blocks of DI mains,
                road dismantling / reinstatement by the road shares of sheet Project - its total in ABS Com
 """
-import json
 import math
 
 from . import design as wd
-from .dpr import ROADS, SOR_FILE, SOR_RNG, q, size_key
+from .dpr import ROADS, SOR_RNG, q, size_key
 
 
 def _done(B):
@@ -24,8 +23,8 @@ def laid_rate(S):
     """(size, class) -> Rs / m laid: the UPJN supply rate + carting / laying (HDPE AOR, DI SOR); a DI main in K9 at
     the K9 supply rate (M.193, pipe_supply_k9), the laying alike - for the economical size too (rising.economic;
     CPHEEO 6.7.4: the DSR price is good enough)."""
-    with open(SOR_FILE, encoding="utf-8") as fh:
-        sor = {str(c): r for c, _, _, r in json.load(fh)["items"] if c and r is not None}
+    from . import rates
+    sor = {str(c): r for c, _, _, r in rates.sor()["items"] if c and r is not None}     # with the user's rates
 
     def rate(s, cls="K7"):
         sup = S["pipe_supply_k9"].get(s) if cls == "K9" else None

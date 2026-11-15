@@ -71,8 +71,10 @@ KEPT = [("hc_shift", "Existing house connections shifted to the new pipes (nos)"
 
 
 def settings():
+    """dpr_water.json's values, its UPJN rates by size with the user's imported ones (rates.py, 15-Nov-2026)."""
+    from . import rates
     with open(SETTINGS_FILE, encoding="utf-8") as fh:
-        return {k: v["value"] for k, v in json.load(fh).items() if isinstance(v, dict) and "value" in v}
+        return rates.apply({k: v["value"] for k, v in json.load(fh).items() if isinstance(v, dict) and "value" in v})
 
 
 def standby(w, tab):
@@ -1780,8 +1782,8 @@ def unit_estimates(B):
 
 
 def sor_sheet(B):
-    with open(SOR_FILE, encoding="utf-8") as fh:
-        sor = json.load(fh)
+    from . import rates
+    sor = rates.sor()                          # with the user's imported rates (15-Nov-2026)
     ws = B.wb.create_sheet("sor")
     ws.cell(1, 1, sor.get("title") or "SCHEDULE OF RATES").font = B.bold
     B.header(ws, 3, ["Item No.", "Description of item", "Unit", "Rate"], [10, 90, 10, 12])

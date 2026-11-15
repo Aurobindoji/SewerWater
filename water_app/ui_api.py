@@ -1199,9 +1199,11 @@ def dpr_file(stem, open_it=True):
     """The DPR workbook of the project's last design - written here, on the Export DPR button, from the data the design
     kept (_keep_dpr; user 15-Nov-2026: not with every design), once per design (a second click opens the same file) -
     and opened in its program (Excel) on this PC when asked. Raises ValueError when there is no design."""
+    from . import rates
     r = last_results(stem).get("design") or {}
     path = (r.get("files") or {}).get("dpr")
-    if not path or not os.path.isfile(path):
+    stamp = rates.stamp()                       # rates imported / reset since that DPR: written again with them
+    if not path or not os.path.isfile(path) or (r.get("files") or {}).get("dpr_rates", "") != stamp:
         folder = os.path.join(ui.out_root(), stem)
         try:
             with open(_dpr_data(folder, stem), "rb") as fh:
@@ -1212,7 +1214,7 @@ def dpr_file(stem, open_it=True):
         f = os.path.join(folder, f"{stem}_wdesign_ui.json")            # the design remembers its DPR
         with open(f, encoding="utf-8") as fh:
             keep = json.load(fh)
-        keep.setdefault("files", {})["dpr"] = path
+        keep.setdefault("files", {}).update(dpr=path, dpr_rates=stamp)
         with open(f, "w", encoding="utf-8") as fh:
             json.dump(keep, fh, ensure_ascii=False, separators=(",", ":"))
     if open_it and hasattr(os, "startfile"):
@@ -1222,6 +1224,33 @@ def dpr_file(stem, open_it=True):
             open_it = False                             # no program for .xlsx: the path is told
     return {"ok": True, "path": path, "folder": os.path.dirname(path), "opened": bool(open_it),
             "time": r.get("time"), "stale": bool(r.get("stale"))}
+
+
+def rate_export(stem, open_it=True):
+    """Export rate xlsx (user decisions 15-Nov-2026): the SOR and the UPJN rates the DPR takes, the user's imported
+    ones in place, in the project's folder; yellow = the rates the DPR of the project's last design uses (no design:
+    none yellow, told). Opened in Excel when asked."""
+    from . import rates
+    folder = os.path.join(ui.out_root(), stem)
+    use, note = None, ""
+    try:
+        with open(_dpr_data(folder, stem), "rb") as fh:
+            info = pickle.load(fh)
+    except (OSError, pickle.UnpicklingError, EOFError, AttributeError, ImportError):
+        info = None
+    if info is not None:
+        use = rates.used(info)
+        r = last_results(stem).get("design") or {}
+        note = f"Design {r.get('time') or ''} ({stem})"
+    else:
+        note = "इस project का Design नहीं - कोई पीला नहीं / no design of this project: none yellow"
+    out = rates.export_xlsx(os.path.join(folder, f"{stem}_rates_{time.strftime('%Y%m%d_%H%M%S')}.xlsx"), use, note)
+    if open_it and hasattr(os, "startfile"):
+        try:
+            os.startfile(out["path"])
+        except OSError:
+            open_it = False
+    return dict(out, ok=True, folder=folder, opened=bool(open_it), design=info is not None, status=rates.status())
 
 
 def last_results(stem):

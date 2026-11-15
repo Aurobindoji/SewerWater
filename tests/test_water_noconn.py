@@ -8,7 +8,7 @@ import pytest
 
 from test_dxf_extract import make_dxf
 from test_water_ui import call, server  # noqa: F401  (the fixture)
-from water_app import netedit, ui_api
+from water_app import netedit, zoning_run
 
 
 def _leaf(conduits, a="start_node", b="stop_node"):
@@ -59,7 +59,7 @@ def test_no_population_on_pipes_without_connections(server):  # noqa: F811
     r = call(url + "/api/w/net_edit", {"name": "wnc", "ops": [{"op": "set_noconn", "ids": [c["id"]], "value": True}]})
     assert r["ok"] and r["conduits_upd"][str(c["id"])]["nc"] == 1
     # the total of the page: none on the dead end of the marked pipe, the rest by pipe length as before
-    _, net, pop = ui_api._load("wnc", {"pop_total": 1000})
+    _, net, pop = zoning_run._load("wnc", {"pop_total": 1000})
     assert pop.get(end, 0) == 0 and sum(pop.values()) == pytest.approx(1000)
     other = sum(x["len"] for x in d["conduits"] if x["id"] != c["id"])
     assert net["noconn_note"] == {"pipes": 1, "m": round(c["len"]), "crossings": 0} and other > 0
@@ -68,7 +68,7 @@ def test_no_population_on_pipes_without_connections(server):  # noqa: F811
     e = 1e-6
     box = [[min(p[0] for p in lls) - e, min(p[1] for p in lls) - e], [max(p[0] for p in lls) + e, min(p[1] for p in lls) - e],
            [max(p[0] for p in lls) + e, max(p[1] for p in lls) + e], [min(p[0] for p in lls) - e, max(p[1] for p in lls) + e]]
-    _, net, pop = ui_api._load("wnc", {"wards": [{"name": "W1", "population": 600, "latlngs": box}]})
+    _, net, pop = zoning_run._load("wnc", {"wards": [{"name": "W1", "population": 600, "latlngs": box}]})
     assert pop.get(end, 0) == 0 and sum(pop.values()) == pytest.approx(600) and net["ward_note"]["outside"] == []
     a = d["nodes"]["MH-1"]["latlng"]
     oht = {"name": "Ex-OHT-1", "lat": a[0], "lng": a[1], "existing": "1", "capacity_kl": 200, "staging_m": 20}

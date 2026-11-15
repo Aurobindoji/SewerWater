@@ -45,7 +45,7 @@ Why each OZ (user request 30-Oct-2026: the reason in a tooltip): z["why"][OZ] = 
 OHT given on the map; for a proposed one {"kind": "proposed", "piece_population", "piece_nodes", "parts" (the OZs its
 piece of the network - "piece" - was cut into for the 50,000 limit), "next_to" (given OHTs whose areas touch the piece - they
 could not take it: capacity / 50,000 / height), "loop", "loop_mode"}. Whether the piece is cut off by a barrier line
-or is a separate piece of the drawing is the caller's to tell (ui_api).
+or is a separate piece of the drawing is the caller's to tell (zoning_run).
 
 Height (an existing OHT whose staging cannot give 17 m everywhere): by default (low_head "vfd", CPHEEO Table 2.7
 S.No.10 p173) its OZ is what its capacity serves and the design sizes a VFD pump at its outlet. With low_head

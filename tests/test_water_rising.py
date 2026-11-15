@@ -192,8 +192,8 @@ def test_design_and_dpr_with_a_tube_well(server):  # noqa: F811
     ch = next(row for row in rows if row[2] and "Sluice valve chamber (masonry type)" in str(row[2]))
     assert ch[7].startswith("=D") and ch[8] == "='U02 SV M'!K17"
     # Export DPR (user request 15-Nov-2026): the last design's workbook, found (not opened here)
-    from water_app import ui_api
-    f = ui_api.dpr_file("wrm", open_it=False)
+    from water_app import results
+    f = results.dpr_file("wrm", open_it=False)
     assert f["path"].endswith("_DPR.xlsx") and os.path.isfile(f["path"]) and not f["opened"]
 
 
@@ -271,7 +271,7 @@ def test_standby_tube_wells_the_farthest_and_the_page_s_table():
     """User decisions 15-Nov-2026: the standby tube wells of an OZ are the farthest from its OHT along the roads (at
     least one stays working); the page may give the tube wells their own standby table (the pumps keep CPHEEO's)."""
     from water_app import demand as dm
-    from water_app import ui_api
+    from water_app import zoning_run
     wnet, z = _line()
     rate = lambda s, c="K7": 1000.0
     mapped = [{"name": "TW far", "xy": (361.0, 0.0)}, {"name": "TW near", "xy": (121.0, 1.0)},
@@ -285,14 +285,14 @@ def test_standby_tube_wells_the_farthest_and_the_page_s_table():
     # CPHEEO 5.7.5 by default (1-2 working: 1, 3-5: 2, 6-10: 3, beyond: 3), the same for the pumps
     assert [dm.standby(w, CRIT, "standby_tubewells") for w in (0, 1, 2, 3, 5, 6, 10, 14)] == [0, 1, 1, 2, 2, 3, 3, 3]
     # the page's own table: the tube wells only
-    crit = ui_api._crit({"tw_standby": {"on": "1", "rows": [[4, "1"], ["8", 2]]}})
+    crit = zoning_run._crit({"tw_standby": {"on": "1", "rows": [[4, "1"], ["8", 2]]}})
     assert crit["standby_tubewells"]["value"] == [[4, 1], [8, 2]] and "given on the page" in crit["standby_tubewells"]["ref"]
     assert [dm.standby(w, crit, "standby_tubewells") for w in (3, 4, 5, 12)] == [1, 1, 2, 2]
     assert crit["standby_pumps"]["value"] == CRIT["standby_pumps"]["value"]
-    assert ui_api._crit({"tw_standby": {"on": "", "rows": [[4, 1]]}})["standby_tubewells"]["value"] == [[2, 1], [5, 2], [10, 3]]
+    assert zoning_run._crit({"tw_standby": {"on": "", "rows": [[4, 1]]}})["standby_tubewells"]["value"] == [[2, 1], [5, 2], [10, 3]]
     for bad in ([], [[4, 1], [3, 2]], [[0, 1]], [[2.5, 1]], [["x", 1]]):
         with pytest.raises(ValueError):
-            ui_api._crit({"tw_standby": {"on": "1", "rows": bad}})
+            zoning_run._crit({"tw_standby": {"on": "1", "rows": bad}})
 
 
 def test_tube_wells_taken_away_none_suggested_in_their_place():

@@ -175,7 +175,7 @@ def project(base_year, base_pop, census, method=None, from_year=None):
                       f"the methods differ widely: at +30 years {NAMES[lo_m][0]} x {hi[lo_m]:.2f}, {NAMES[hi_m][0]} "
                       f"x {hi[hi_m]:.2f} - choose the adopted method with care"))
     # town_ratio_from: the town's own growth from from_year by the adopted method (unrounded) - for the balancing
-    # character Far-open of the wards (ui_api.far_open_balance, user decision 7-Nov-2026)
+    # character Far-open of the wards (wards.far_open_balance, user decision 7-Nov-2026)
     extra = {"from_year": from_year, "from_pop": from_pop,
              "ratio_from": {t: pop[t] / from_pop for t in pop},
              "town_from": tf[adopted], "town_ratio_from": {t: town[adopted][t] / tf[adopted] for t in STAGE_YEARS}

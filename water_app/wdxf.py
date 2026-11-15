@@ -70,8 +70,8 @@ def pipe_text(label, nominal, length, chord, h, r):
 def _kept(stem):
     """(zoning, design or None) kept for the page; the design only when it is newer than the zoning and of the same
     network. A zoning of another state of the network than the one now: an error (zoning again first)."""
-    from . import ui_api
-    last = ui_api.last_results(stem)
+    from . import results, zoning_run  # noqa: F401
+    last = results.last_results(stem)
     z = last.get("zoning")
     if not z:
         raise ValueError("पहले Zoning चलाएँ")
@@ -106,14 +106,14 @@ def export(stem, path=None, what="both"):
     "both": the zoning, and its design when there is one (<stem>_water_..., as before)."""
     import ezdxf
     from ezdxf.enums import TextEntityAlignment
-    from . import ui_api
+    from . import results, zoning_run  # noqa: F401
     what = what if what in WHAT else "both"
     z, d = _kept(stem)
     if what == "zoning":
         d = None
     elif what == "design" and not d:
         raise ValueError("इस zoning का design नहीं है - पहले Design चलाएँ (no design of the current zoning yet)")
-    net = ui_api.cut_net(stem, z.get("req"))                 # the pipes as cut at the barrier lines
+    net = zoning_run.cut_net(stem, z.get("req"))                 # the pipes as cut at the barrier lines
     nodes = {n: v for n, v in net["nodes"].items() if v.get("xy")}
     to_xy = ui.converters_for(stem)[1]
     h, h_src = _text_height(stem, net)

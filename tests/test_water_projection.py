@@ -108,18 +108,18 @@ def test_zoning_and_design_on_a_projection(server):  # noqa: F811
 def test_far_open_below_one_is_flagged():
     """Far-open's balancing factor below 1 (user decision 10-Nov-2026): flagged as 'below' - its own warning in place
     of 'low'; the example's ratios give back the example's Far-open (technical.xlsx T P470)."""
-    from water_app import ui_api as U
-    ch = U.WARD_CHARS
+    from water_app import wards
+    ch = wards.WARD_CHARS
     city = dict(zip(ch, (698311, 673088, 720858, 587585)))
     growth = dict(zip(ch, ([1.02, 1.25, 1.50], [1.04, 1.40, 1.85], [1.06, 1.63, 2.45], [1.0932, 1.9183, 3.3282])))
     S = sum(city.values())
     ex = {t: sum(city[k] * growth[k][j] for k in ch) / S for j, t in enumerate(("init", "mid", "ult"))}
-    fo = U.far_open_balance({"city": city, "growth": growth}, {"town_ratio_from": ex})
+    fo = wards.far_open_balance({"city": city, "growth": growth}, {"town_ratio_from": ex})
     assert fo["factors"] == pytest.approx([1.0932, 1.9183, 3.3282], abs=1e-4) and fo["below"] == []
     slow = dict(ex, ult=1.6023)                       # an incremental-like town: Far-open 0.40 at +30 years
-    fo = U.far_open_balance({"city": city, "growth": growth}, {"town_ratio_from": slow})
+    fo = wards.far_open_balance({"city": city, "growth": growth}, {"town_ratio_from": slow})
     assert fo["below"] == ["ult"] and fo["factors"][2] == pytest.approx(0.40, abs=0.01)
     f = {"names": {"inc": ["Incremental", "Incremental"]}, "adopted": "inc", "years": {"init": 2027, "mid": 2042, "ult": 2057},
          "pop": {"init": 1, "mid": 2, "ult": 3}, "ratio": {"ult": 1.6}, "notes": [], "far_open": fo}
-    texts = [x["text"] for x in U._proj_flags(f, None)]
+    texts = [x["text"] for x in wards._proj_flags(f, None)]
     assert any("below 1 (ult 0.40" in t for t in texts) and not any("grows slower" in t for t in texts)

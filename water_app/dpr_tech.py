@@ -1,6 +1,6 @@
 """The technical statement of the water DPR beyond the OZ sums - in the format of the Riverside water DPR (U.P. Jal
 Nigam, AMRUT 2.0, 2026; user decision 6-Nov-2026), each OZ a block of its own, from the design (B.info["tech"],
-ui_api._tech) and the sheets before (T1 / TW / Storage / T3 (k) / EM TS):
+results._tech) and the sheets before (T1 / TW / Storage / T3 (k) / EM TS):
 
     wards(B)        Wards        ward-wise population and its growth by the ward's character (p71-82), the zone-wise
                                  population by ward (p83-87)
@@ -23,7 +23,7 @@ write(B) makes them all (a sheet with nothing to show is left out). B = dpr.Book
 import re
 
 from .dpr import q
-from .ui_api import FAR_OPEN, WARD_DENS
+from .wards import FAR_OPEN, WARD_DENS
 
 DPR = "Riverside water DPR (U.P. Jal Nigam 2026)"
 YEARS = (("init", "base_year"), ("mid", "mid_year"), ("ult", "design_year"))

@@ -24,7 +24,7 @@ def _grid(n=10, pop=100.0):
 
 
 def _loop(net, mode, i_max=3, name="L1"):
-    """The loop around the junctions with i <= i_max, its boundary pipes closed (as ui_api._loops)."""
+    """The loop around the junctions with i <= i_max, its boundary pipes closed (as zoning_run._loops)."""
     inside = {n for n in net["nodes"] if int(n.split("-")[0]) <= i_max}
     bnd = sorted(p for p, x in net["pipes"].items() if (x["a"] in inside) != (x["b"] in inside))
     for p in bnd:
@@ -110,17 +110,17 @@ def test_small_pieces_cut_off_by_a_loop_go_to_the_neighbour_or_into_it(crit):
     """User report 27-Oct-2026: a loop drawn across roads gave every bit of road cut off inside it an OZ of its own
     (8 - 193 people). A small piece inside not joined to the loop's main part goes out to the neighbour; a small
     piece outside joined only to the loop comes in."""
-    from water_app import ui_api
+    from water_app import zoning_run
     net = _grid()
     del net["pipes"]["h4-0"], net["pipes"]["v4-0"]          # 4-0: joined only to 3-0, inside the loop
     lp = {"name": "L", "nodes": {n for n in net["nodes"] if int(n.split("-")[0]) <= 3} | {"8-8"}}   # 8-8: a stray
     ppc, dmin = crit["persons_per_connection"]["value"], crit["dma_min_connections"]["value"]
-    pc = ui_api._loop_pieces(net, lp, lambda P: P / ppc < dmin, set())
+    pc = zoning_run._loop_pieces(net, lp, lambda P: P / ppc < dmin, set())
     assert pc == (1, 100.0, 1, 100.0)
     assert "8-8" not in lp["nodes"] and "4-0" in lp["nodes"] and len(lp["nodes"]) == 41
     # a piece holding a given OHT stays where it is
     lp = {"name": "L", "nodes": {n for n in net["nodes"] if int(n.split("-")[0]) <= 3} | {"8-8"}}
-    assert ui_api._loop_pieces(net, lp, lambda P: P / ppc < dmin, {"8-8", "4-0"})[::2] == (0, 0)
+    assert zoning_run._loop_pieces(net, lp, lambda P: P / ppc < dmin, {"8-8", "4-0"})[::2] == (0, 0)
 
 
 def test_a_crossing_keeps_a_loop_boundary_pipe_open(server):  # noqa: F811

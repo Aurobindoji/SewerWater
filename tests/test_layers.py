@@ -17,9 +17,9 @@ LAYERS = {
         "core": "barriers demand design geo hindi hydraulics intze intze_calc network population prv rising spacing "
                 "zone_geom zoning",
         "net": "cad dxf_extract dxf_inspect layout netedit repair",
-        "project": "project",
-        "output": "dpr dpr_civil dpr_em dpr_emd dpr_format dpr_front dpr_more dpr_rm dpr_tech intze_dwg rates wdxf",
-        "service": "city_wards intze_api layout_cmd ui_api",
+        "project": "city_wards project wards",
+        "output": "dpr dpr_civil dpr_em dpr_emd dpr_format dpr_front dpr_more dpr_rm dpr_tech intze_dwg rates",
+        "service": "design_run intze_api layout_cmd results wdxf zone_lines zoning_run",
         "web": "server __main__",
     },
     "sewer_app": {
@@ -34,7 +34,7 @@ LAYERS = {
 }
 # the breaks of today (15-Nov-2026), each to go in a stage of the restructure
 KNOWN = {
-    "water_app": {("wdxf", "ui_api"), ("dpr_tech", "ui_api")},
+    "water_app": set(),
     "sewer_app": {("zoning", "cad"), ("zoning", "report"), ("ui", "__main__")},
 }
 

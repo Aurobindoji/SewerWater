@@ -631,7 +631,7 @@ KIND.zone_loop = { name: "Zone लूप", color: "#ad1457" };
 // The names, densest first (user decision 9-Nov-2026): CPHEEO Manual on Water Supply 2024 Part A Annexure 2.7 p974's
 // categories - low / medium / high / saturated, "the cores of the city" at saturation - with the Riverside DPR p76's
 // word in brackets (its Proximal Developed / Core / Proximal Developing / Far-open, in that order of density); the
-// old names of a saved project / map read as the new (charName; ui_api.char_name)
+// old names of a saved project / map read as the new (charName; wards.char_name)
 const CH = ["Saturated (Core)", "High (Proximal Developed)", "Medium (Proximal Developing)", "Low (Far-open)"];
 const CH_OLD = { "Proximal Developed": CH[0], "Core": CH[1], "Proximal Developing": CH[2], "Far-open": CH[3] };
 function charName(c) { c = String(c ?? "").trim(); return CH_OLD[c] || c; }
@@ -654,7 +654,7 @@ const WARD_TOWN_DEF = { [CH[0]]: 698311, [CH[1]]: 673088, [CH[2]]: 720858, [CH[3
 // user decision 8-Nov-2026: a ward above it only warned of); another town: its own (yellow), blank = no check
 const WARD_SAT_DEF = 1880;
 // CPHEEO Annexure 2.7 p974: the developed core near saturation - Saturated (Core)'s design factor above this warned
-// of (the app's reading of "very close to the present density": 10 %, as the saturation's default; ui_api.CORE_NEAR)
+// of (the app's reading of "very close to the present density": 10 %, as the saturation's default; wards.CORE_NEAR)
 const WARD_CORE_NEAR = 1.10;
 // CPHEEO Manual on Water Supply 2024 Part A: the clauses on the ward-wise population (user 8-Nov-2026), shown with
 // the factors of the ward's character
@@ -2335,7 +2335,7 @@ $("pjrun").onclick = () => pjRun(false);
 var WT = { year: 2025, rows: [], growth: JSON.parse(JSON.stringify(WARD_GROWTH_DEF)), dens: Object.assign({}, WARD_DENS_DEF),
            city: Object.assign({}, WARD_TOWN_DEF), sat: WARD_SAT_DEF };
 var CW = null;                            // the town's list of wards chosen (city_wards.py): {city, year, rows} or null
-// Far-open balanced by the projection (ui_api.far_open_balance): {factors, total, target} or null
+// Far-open balanced by the projection (wards.far_open_balance): {factors, total, target} or null
 function pjFar() { try { return (PJ && PJ.far_open) || null; } catch (e) { return null; } }   // var / functions: used before this line runs
 // the columns: key, title, width, input type ("char": the character's select; "ro": shown only - the KML's area share)
 const WT_COLS = [["no", () => "Ward No.", 58, "text"], ["name", () => tr("नाम", "Name"), 110, "text"],
@@ -2355,7 +2355,7 @@ function wtCov(r) { return (+r.pop || 0) * (r.cov === "" || r.cov == null ? 100 
 function wtTotal() { return (WT ? WT.rows : []).reduce((a, r) => a + wtCov(r), 0); }
 function wtRow(no) { return no === undefined || no === null || String(no).trim() === "" ? null : WT.rows.find(r => String(r.no).trim() === String(no).trim()) || null; }
 function wtInputs() { return WT && WT.rows.length ? { year: WT.year, rows: WT.rows, growth: WT.growth, dens: WT.dens, city: WT.city, sat: WT.sat ?? "", citylist: WT.citylist || "" } : null; }
-// the wards above the saturation density in the design year (ui_api.saturation_over): density x the character's design
+// the wards above the saturation density in the design year (wards.saturation_over): density x the character's design
 // factor, a ward without one x the adopted ratio (once the projection is run)
 function wtSatOver() {
   const s = +WT.sat || 0; if (!(s > 0)) return [];
@@ -2540,7 +2540,7 @@ function wtGrowthRender() {
     wtSyncGrowth(); wtSatShow(); wtChanged(); });
   wtSatShow();
 }
-// the ward table from a KML of the ward boundaries (user decision 7-Nov-2026; ui_api.ward_kml_table): the rows
+// the ward table from a KML of the ward boundaries (user decision 7-Nov-2026; wards.ward_kml_table): the rows
 // (replacing the table's, asked), the wards on the map with their Ward No. (replacing the wards drawn, asked)
 $("wtkml").onclick = () => $("wtkmlfile").click();
 $("wtkmlfile").onchange = async e => {

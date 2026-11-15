@@ -10,8 +10,9 @@ import pytest
 from water_app import dpr as wdpr
 from water_app import server as wserver
 from water_app import project as wproject
-from water_app import ui_api
-
+from water_app import design_run
+from water_app import results
+from water_app import zoning_run
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SAMPLE = os.path.join(HERE, "samples", "sample_area.kml")
 REF = re.compile(r"(?:'((?:[^']|'')+)'|([A-Za-z_][\w\.]*))!")
@@ -31,9 +32,9 @@ def design(tmp_path, monkeypatch):
     def run(**kw):
         req = dict({"name": "wdpr", "ohts": [old], "pop_factor": 3, "base_year": 2027, "pop_initial": 20000,
                     "pop_mid": 24000}, **kw)
-        d = ui_api.run_design("wdpr", req)
+        d = design_run.run_design("wdpr", req)
         assert d["ok"] and not (d.get("files") or {}).get("dpr"), d.get("log")      # not with the design
-        d["files"]["dpr"] = ui_api.dpr_file("wdpr", open_it=False)["path"]           # on Export DPR
+        d["files"]["dpr"] = results.dpr_file("wdpr", open_it=False)["path"]           # on Export DPR
         return d
     return run
 
@@ -44,13 +45,13 @@ def test_dpr_written_on_export_only(design):
     import glob
     d = design()
     folder = os.path.dirname(d["files"]["dpr"])
-    assert ui_api.dpr_file("wdpr", open_it=False)["path"] == d["files"]["dpr"]
+    assert results.dpr_file("wdpr", open_it=False)["path"] == d["files"]["dpr"]
     n = len(glob.glob(os.path.join(folder, "wdpr_water_design_*_DPR.xlsx")))
     assert os.path.isfile(os.path.join(folder, "wdpr_wdesign_dpr.pkl"))
-    ui_api._keep("wdpr", "zoning", {"ok": True}, {})
+    results._keep("wdpr", "zoning", {"ok": True}, {})
     assert not os.path.isfile(os.path.join(folder, "wdpr_wdesign_dpr.pkl"))
     with pytest.raises(ValueError):
-        ui_api.dpr_file("wdpr", open_it=False)
+        results.dpr_file("wdpr", open_it=False)
     assert len(glob.glob(os.path.join(folder, "wdpr_water_design_*_DPR.xlsx"))) == n
 
 
@@ -398,7 +399,7 @@ def test_dpr_storage_as_zoning(design):
     st = wb["T11 Mass Balance"]
     fill = [st.cell(6 + h, 3).value for h in range(24)]
     assert sum(fill) == 8 and fill[4] == 1 and fill[3] == 0 and fill[16] == 1
-    crit = ui_api._crit({"oht_inflow": "4-8, 16-20"})
+    crit = zoning_run._crit({"oht_inflow": "4-8, 16-20"})
     share = dm.storage_share(crit)
     assert round(share, 3) == 0.385
     city = sum(o["population"] for o in d["outlets"])

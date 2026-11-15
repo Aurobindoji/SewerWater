@@ -18,7 +18,7 @@ import os
 import re
 
 # the characters of a ward, densest first (CPHEEO Annexure 2.7's categories with the DPR's word, 9-Nov-2026; as
-# ui_api.WARD_CHARS) and the old names (a list / xlsx of before) read as them
+# wards.WARD_CHARS) and the old names (a list / xlsx of before) read as them
 CHARS = ("Saturated (Core)", "High (Proximal Developed)", "Medium (Proximal Developing)", "Low (Far-open)")
 OLD = dict(zip(("Proximal Developed", "Core", "Proximal Developing", "Far-open"), CHARS))
 TITLE = "WARDWISE POPULATION AND AREA"

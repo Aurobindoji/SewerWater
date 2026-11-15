@@ -3,9 +3,7 @@ Annexure 2.8 suggests 1-3 % when no figures are available) - sewer forecast and 
 import pytest
 
 from sewer_app import population as P
-from water_app import ui_api as W
-
-
+from water_app import zoning_run
 def test_sewer_forecast_takes_the_page_share():
     d = P.forecast(2027, 100000, None, sewage_lpcd=120)
     assert d["floating_share"] == 0.10 and d["floating"]["init"] == 10000
@@ -22,10 +20,10 @@ def test_sewer_forecast_takes_the_page_share():
 
 
 def test_water_criteria_take_the_page_share():
-    assert W._crit({})["floating_share"]["value"] == 0.10
-    assert W._crit({"floating_pct": "10"})["floating_share"]["value"] == 0.10
-    c = W._crit({"floating_pct": "2.5"})
+    assert zoning_run._crit({})["floating_share"]["value"] == 0.10
+    assert zoning_run._crit({"floating_pct": "10"})["floating_share"]["value"] == 0.10
+    c = zoning_run._crit({"floating_pct": "2.5"})
     assert c["floating_share"]["value"] == 0.025 and "page" in c["floating_share"]["ref"]
     for bad in ("x", "70"):
         with pytest.raises(ValueError):
-            W._crit({"floating_pct": bad})
+            zoning_run._crit({"floating_pct": bad})

@@ -45,8 +45,8 @@ def sewer(tmp_path, monkeypatch):
 
 def dpr_of(name):
     """The DPR workbook of the project's last design - written on Export DPR, not with the design (15-Nov-2026)."""
-    from water_app import ui_api
-    return ui_api.dpr_file(name, open_it=False)["path"]
+    from water_app import results
+    return results.dpr_file(name, open_it=False)["path"]
 
 
 def call(url, body=None):
@@ -450,7 +450,7 @@ def test_ward_table_from_a_kml():
     """'KML से वार्ड तालिका' (user decision 7-Nov-2026): a polygon with a ward number / name field is a ward, the others
     the zone; each ward's area and the share of it in the zone (only a check), its population / households where the
     KML gives them above 0, its boundary for the map."""
-    from water_app import ui_api
+    from water_app import wards
     dx, dy = 0.0099, 0.009                       # about 1 km at Springfield
     sq = lambda x0, y0, x1, y1: " ".join(f"{x:.6f},{y:.6f}" for x, y in
                                          ((x0, y0), (x1, y0), (x1, y1), (x0, y1), (x0, y0)))
@@ -464,7 +464,7 @@ def test_ward_table_from_a_kml():
            pm("A", {"W_NUM": "007", "W_Name": "Alpha", "W_POP": "1200", "W_HH": "0"}, sq(x, y, x + dx, y + dy)) +
            pm("B", {"W_NUM": "009", "W_Name": "Beta", "W_POP": "0"}, sq(x + 1.5 * dx, y, x + 2.5 * dx, y + dy)) +
            "</Document></kml>")
-    r = ui_api.ward_kml_table(kml)
+    r = wards.ward_kml_table(kml)
     a, b = r["rows"]
     assert (a["no"], a["name"], a["pop"], a["hh"], a["cov"]) == ("007", "Alpha", 1200, "", "")
     assert a["area"] == pytest.approx(100, rel=0.02) and a["kcov"] == pytest.approx(100, abs=1)

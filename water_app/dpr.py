@@ -4,7 +4,7 @@ formulas, phase 1 = the sheets the network design gives (the rest - WTP, rising 
 sums); SOR items from sor_2025_26.json, the other rates and unit estimates as in the Elmwood estimate (dpr_water.json,
 yellow, to be confirmed); OHT capacity = max(33 %, mass balance) as in the zoning (CPHEEO Table 2.7 S.No.12 p175).
 
-    info = dpr_info(zones, pipes, outlets, dmas, closed, stages, crit, title)      (ui_api.run_design builds it)
+    info = dpr_info(zones, pipes, outlets, dmas, closed, stages, crit, title)      (design_run.run_design builds it)
     write_dpr(info, path, previous=None)
 
 The sheets, each computed from the ones before it by Excel formulas (Elmwood names):

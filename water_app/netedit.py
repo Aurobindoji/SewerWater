@@ -734,7 +734,7 @@ def _apply1(st, op, tn, tc):
         tn.add(mh)
     elif kind == "set_noconn":
         # pipes without service connections - a feeder / transmission main, a pipe across open land (user request
-        # 30-Oct-2026): no population is put on them (ui_api._load); the water still flows through them
+        # 30-Oct-2026): no population is put on them (zoning_run._load); the water still flows through them
         on = bool(op.get("value"))
         ks = [by_id[int(i)] for i in op.get("ids") or [] if int(i) in by_id]
         if not ks:

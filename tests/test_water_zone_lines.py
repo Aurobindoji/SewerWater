@@ -90,7 +90,7 @@ def test_two_parts_touching_at_one_point_do_not_cross():
 def test_open_land_the_zones_close_in_is_theirs():
     """Triangles left out for their length: those shut in by kept ones on every side come back (no empty figure in
     the middle of the zones); those that reach the edge of the points, or lie outside the project, stay out."""
-    from water_app import ui_api
+    from water_app import zone_lines
     # a ring of points round an empty middle, and one point far outside it
     ang = np.linspace(0.0, 2 * np.pi, 24, endpoint=False)
     X = np.concatenate([300 * np.cos(ang), 330 * np.cos(ang + 0.13), [0.0], [2000.0]])
@@ -101,7 +101,7 @@ def test_open_land_the_zones_close_in_is_theirs():
                           for i, j in ((0, 1), (1, 2), (2, 0))]), axis=0)
     keep = el <= 150.0                                         # the ring's own triangles; the middle's are too long
     assert not keep.all() and keep.any()
-    back = ui_api._enclosed(tri.neighbors, keep, np.ones(len(T), dtype=bool))
+    back = zone_lines._enclosed(tri.neighbors, keep, np.ones(len(T), dtype=bool))
     cx, cy = X[T].mean(axis=1), Y[T].mean(axis=1)
     middle = np.hypot(cx, cy) < 290.0
     assert back[middle & ~keep].all() and (middle & ~keep).any()          # the middle: shut in, comes back
@@ -110,23 +110,23 @@ def test_open_land_the_zones_close_in_is_theirs():
     # a size limit: the middle (about 28 ha) is too large to be a block between streets - it stays empty land
     a2 = np.abs((X[T][:, 1] - X[T][:, 0]) * (Y[T][:, 2] - Y[T][:, 0])
                 - (X[T][:, 2] - X[T][:, 0]) * (Y[T][:, 1] - Y[T][:, 0])) / 2
-    assert not ui_api._enclosed(tri.neighbors, keep, np.ones(len(T), dtype=bool), a2, 30000.0).any()
-    assert ui_api._enclosed(tri.neighbors, keep, np.ones(len(T), dtype=bool), a2, 400000.0)[middle & ~keep].all()
+    assert not zone_lines._enclosed(tri.neighbors, keep, np.ones(len(T), dtype=bool), a2, 30000.0).any()
+    assert zone_lines._enclosed(tri.neighbors, keep, np.ones(len(T), dtype=bool), a2, 400000.0)[middle & ~keep].all()
     # the same middle outside the project boundary: stays out
-    assert not ui_api._enclosed(tri.neighbors, keep, ~middle).any()
+    assert not zone_lines._enclosed(tri.neighbors, keep, ~middle).any()
 
 
 def test_land_closed_in_by_the_zones_is_theirs_whatever_its_size():
     """User 15-Nov-2026: no ring round empty land inside the zones (as the DPR's key plan) - land the zones close in on
     every side is theirs, however large; open land reaching the outside stays out."""
     import numpy as np
-    from water_app import ui_api
-    assert ui_api.BLOCK_MAX_M2 is None
+    from water_app import zone_lines
+    assert zone_lines.BLOCK_MAX_M2 is None
     # triangle 1: left out, closed in by the kept 0, 2, 3; triangle 4: left out, on the outer edge (-1)
     nb = np.array([[1, -1, -1], [0, 2, 3], [1, -1, -1], [1, 4, -1], [3, -1, -1]])
     keep = np.array([True, False, True, True, False])
     inside = np.ones(5, dtype=bool)
     area = np.array([10.0, 1e6, 10.0, 10.0, 1e6])                     # 100 ha closed in
-    got = ui_api._enclosed(nb, keep, inside, area, ui_api.BLOCK_MAX_M2)
+    got = zone_lines._enclosed(nb, keep, inside, area, zone_lines.BLOCK_MAX_M2)
     assert got.tolist() == [False, True, False, False, False]
-    assert not ui_api._enclosed(nb, keep, inside, area, 30000.0)[1]   # the 3 ha of before: left as a ring
+    assert not zone_lines._enclosed(nb, keep, inside, area, 30000.0)[1]   # the 3 ha of before: left as a ring

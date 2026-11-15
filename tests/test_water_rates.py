@@ -9,9 +9,7 @@ import pytest
 
 from test_water_dpr import design  # noqa: F401  (the fixture)
 from water_app import rates
-from water_app import ui_api
-
-
+from water_app import results
 @pytest.fixture
 def mine(tmp_path, monkeypatch):
     monkeypatch.setattr(rates, "USER_FILE", str(tmp_path / "home" / "rates" / "water_rates.json"))
@@ -25,7 +23,7 @@ def yellow(c):
 def test_export_import_reset(design, mine):  # noqa: F811
     d = design()
     old_dpr = d["files"]["dpr"]
-    r = ui_api.rate_export("wdpr", open_it=False)
+    r = results.rate_export("wdpr", open_it=False)
     assert r["ok"] and r["design"] and os.path.isfile(r["path"]) and r["changed"] == 0
     assert r["sor_used"] > 5 and r["upjn_used"] > 0
     wb = openpyxl.load_workbook(r["path"])
@@ -55,7 +53,7 @@ def test_export_import_reset(design, mine):  # noqa: F811
     assert imp["sor_changed"] == 1 and imp["upjn_changed"] == 1 and not imp["notes"]
     assert os.path.isfile(mine) and rates.status()["changed"] == 2
     # Export DPR again: a new workbook with the new rates (the old one was of the old rates)
-    p2 = ui_api.dpr_file("wdpr", open_it=False)["path"]
+    p2 = results.dpr_file("wdpr", open_it=False)["path"]
     assert p2 != old_dpr
     w2 = openpyxl.load_workbook(p2)
     sor = w2["R SOR 2025-26"]
@@ -63,19 +61,19 @@ def test_export_import_reset(design, mine):  # noqa: F811
     assert sor.cell(row, 4).value == pytest.approx(sor0 * 1.1, abs=0.01)
     d2 = [c.value for row in w2["D2 DS Estimate"].iter_rows() for c in row]
     assert up0 + 100 in d2 and up0 not in d2, (up0, s0)
-    assert ui_api.dpr_file("wdpr", open_it=False)["path"] == p2          # the same rates: the same file
+    assert results.dpr_file("wdpr", open_it=False)["path"] == p2          # the same rates: the same file
     # the next export shows them, as the user's
-    r2 = ui_api.rate_export("wdpr", open_it=False)
+    r2 = results.rate_export("wdpr", open_it=False)
     assert r2["changed"] == 2
     # back to the app's own
     assert rates.reset() and not os.path.isfile(mine) and rates.status()["changed"] == 0
-    assert ui_api.dpr_file("wdpr", open_it=False)["path"] != p2
+    assert results.dpr_file("wdpr", open_it=False)["path"] != p2
 
 
 def test_export_without_a_design_and_bad_files(tmp_path, monkeypatch, mine):
     from water_app import project as wproject
     monkeypatch.setattr(wproject, "OUT_ROOT", str(tmp_path / "o"))
-    r = ui_api.rate_export("none", open_it=False)
+    r = results.rate_export("none", open_it=False)
     assert r["ok"] and not r["design"] and r["sor_used"] == 0 and r["upjn_used"] == 0
     with pytest.raises(ValueError):
         rates.import_xlsx(b"not an xlsx")

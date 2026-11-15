@@ -188,6 +188,30 @@ def water(R, url, tmp):
     d = R.answer("w3_design", R.call(w + "water_design", q3))
     R.files("w3_design", d.get("files") or {})
     R.files("w3_dpr", {"dpr": R.call(w + "water_dpr", {"name": "ws"}).get("path")})
+    # 4. a barrier line (railway) between two junction columns, then a crossing at its first cut; design, DXF, DPR
+    wb_ = R.call(w + "layout", {"name": "wb", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100})
+    lats = sorted(m["latlng"][0] for m in wb_["manholes"])
+    lngs = sorted({m["latlng"][1] for m in wb_["manholes"]})
+    mid = (lngs[len(lngs) // 2] + lngs[len(lngs) // 2 + 1]) / 2
+    bar = {"name": "Railway 1", "type": "railway", "latlngs": [[lats[0] - 0.01, mid], [lats[-1] + 0.01, mid]]}
+    qb = {"name": "wb", "ohts": [], "pop_factor": 3, "barriers": [bar]}
+    z = R.answer("w4_zoning_barrier", R.call(w + "water_zoning", qb))
+    cut = (z.get("cuts") or [{}])[0]
+    if cut.get("latlng"):
+        xing = {"name": "Bridge", "latlngs": [[cut["latlng"][0], mid - 0.0002], [cut["latlng"][0], mid + 0.0002]]}
+        qb = dict(qb, crossings=[xing])
+        R.answer("w4_zoning_crossing", R.call(w + "water_zoning", qb))
+    d = R.answer("w4_design", R.call(w + "water_design", qb))
+    R.files("w4_design", d.get("files") or {})
+    R.files("w4_design_dxf", {"dxf": R.call(w + "water_export", {"name": "wb", "what": "design"}).get("path")})
+    R.files("w4_dpr", {"dpr": R.call(w + "water_dpr", {"name": "wb"}).get("path")})
+    # 5. a zone loop over the west part (kept as its own OZ), zoning and design
+    ring = [[lats[0] - 0.001, lngs[0] - 0.001], [lats[-1] + 0.001, lngs[0] - 0.001], [lats[-1] + 0.001, mid],
+            [lats[0] - 0.001, mid]]
+    ql = {"name": "wb", "ohts": [], "pop_factor": 5, "loops": [{"name": "Ward A", "latlngs": ring, "on_limit": "keep"}]}
+    R.answer("w5_zoning_loop", R.call(w + "water_zoning", ql))
+    d = R.answer("w5_design_loop", R.call(w + "water_design", ql))
+    R.files("w5_design", d.get("files") or {})
     R.answer("w_projects", R.call(url + "/api/w/projects"))
 
 
@@ -219,6 +243,30 @@ def sewer(R, url):
         for k, f in enumerate(sorted(_paths(e))):
             R.files(f"s1_zexport_{o['option']}_{k}", {"f": f})
     R.answer("s1_last", R.call(url + "/api/last_results?name=sg"))
+    # 2. a barrier line (highway) between two manhole columns: zoning, design of the first option, its export
+    lay = R.call(s + "layout", {"name": "sb", "kml": kml})
+    lats = sorted(m["latlng"][0] for m in lay["manholes"])
+    lngs = sorted({m["latlng"][1] for m in lay["manholes"]})
+    mid = (lngs[len(lngs) // 2] + lngs[len(lngs) // 2 + 1]) / 2
+    bar = {"name": "NH-19", "type": "highway", "latlngs": [[lats[0] - 0.01, mid], [lats[-1] + 0.01, mid]]}
+    qb = {"name": "sb", "stp": "MH-17", "sewage_lpcd": 108, "start_depth": 0.7, "barriers": [bar]}
+    z = R.answer("s2_zoning_barrier", R.call(s + "zoning", qb))
+    o = z["options"][0]["option"]
+    d = R.answer("s2_design_barrier", R.call(s + "design", dict(qb, option=o)))
+    R.files("s2_design", d.get("files") or {})
+    e = R.answer("s2_zexport", R.call(s + "zoning_export", {"name": "sb", "option": o}))
+    for k, f in enumerate(sorted(_paths(e))):
+        R.files(f"s2_zexport_{k}", {"f": f})
+    # 3. a zone loop over the west third: its own outlet
+    lats = sorted({m["latlng"][0] for m in lay["manholes"]})
+    mid = (lngs[len(lngs) // 3] + lngs[len(lngs) // 3 + 1]) / 2
+    ring = [[lats[0] - 0.001, lngs[0] - 0.001], [lats[-1] + 0.001, lngs[0] - 0.001], [lats[-1] + 0.001, mid],
+            [lats[0] - 0.001, mid]]
+    ql = {"name": "sb", "stp": "MH-17", "sewage_lpcd": 108, "start_depth": 0.7,
+          "loops": [{"name": "Ward A", "latlngs": ring}]}
+    R.answer("s3_zoning_loop", R.call(s + "zoning", ql))
+    d = R.answer("s3_design_loop", R.call(s + "design", dict(ql, option="CURRENT")))
+    R.files("s3_design", d.get("files") or {})
     R.answer("s_projects", R.call(url + "/api/projects"))
 
 

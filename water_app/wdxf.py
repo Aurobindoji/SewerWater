@@ -20,6 +20,7 @@ a layout: UTM metres), its layers switched on / off in AutoCAD:
                          as the sewer's plan drawing (pipe_text)
         W_FLOW_ARROW     the direction of the peak flow
         W_JUNCTION, W_JUNCTION_LOW (residual head below 17 m), W_JUNCTION_TEXT: name, GL, HGL, residual head
+                         ("RH 21.95", m; user request 15-Nov-2026 - was "P")
         W_PRV            the PRVs (a triangle on the pipe) with their setting
         W_TUBEWELL, W_RISING_MAIN   the new tube wells (a circle) and each one's rising main along the roads
     without a design: the network's pipes and junctions only (W_PIPE, W_JUNCTION, W_JUNCTION_TEXT: name, GL).
@@ -327,7 +328,7 @@ def export(stem, path=None, what="both"):
         n["low"] += low
         msp.add_circle((x, y), r, dxfattribs={"layer": "W_JUNCTION_LOW" if low else "W_JUNCTION"})
         gl = e.get("gl", v.get("ground"))
-        lines = [lab, f"GL {cad.fmt(gl, 2)}"] + ([f"HGL {cad.fmt(e.get('head'), 2)}", f"P {cad.fmt(e.get('p'), 2)}"]
+        lines = [lab, f"GL {cad.fmt(gl, 2)}"] + ([f"HGL {cad.fmt(e.get('head'), 2)}", f"RH {cad.fmt(e.get('p'), 2)}"]
                                                 if d else [])
         for j, t in enumerate(lines):
             text(t, (x + r * 1.3, y + r * 1.3 + (len(lines) - 1 - j) * h * 1.4), "W_JUNCTION_TEXT", h,

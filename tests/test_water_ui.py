@@ -459,7 +459,7 @@ def test_water_dxf_export(server):
     assert "Pipe sizes" in txt and all(any(t.startswith(f"{x} mm - ") for t in txt) for x in sizes)
     assert set(r["counts"]["sizes"]) >= set(sizes)
     n = next(x for x in d["nodes"] if x["head"] is not None)
-    assert f"HGL {n['head']:.2f}" in txt and f"P {n['p']:.2f}" in txt
+    assert f"HGL {n['head']:.2f}" in txt and f"RH {n['p']:.2f}" in txt
     assert len(msp.query("SOLID[layer=='W_FLOW_ARROW']")) > 0
 
 

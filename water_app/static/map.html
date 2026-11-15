@@ -242,6 +242,13 @@
   .hovcard .hc-act button.del { color: #c62828; }
   .hovcard .hc-k { color: #666; }
   .tw-icon.sb { box-shadow: 0 0 0 2px #e65100; }
+  /* a folding row: the whole bar opens it (user 15-Nov-2026: in the app only its small triangle did) */
+  details > summary { cursor: pointer; user-select: none; -webkit-user-select: none; }
+  #izbox > summary { list-style: none; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--chip, #eef2f7); font-weight: 600; }
+  #izbox > summary::-webkit-details-marker { display: none; }
+  #izbox > summary::before { content: "▶"; display: inline-block; width: 1.2em; font-size: 12px; }
+  #izbox[open] > summary::before { content: "▼"; }
+  .tw-icon.need { background: #fff; color: #c62828; border: 2px dashed #c62828; font-size: 8px; }
   .hc-moving { filter: drop-shadow(0 0 4px #ffd600); cursor: move; }
   /* the tube wells' standby table (user 15-Nov-2026): grey until switched on */
   .sbtab { margin: 2px 0 6px 4px; font-size: 12px; }
@@ -530,6 +537,7 @@
         <input type="checkbox" id="wsbon"> Standby tube wells अपने हिसाब से</label>
         <button type="button" id="wsbinfo" title="CPHEEO का नियम">ⓘ CPHEEO</button></div>
       <div id="wsbtab" class="sbtab off"></div>
+      <div id="wsug" class="sbtab"></div>
       <div class="row"><label title="drawing के दो अलग टुकड़े (कोई pipe नहीं जोड़ता) इतनी दूरी या कम पर हों तो Zoning चेतावनी देती है (नक्शे पर लाल बिंदीदार रेखा) - शायद drawing में छूटा जोड़">Gap की चेतावनी (m तक)</label>
         <input type="number" id="wnearm" value="50" min="1" max="1000" step="1"></div>
       <div class="stepact"><button id="wzrun" class="primary">Zoning (OZ / DMA)</button>
@@ -540,12 +548,13 @@
       <div class="row"><label style="min-width:0" title="दबाव घटाने वाले valve (PRV): चालू हो तो design नक्शे के PRV लगाता है और 31 m से ऊपर के दबाव पर PRV सुझाता है, DPR (D2) में उनका ख़र्च; U.P. जल निगम की DPRs में आम नहीं, इसलिए default बंद">
         <input type="checkbox" id="wprv"> PRV का विकल्प (दबाव घटाने वाले valve)</label></div>
       <div class="stepact"><button id="wdrun" class="primary">Design</button>
-        <button id="wexport" title="Design की DXF, मौजूदा zoning पर - AutoCAD के लिए">Export DXF</button></div>
+        <button id="wexport" title="Design की DXF, मौजूदा zoning पर - AutoCAD के लिए">Export DXF</button>
+        <button id="wexportdpr" title="आख़िरी Design की DPR (Excel) - हर Design के साथ बनती है; यह उसे Excel में खोलता है">Export DPR (xlsx)</button></div>
       <div id="wdbox"></div>
       <div class="stepact" id="tblrow" hidden><button id="tblbtn" title="Design के हर pipe / junction की तालिका: manual की जाँच, बदलाव, CSV">☷ Pipe / junction तालिका</button>
         <span class="hint" id="tbledits"></span></div>
       <div class="stepbar">Intze OHT drawings (नई टंकियाँ)</div>
-      <details id="izbox" style="margin:6px 0"><summary title="नई OHTs की Intze टंकी: design (working stress, IS 3370 Part 2 / IS 456 / IS 1893 Part 2 / IS 875 Part 3), GA, reinforcement और BBS की drawings - capacity और staging आख़िरी Design से">🏗 टंकियाँ और उनके inputs (खोलें)</summary>
+      <details id="izbox" style="margin:6px 0"><summary title="नई OHTs की Intze टंकी: design (working stress, IS 3370 Part 2 / IS 456 / IS 1893 Part 2 / IS 875 Part 3), GA, reinforcement और BBS की drawings - capacity और staging आख़िरी Design से">🏗 टंकियाँ और उनके inputs (खोलने के लिए यहाँ click करें)</summary>
       <div class="row"><label title="IS 1893 (Part 1):2016 Table 3; स्प्रिंगफ़ील्ड zone III">Seismic zone</label>
         <select id="izzone"><option>II</option><option selected>III</option><option>IV</option><option>V</option></select></div>
       <div class="row"><label title="मिट्टी की net bearing capacity नींव की गहराई पर - soil test आने तक मानी गई (Brookfield की Greenfield report: 8 t/m² = 80 kN/m²)">Net SBC (kN/m²)</label>
@@ -1990,7 +1999,7 @@ function wInputs() {
   const tws = [];                       // new tube wells (water phase 2, user 31-Oct-2026)
   drawn.eachLayer(l => { if (l.kind === "tw") { const ll = l.getLatLng(); tws.push({ name: l.props.name, lat: ll.lat, lng: ll.lng, discharge_lpm: l.props.discharge_lpm ?? "" }); } });
   return { name: $("pname").value, ohts, barriers, loops, crossings, wards, bulk, prvs, tws, projection: pjInputs(), pop_factor: $("wpopf").value, floating_pct: $("wfloat").value, persons_per_connection: $("wppc").value, use_prv: $("wprv").checked ? "1" : "",
-           oht_inflow: $("winflow").value, near_m: $("wnearm").value, ward_table: wtInputs(), intze: izInputs(), tw_standby: sbInputs(),
+           oht_inflow: $("winflow").value, near_m: $("wnearm").value, ward_table: wtInputs(), intze: izInputs(), tw_standby: sbInputs(), sug: SUG,
            pop_total: $("poptot").hidden ? "" : $("poptot").value, edits: WEDITS, ...stageInputs() };
 }
 // stage-wise check (CPHEEO sewer Table 2.1 p2-9, water Table 2.7 S.No.1 p168): base year and the populations of the
@@ -2033,6 +2042,45 @@ $("wsbinfo").onclick = ev => {
   d.querySelector("button").onclick = () => d.remove();
 };
 sbRender();
+
+// ---- the app's suggestions taken away (user decision 15-Nov-2026): a proposed OHT just goes (its area to the
+// neighbouring OZs); a suggested tube well goes and none comes in its place - its OZ's tube wells are then the map's,
+// too few: the design fails and tells how many the demand needs. Sites are kept (an OZ is renamed when the zoning
+// runs again): those of the OHTs taken away, and the OHT sites of the OZs whose tube wells are the user's.
+let SUG = { oht_off: [], oht_off_all: false, tw_off: [], tw_off_all: false };
+function sugRender() {
+  const o = SUG.oht_off_all ? tr("सभी हटाई", "all taken away") : SUG.oht_off.length ? tr(`${SUG.oht_off.length} हटाई`, `${SUG.oht_off.length} taken away`) : "";
+  const t = SUG.tw_off_all ? tr("सभी हटाए", "all taken away") : SUG.tw_off.length ? tr(`${SUG.tw_off.length} OZ में हटाए`, `taken away in ${SUG.tw_off.length} OZ`) : "";
+  $("wsug").innerHTML =
+    `<div><b>${tr("सुझाई OHT", "Suggested OHTs")}</b>: ${o ? `${o} <button type="button" id="wsugo1">${tr("वापस लाएँ", "bring back")}</button>`
+       : `<button type="button" id="wsugo0">${tr("सभी सुझाई OHT हटाएँ", "Remove all suggested OHTs")}</button>`}</div>` +
+    `<div style="margin-top:3px"><b>${tr("सुझाए tube wells", "Suggested tube wells")}</b>: ${t ? `${t} <button type="button" id="wsugt1">${tr("वापस लाएँ", "bring back")}</button>`
+       : `<button type="button" id="wsugt0">${tr("सभी सुझाए tube wells हटाएँ", "Remove all suggested tube wells")}</button>`}</div>` +
+    `<div class="hint">${tr("हटाई OHT: उसका इलाका पड़ोसी OZ लेते हैं (न ले सकें तो किसी OHT से नहीं जुड़ा)। हटाए tube wells: उस OZ में सिर्फ़ नक्शे वाले लिए जाते हैं - कम हों तो design अधूरा (✖) और कमी वाले tube wells की जगहें लाल T! से। Zoning / Design दोबारा चलाने पर लागू।",
+      "An OHT taken away: its area goes to the neighbouring OZs (or stays joined to none). Tube wells taken away: that OZ takes the map's only - too few: the design fails (✖) and the sites for the rest show as red T!. Applies when Zoning / Design run again.")}</div>`;
+  const on = (id, fn) => { if ($(id)) $(id).onclick = () => { fn(); sugRender(); changed(); }; };
+  on("wsugo0", () => { if (confirm(tr("सभी सुझाई OHT हटाएँ? Zoning तब सिर्फ़ नक्शे पर रखी OHT लेगी।", "Remove all suggested OHTs? The zoning then takes the OHTs on the map only."))) SUG.oht_off_all = true; });
+  on("wsugo1", () => { SUG.oht_off_all = false; SUG.oht_off = []; });
+  on("wsugt0", () => { if (confirm(tr("सभी सुझाए tube wells हटाएँ? Design तब सिर्फ़ नक्शे पर रखे tube wells लेगा।", "Remove all suggested tube wells? The design then takes the tube wells on the map only."))) SUG.tw_off_all = true; });
+  on("wsugt1", () => { SUG.tw_off_all = false; SUG.tw_off = []; });
+}
+sugRender();
+function sugTwOff(t, also) {                       // one suggested tube well taken away: its OZ's are now the map's
+  const site = ohtLatLng(t.oz);
+  if (site && !SUG.tw_off.some(p => Math.abs(p.lat - site[0]) < 1e-7 && Math.abs(p.lng - site[1]) < 1e-7))
+    SUG.tw_off.push({ lat: site[0], lng: site[1] });
+  for (const x of (wDesign && wDesign.rising && wDesign.rising.tws) || [])          // the others of its OZ stay: on the map
+    if (x.oz === t.oz && !x.placed && x !== t && x.latlng && !x._mapped) x._mapped = addFeature(L.marker(x.latlng), "tw", { name: nextTw(), discharge_lpm: "" });
+  (also || []).forEach(m => m && m.remove());
+  sugRender(); changed();
+  if ($("wstatus")) { $("wstatus").className = "status"; $("wstatus").textContent = tr(`${t.name} हटाया - ${t.oz} के बाकी tube wells अब नक्शे पर आपके; Design दोबारा चलाएँ`, `${t.name} taken away - the other tube wells of ${t.oz} are now yours on the map; run the Design again`); }
+}
+function sugOhtOff(name, ll, also) {                // a proposed OHT taken away: it just goes
+  if (!confirm(tr(`${name} हटाएँ? अगली Zoning में यह OHT नहीं होगी, उसका इलाका पड़ोसी OZ लेंगे।`, `Remove ${name}? The next zoning has no OHT there; the neighbouring OZs take its area.`))) return;
+  SUG.oht_off.push({ lat: ll[0], lng: ll[1] });
+  (also || []).forEach(m => m && m.remove());
+  sugRender(); changed();
+}
 
 // ---- hover card of a tube well / tank (user 15-Nov-2026): its zone, capacity, staging, by whom, main / standby; ✕ and
 // move for those on the map. A suggested tube well or a proposed OHT moved becomes the user's: a proposed OHT moved
@@ -2881,7 +2929,8 @@ function renderWZoning(r, note) {
     const m = L.marker(z.latlng, { icon: icon("oht", false, { name: z.name, existing: "0" }) }).addTo(zoneLayer);
     hoverCard(m, () => ({ html: ohtCardHtml(z.name, false) +
       `<div class="hint">${tr("Move: OHT (और उसके OZ के सुझाए tube wells) आपके हो जाएँगे, नक्शे पर।", "Move: the OHT (and its OZ's suggested tube wells) become yours, on the map.")}</div>`,
-      acts: [["✥ move", tr("आपकी बनाकर खींचें", "make it yours and drag it"), () => hcMove(convertOht(z.name, z.latlng, [m]))]] }));
+      acts: [["✕", tr("हटाएँ - अगली Zoning में यह OHT नहीं", "remove - no OHT here in the next zoning"), () => sugOhtOff(z.name, z.latlng, [m]), "del"],
+             ["✥ move", tr("आपकी बनाकर खींचें", "make it yours and drag it"), () => hcMove(convertOht(z.name, z.latlng, [m]))]] }));
   }
   for (const p of r.unserved_pts || [])
     L.circleMarker(p, { radius: 5, color: "#616161", weight: 2, fill: false, dashArray: "2 2", renderer: netRenderer })
@@ -3009,8 +3058,8 @@ function drawPrvs(r) {
 // along the roads, the suggested sites as dashed rings and a button placing them
 function rmBox(r) {
   const R = r.rising, T = (R && R.tws) || [];
-  if (!T.length) return "";
-  const sug = T.filter(t => !t.placed && !t.auto).length, D = (R && R.dropped) || [];
+  if (!T.length && !((R && R.needed) || []).length) return "";
+  const sug = T.filter(t => !t.placed && !t.auto).length + ((R && R.needed) || []).length, D = (R && R.dropped) || [];
   const row = t => `<tr><td>${esc(t.name)}${t.placed ? "" : ` <span class="hint">${tr("सुझाव", "suggested")}</span>`}</td><td>${esc(t.oz)}</td>` +
     (t.size ? `<td>${fmt(t.length_m)}</td><td><b>${esc(t.size)}</b>${t.cls === "K9" ? ` <span style="color:#6a1b9a">K9</span>` : ""}</td><td>${fmt(t.v, 2)}</td><td>${fmt(t.hf_m, 2)}</td><td>${fmt(t.head_m, 1)}</td>` +
               `<td${t.surge_ok ? "" : ' style="color:#c62828"'}>${fmt(t.max_m, 0)} / ${fmt(t.rating_m, 0)}</td></tr>`
@@ -3042,7 +3091,14 @@ function drawRising(r) {
     else hoverCard(m, () => ({ html: twCardHtml(t.name, t.lpm, false) +
       `<div class="hint">${t.auto ? tr("Move: इसका OZ (OHT और सुझाए tube wells) आपका हो जाएगा, नक्शे पर।", "Move: its OZ (the OHT and the suggested tube wells) becomes yours, on the map.")
                                   : tr("Move: यह tube well आपका हो जाएगा, नक्शे पर।", "Move: this tube well becomes yours, on the map.")}</div>`,
-      acts: [["✥ move", tr("आपका बनाकर खींचें", "make it yours and drag it"), () => moveSuggestedTw(t, [m, line])]] }));
+      acts: [["✕", tr("हटाएँ - उसकी जगह कोई नहीं सुझाया जाएगा", "remove - none suggested in its place"), () => sugTwOff(t, [m, line]), "del"],
+             ["✥ move", tr("आपका बनाकर खींचें", "make it yours and drag it"), () => moveSuggestedTw(t, [m, line])]] }));
+  }
+  for (const t of (r.rising && r.rising.needed) || []) {   // the sites the shortfall needs: not in the design
+    const m = L.marker(t.latlng, { icon: L.divIcon({ className: "tw-icon need", html: "T!", iconSize: [20, 20] }), zIndexOffset: 840 }).addTo(designLayer);
+    hoverCard(m, () => ({ html: `<b>${esc(t.oz)}</b>: ${tr("आवश्यक tube well - design में नहीं (कमी पूरी करने के लिए सुझाई जगह)", "a tube well needed - not in the design (a site suggested for the shortfall)")}` +
+      `<div class="hint">${tr("Move: नक्शे पर आपका बनेगा; फिर Design दोबारा चलाएँ।", "Move: it becomes yours on the map; then run the Design again.")}</div>`,
+      acts: [["✥ move", tr("आपका बनाकर खींचें", "make it yours and drag it"), () => { m.remove(); hcMove(addFeature(L.marker(t.latlng), "tw", { name: nextTw(), discharge_lpm: "" })); }]] }));
   }
 }
 function renderWDesign(r, note) {
@@ -3081,7 +3137,8 @@ function renderWDesign(r, note) {
                `<div class="hint">${tr("Move: OHT (और उसके OZ के सुझाए tube wells) आपके हो जाएँगे, नक्शे पर।", "Move: the OHT (and its OZ's suggested tube wells) become yours, on the map.")}</div>`),
                acts: l ? [["✕", tr("नक्शे से हटाएँ", "remove from the map"), () => hcDelete(l, [om]), "del"],
                           ["✥ move", tr("खींचकर नई जगह", "drag to a new place"), () => { om.remove(); hcMove(l); }]]
-                       : [["✥ move", tr("आपकी बनाकर खींचें", "make it yours and drag it"), () => hcMove(convertOht(o.name, o.latlng, [om]))]] }; });
+                       : [["✕", tr("हटाएँ - अगली Zoning में यह OHT नहीं", "remove - no OHT here in the next zoning"), () => sugOhtOff(o.name, o.latlng, [om]), "del"],
+                          ["✥ move", tr("आपकी बनाकर खींचें", "make it yours and drag it"), () => hcMove(convertOht(o.name, o.latlng, [om]))]] }; });
     om.addTo(designLayer);                         // its data in the hover card
   }
   const otab = `<table class="wz"><tr><th>OHT</th><th>${tr("क्षमता KL", "capacity KL")}</th><th>staging m</th><th>VFD</th><th>CWR KL</th><th>${tr("आबादी", "population")}</th><th>DMA</th><th>${tr("न्यूनतम दबाव", "lowest head")}</th></tr>` +
@@ -3104,6 +3161,8 @@ function renderWDesign(r, note) {
   if ($("wtwplace")) $("wtwplace").onclick = () => {     // the suggested sites become tube wells of the drawing
     let n = countOf("tw");
     for (const t of (r.rising && r.rising.tws) || []) if (!t.placed && !t.auto && t.latlng)   // a proposed OHT's: with it
+      addFeature(L.marker(t.latlng), "tw", { name: `TW ${++n}`, discharge_lpm: "" });
+    for (const t of (r.rising && r.rising.needed) || [])                                     // the shortfall's sites
       addFeature(L.marker(t.latlng), "tw", { name: `TW ${++n}`, discharge_lpm: "" });
     changed();
     $("wtwplace").replaceWith(Object.assign(document.createElement("div"), { className: "hint", style: "color:var(--ok)",
@@ -3143,6 +3202,10 @@ async function restoreWater(name) {
   $("wsbon").checked = !!qs.on;
   SB = Array.isArray(qs.rows) && qs.rows.length ? qs.rows.map(r => [+r[0], +r[1]]) : SB_DEF.map(r => r.slice());
   sbRender();
+  const qg = q.sug || (r.design && r.design.req && r.design.req.sug) || {};
+  SUG = { oht_off: Array.isArray(qg.oht_off) ? qg.oht_off : [], oht_off_all: !!qg.oht_off_all,
+          tw_off: Array.isArray(qg.tw_off) ? qg.tw_off : [], tw_off_all: !!qg.tw_off_all };
+  sugRender();
   if (q.ward_table && q.ward_table.rows) {
     const g = JSON.parse(JSON.stringify(WARD_GROWTH_DEF));
     const qg = charKeys(q.ward_table.growth), qd = q.ward_table.dens ? charKeys(q.ward_table.dens) : null, qc = charKeys(q.ward_table.city);   // the old names as the new (9-Nov-2026)
@@ -3229,6 +3292,16 @@ function exportDxf(what) {
 }
 $("wexportz").onclick = () => exportDxf("zoning");
 $("wexport").onclick = () => exportDxf("design");
+$("wexportdpr").onclick = () => {                 // the DPR of the last design, opened in Excel (15-Nov-2026)
+  let r = null;
+  longTask(tr("DPR (xlsx)", "DPR (xlsx)"), async () => { r = await api("/api/water_dpr", { name: $("pname").value }); },
+    () => !r || !r.ok ? [tr("DPR नहीं मिली", "No DPR"), (r && r.log) || "error", "err"]
+      : [tr("DPR तैयार", "DPR ready"), `folder: ${r.folder}\n\nExcel : ${r.path.split(/[\\/]/).pop()}\n` +
+         tr(`Design ${r.time || ""} की DPR` + (r.opened ? " - Excel में खुल रही है।" : " - Excel नहीं खुला, folder से खोलें।"),
+            `The DPR of the design of ${r.time || ""}` + (r.opened ? " - opening in Excel." : " - Excel did not open; open it from the folder.")) +
+         (r.stale ? "\n\n" + tr("⚠ Network उस Design के बाद बदला है - नई DPR के लिए Design दोबारा चलाएँ।", "⚠ The network changed after that design - run the Design again for a new DPR.") : ""),
+         r.stale ? "warn" : "ok"]);
+};
 
 // ---- Intze OHT drawings of the new OHTs of the last design (intze_api, user decisions 9-Nov-2026)
 const IZ = { zone: "izzone", sbc: "izsbc", soil: "izsoil", vb: "izvb", depth: "izdepth", fck: "izfck", fckf: "izfckf", fy: "izfy", per: "izper" };

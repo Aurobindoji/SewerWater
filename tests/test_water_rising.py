@@ -191,6 +191,10 @@ def test_design_and_dpr_with_a_tube_well(server):  # noqa: F811
     assert rows[i + 1][7].endswith("+10*D6")
     ch = next(row for row in rows if row[2] and "Sluice valve chamber (masonry type)" in str(row[2]))
     assert ch[7].startswith("=D") and ch[8] == "='U02 SV M'!K17"
+    # Export DPR (user request 15-Nov-2026): the last design's workbook, found (not opened here)
+    from water_app import ui_api
+    f = ui_api.dpr_file("wrm", open_it=False)
+    assert f["path"].endswith("_DPR.xlsx") and os.path.isfile(f["path"]) and not f["opened"]
 
 
 def test_a_cwr_zone_s_tube_wells_fill_the_cwr(server):  # noqa: F811
@@ -289,3 +293,17 @@ def test_standby_tube_wells_the_farthest_and_the_page_s_table():
     for bad in ([], [[4, 1], [3, 2]], [[0, 1]], [[2.5, 1]], [["x", 1]]):
         with pytest.raises(ValueError):
             ui_api._crit({"tw_standby": {"on": "1", "rows": bad}})
+
+
+def test_tube_wells_taken_away_none_suggested_in_their_place():
+    """User decision 15-Nov-2026: in an OZ whose suggested tube wells the user took away only the map's are designed;
+    the shortfall is told (need / have) and its sites given apart, not designed."""
+    wnet, z = _line()
+    rate = lambda s, c="K7": 1000.0
+    oht = [{"name": "OHT-1", "node": "J0"}]
+    R = rising.plan(wnet, z, oht, [{"name": "TW A", "xy": (121.0, 70.0)}], CRIT, SIZES, rate, {"OHT-1": 110.0},
+                    {"OHT-1": 3}, auto={"OHT-1"}, manual={"OHT-1"})
+    assert [(t["name"], t["placed"]) for t in R["tws"]] == [("TW A", True)]       # the map's, though the OHT is proposed
+    assert R["short"] == {"OHT-1": {"need": 3, "have": 1}}
+    assert len(R["needed"]) >= 1 and all(not t["placed"] for t in R["needed"]) and not R["dropped"]
+    assert R["oz"]["OHT-1"]["n"] == 1                                              # only the map's one designed

@@ -128,7 +128,7 @@ def economic(L, q_m3s, static, sizes, rate, crit):
     return out
 
 
-def plan(wnet, z, ohts, placed, crit, sizes, rate, top, need, below=6.0, auto=(), standby=None):
+def plan(wnet, z, ohts, placed, crit, sizes, rate, top, need, below=6.0, auto=(), standby=None, manual=()):
     """The new tube wells and their rising mains.
         wnet   nodes {n: {xy, elev}}, pipes {lab: {a, b, length}} (the roads: closed pipes too)
         z      the zoning (z["oz"]: junction -> OZ)
@@ -141,6 +141,9 @@ def plan(wnet, z, ohts, placed, crit, sizes, rate, top, need, below=6.0, auto=()
         auto   the OZs whose OHT the zoning proposed: the map's tube wells there left out
         standby {OZ: standby tube wells of its need} - the farthest from the OHT along the roads marked "standby"
                (user decision 15-Nov-2026); at least one stays working
+        manual the OZs whose suggested tube wells the user took away (user decision 15-Nov-2026): the map's taken (the
+               nearest, as many as needed), none suggested into the design - the sites the shortfall needs are given
+               apart ("needed") and "short" {OZ: {need, have}} tells it (the design is not complete)
     {"tws": [...], "oz": {OZ: {friction_m, length_m, n}}, "flags": [...],
      "dropped": [{name, oz, xy, why: "auto" | "extra"}] - the map's tube wells not taken}
     The candidate sizes: those of the materials of crit rising_main_material (DI only - user decision 7-Nov-2026)."""
@@ -172,7 +175,8 @@ def plan(wnet, z, ohts, placed, crit, sizes, rate, top, need, below=6.0, auto=()
     # only as many as the OZ needs (user decision 15-Nov-2026), the map's nearest to the OHT along the roads first; in
     # an OZ of the zoning's own OHT the map's wait (`spare`) - its tube wells suggested with it, the map's only where
     # no site is found
-    auto, dropped, kept, spare = set(auto), [], [], {}
+    manual = set(manual)
+    auto, dropped, kept, spare, needed, short_of = set(auto) - manual, [], [], {}, [], {}
     for oz in sorted({t["oz"] for t in tws}):
         dist = route.get(oz, ({}, {}))[0]
         mine = sorted((t for t in tws if t["oz"] == oz), key=lambda t: (dist.get(t["node"], math.inf) + t["snap_m"],
@@ -197,10 +201,14 @@ def plan(wnet, z, ohts, placed, crit, sizes, rate, top, need, below=6.0, auto=()
             if made >= k - have:
                 break
             if all(math.dist(xy[n], p) >= spacing for p in taken):
-                tws.append({"name": f"TW-{oz}-{have + made + 1}", "node": n, "oz": oz, "xy": tuple(xy[n]), "snap_m": 0.0,
-                            "lpm": q_new, "placed": False, "auto": oz in auto})
+                t = {"name": f"TW-{oz}-{have + made + 1}", "node": n, "oz": oz, "xy": tuple(xy[n]), "snap_m": 0.0,
+                     "lpm": q_new, "placed": False, "auto": oz in auto}
+                (needed if oz in manual else tws).append(t)
                 taken.append(xy[n])
                 made += 1
+        if oz in manual:                                 # the user's tube wells only: the shortfall told
+            short_of[oz] = {"need": k, "have": have}
+            continue
         short = k - have - made
         if short > 0 and spare.get(oz):                  # no site for them: the map's after all
             use, spare[oz] = spare[oz][:short], spare[oz][short:]
@@ -242,4 +250,4 @@ def plan(wnet, z, ohts, placed, crit, sizes, rate, top, need, below=6.0, auto=()
         g["length_m"] += L
         g["n"] += 1
         g["by_size"][b["size"]] = g["by_size"].get(b["size"], 0.0) + L
-    return {"tws": tws, "oz": per_oz, "flags": flags, "dropped": dropped}
+    return {"tws": tws, "oz": per_oz, "flags": flags, "dropped": dropped, "needed": needed, "short": short_of}

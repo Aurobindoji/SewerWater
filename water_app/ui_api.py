@@ -1146,7 +1146,7 @@ def _crit(req):
 def _keep(stem, kind, res, req):
     folder = os.path.join(ui.out_root(), stem)
     os.makedirs(folder, exist_ok=True)
-    keep = dict(res, req={k: req.get(k) for k in ("ohts", "pop_factor", "persons_per_connection", "floating_pct", "oht_inflow", "near_m", "tw_standby",
+    keep = dict(res, req={k: req.get(k) for k in ("ohts", "pop_factor", "persons_per_connection", "floating_pct", "oht_inflow", "near_m", "tw_standby", "sug",
                                                   "pop_total", "edits", "barriers", "loops", "crossings", "wards", "bulk",
                                                   "projection", "ward_table")
                           + ui.STAGE_KEYS},
@@ -1193,6 +1193,23 @@ def _unserved_note(wnet, nodes, hi=False):
             f"(✎ / a road from them; or 'Join to the main network' in the Zoning) or place an OHT there; shown on the map as grey dashed circles")
 
 
+def dpr_file(stem, open_it=True):
+    """The DPR workbook of the project's last design (written with it, _dpr) - opened in its program (Excel) on this
+    PC when asked (user request 15-Nov-2026: an Export DPR button beside Export DXF). Raises ValueError when there is
+    none."""
+    r = last_results(stem).get("design") or {}
+    path = (r.get("files") or {}).get("dpr")
+    if not path or not os.path.isfile(path):
+        raise ValueError("DPR नहीं मिली - पहले Design चलाएँ / no DPR: run the Design first")
+    if open_it and hasattr(os, "startfile"):
+        try:
+            os.startfile(path)
+        except OSError:
+            open_it = False                             # no program for .xlsx: the path is told
+    return {"ok": True, "path": path, "folder": os.path.dirname(path), "opened": bool(open_it),
+            "time": r.get("time"), "stale": bool(r.get("stale"))}
+
+
 def last_results(stem):
     """As the sewer server's last_results: network_saved = there is a network to zone; a result of another state of the
     network than the one now is 'stale'."""
@@ -1236,6 +1253,30 @@ def edits_of(req):
         if y:
             out["junctions"][str(lab)] = y
     return out
+
+
+def _near_nodes(stem, wnet, pts):
+    """The junction nearest to each [{lat, lng}] of the page (the network's metres)."""
+    to_xy = ui.converters_for(stem)[1]
+    xy = {n: v["xy"] for n, v in wnet["nodes"].items()}
+    out = []
+    for p in pts or []:
+        try:
+            q = to_xy([[float(p["lat"]), float(p["lng"])]])[0]
+        except (KeyError, TypeError, ValueError):
+            continue
+        if xy:
+            out.append(min(xy, key=lambda n: math.dist(xy[n], q)))
+    return out
+
+
+def _removed_ohts(stem, req, wnet):
+    """The proposed OHTs the user took away (user decision 15-Nov-2026): True for all ("सभी सुझाई OHT हटाएँ"), else
+    the junctions at the sites taken away one by one."""
+    s = (req or {}).get("sug") or {}
+    if s.get("oht_off_all"):
+        return True
+    return _near_nodes(stem, wnet, s.get("oht_off"))
 
 
 def _zones(stem, req, bar=None):
@@ -1294,7 +1335,10 @@ def _zones(stem, req, bar=None):
                                "ref": "page: +15 वर्ष की आबादी / design population (not given: 1)"}
     # the zone loops of the page: the junctions inside, their boundary pipes closed (valves)
     wnet["loops"] = _loops(stem, req, wnet, crit, {o["node"] for o in ohts}, net)
-    z = wz.plan(wnet, ohts, crit, bar=bar, loops=wnet["loops"])
+    z = wz.plan(wnet, ohts, crit, bar=bar, loops=wnet["loops"], removed=_removed_ohts(stem, req, wnet))
+    if not z["zones"]:
+        raise ValueError("कोई OHT नहीं: सुझाई OHT हटाई गई हैं और नक्शे पर कोई OHT नहीं - नक्शे पर OHT रखें या "
+                         "'सुझाई OHT वापस' दबाएँ / no OHT: place OHTs on the map or bring the suggested ones back")
     ll = ui.to_latlng(stem)
     for p in z["proposed"]:
         p.update(latlng=ll(wnet["nodes"][p["node"]]["xy"]), dist_m=0.0)
@@ -1749,8 +1793,15 @@ def _rising(stem, req, wnet, z, ohts, res, crit):
         return None
     auto = {o["name"] for o in res["outlets"] if o.get("proposed")}     # the zoning's OHTs: their tube wells too
     sby = {zn["name"]: int(zn.get("tubewells_standby") or 0) for zn in z["zones"] if zn["name"] in top}
+    # the OZs whose suggested tube wells the user took away (user decision 15-Nov-2026): all, or those of the OHT
+    # sites given (an OZ found by its OHT's site: the zoning's names change when it runs again)
+    sg = (req or {}).get("sug") or {}
+    if sg.get("tw_off_all"):
+        manual = set(top)
+    else:
+        manual = {z["oz"].get(n) for n in _near_nodes(stem, wnet, sg.get("tw_off"))} - {None}
     R = wrising.plan(wnet, z, [o for o in ohts if o["name"] in top], placed, crit, wd.load_pipes(), wdpr_rm.laid_rate(S),
-                     top, need, below=_tw_below(S), auto=auto, standby=sby)
+                     top, need, below=_tw_below(S), auto=auto, standby=sby, manual=manual)
     r2 = lambda x, d=2: round(x, d) if isinstance(x, float) else x
     tws = []
     for t in R["tws"]:
@@ -1767,9 +1818,32 @@ def _rising(stem, req, wnet, z, ohts, res, crit):
                                   for kk, vv in v.items()} for k, v in R["oz"].items()},
            "flags": R["flags"], "top": {k: round(v, 2) for k, v in top.items()}, "cwr": sorted(cwr),
            "dropped": [{"name": d["name"], "oz": d["oz"], "why": d["why"], "latlng": ll(d["xy"])} for d in R["dropped"]],
+           "needed": [{"name": t["name"], "oz": t["oz"], "latlng": ll(t["xy"])} for t in R["needed"]],
+           "short": R["short"], "manual": sorted(manual),
            "need": need,
            "gl": {k: round(v, 2) for k, v in gls.items() if v is not None}}           # each OHT's ground (DPR static head)
     done = [t for t in tws if t.get("size")]
+    lack = {oz: s for oz, s in R["short"].items() if s["have"] < s["need"]}
+    if lack:                                          # the user's tube wells too few (user decision 15-Nov-2026)
+        v = lambda k: crit[k]["value"]
+        one = v("tubewell_discharge_lpm") * v("tubewell_pumping_hours") * 60 / 1000.0      # KL a day, a new tube well
+        mid = crit.get("stage_mid_share", {}).get("value", 1.0)
+        en, hi = [], []
+        for oz, s in sorted(lack.items()):
+            zn = next(x for x in z["zones"] if x["name"] == oz)
+            p_ = zn["population"] * mid
+            kld = ((p_ * v("lpcd") + p_ * v("floating_share") * v("floating_lpcd")) / 1000.0 + (zn.get("bulk_kld") or 0.0)) \
+                * v("pumping_main_factor")
+            w, sb = int(zn.get("tubewells_new") or 0), int(zn.get("tubewells_standby") or 0)
+            en.append(f"{oz}: +15 years demand {kld:,.0f} KLD needs {w} working + {sb} standby tube wells "
+                      f"({one:,.0f} KL a day each), the map has {s['have']} - {s['need'] - s['have']} more")
+            hi.append(f"{oz}: +15 वर्ष की माँग {kld:,.0f} KLD के लिए {w} चालू + {sb} standby tube wells चाहिए "
+                      f"(हर एक {one:,.0f} KL/दिन), नक्शे पर {s['have']} - {s['need'] - s['have']} और चाहिए")
+        res["checks"].append({
+            "check": "tube wells for the demand", "ok": False, "ref": crit["tubewell_discharge_lpm"]["ref"],
+            "detail": "; ".join(en) + " - the design is not complete (the sites suggested for them: on the map)",
+            "check_hi": "माँग के लिए tube wells",
+            "detail_hi": "; ".join(hi) + " - design अधूरा (उनकी सुझाई जगहें नक्शे पर)"})
     if done:
         L = sum(t["length_m"] for t in done)
         by = {}

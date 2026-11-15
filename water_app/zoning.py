@@ -435,9 +435,11 @@ def _site(nodes, xy, pop, mem):
                                     -((xy[n][0] - cx) ** 2 + (xy[n][1] - cy) ** 2)))
 
 
-def plan(net, ohts, crit, city_pop=None, bar=None, loops=None):
+def plan(net, ohts, crit, city_pop=None, bar=None, loops=None, removed=None):
     """bar = {OHT name: nodes it must not take} - nodes the design left below 17 m in its OZ; loops: see the module
-    text."""
+    text. removed: the proposed OHTs the user took away (user decision 15-Nov-2026: "बस हट जाए") - True: all of
+    them, else the nodes at their sites: a proposed OHT whose part holds one is not proposed; its part joins the
+    neighbouring OZs as a left-over piece does (or stays joined to no OHT)."""
     nodes, pipes = net["nodes"], net["pipes"]
     adj = {n: [] for n in nodes}
     for pid, p in pipes.items():
@@ -560,6 +562,11 @@ def plan(net, ohts, crit, city_pop=None, bar=None, loops=None):
                              "staging_m": None, "tubewells": 0, "proposed": True, "_members": mem, "why": why})
     # the OZs as found: the given OHTs' areas, the proposed ones' parts; a left-over piece too small for an OHT
     # joins the OZ next to it (which make_zones then flags if it is now above its capacity)
+    if removed is True:
+        proposed = []
+    elif removed:
+        gone = set(removed)
+        proposed = [p for p in proposed if not gone & set(p["_members"])]
     assign = dict(owner)
     for p in proposed:
         for n in p.pop("_members"):

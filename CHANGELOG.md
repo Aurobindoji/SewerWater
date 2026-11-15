@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+- Water supply: **✕ on the app's own suggestions** too, beside "move" in the hover card. A suggested OHT taken away
+  just goes: the next zoning has no OHT there and its area joins the neighbouring OZs (or stays joined to no OHT). A
+  suggested tube well taken away: none comes in its place - the other tube wells of its OZ become yours on the map,
+  only the map's are designed there, and when they are too few the design fails (✖) with the OZ's +15 years demand
+  and how many tube wells it needs; the sites for the rest show as red T! (not in the design).
+- Under Zoning: **"Remove all suggested OHTs"** and **"Remove all suggested tube wells"**, with "bring back" to undo.
+  The choices are kept with the project (by the sites, as the zoning renames its OZs when it runs again).
+- Water supply: an **Export DPR (xlsx)** button beside Design / Export DXF - it opens the last design's DPR
+  workbook in Excel and tells its folder (and warns when the network changed after that design).
+- The folding rows (such as "Intze OHT drawings: tanks and their inputs") open on a click anywhere on the row, not
+  only on the small triangle; the Intze row is now a bar with ▶ / ▼.
+
 ## 0.9.11 (beta) - 2026-11-15
 
 - Water supply, the zone lines: **no ring round empty land inside the zones** any more. Land the zones close in on

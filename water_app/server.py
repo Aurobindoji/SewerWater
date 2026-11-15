@@ -788,6 +788,10 @@ class Handler(BaseHTTPRequestHandler):
         with LOCK:
             return _answer(export, plain=ValueError)
 
+    def _post_water_dpr(self, u, req):                   # the last design's DPR workbook, opened (15-Nov-2026)
+        from . import ui_api
+        return _answer(ui_api.dpr_file, safe_name(req.get("name")), plain=ValueError)
+
     POST = {"/api/save": _post_save, "/api/kmz": _post_kmz, "/api/layout": _post_layout,
             "/api/dxf_preview": _post_dxf_preview, "/api/dxf_layers": _post_dxf_layers,
             "/api/dxf_gl_options": _post_dxf_gl_options, "/api/dxf_import": _post_dxf_import,
@@ -797,7 +801,7 @@ class Handler(BaseHTTPRequestHandler):
             "/api/city_wards_import": _post_city_wards_import, "/api/water_join_plan": _post_water_join_plan,
             "/api/water_zoning": _post_water_zoning, "/api/water_design": _post_water_design,
             "/api/water_intze": _post_water_intze, "/api/water_intze_list": _post_water_intze_list,
-            "/api/water_export": _post_water_export}
+            "/api/water_export": _post_water_export, "/api/water_dpr": _post_water_dpr}
 
 
 LOCK = threading.Lock()

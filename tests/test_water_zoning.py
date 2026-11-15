@@ -274,3 +274,16 @@ def test_cwr_counts_the_new_tube_wells():
     assert [dm.standby(w, crit) for w in (0, 1, 2, 3, 5, 6, 10, 12)] == [0, 1, 1, 2, 2, 3, 3, 3]
     z5 = wz.make_zones(net, [{"name": "A", "node": (0, 0), "tubewells": 1, "rebore": 1}], crit)["zones"][0]
     assert z5["rebore"] == 1 and z5["tubewells_new"] == 3 and z5["cwr_kl"] is None
+
+
+def test_proposed_ohts_taken_away_by_the_user():
+    """User decision 15-Nov-2026: a proposed OHT taken away just goes - its part joins the neighbouring OZs (flagged
+    when above the limit); all taken away: none proposed."""
+    crit = load_criteria()
+    net = grid(n=20, pop=300)                                       # 120,000 people: 3 proposed
+    z = wz.plan(net, [], crit)
+    gone = z["proposed"][1]["node"]
+    z2 = wz.plan(grid(n=20, pop=300), [], crit, removed=[gone])
+    assert len(z2["proposed"]) == 2 and gone not in {p["node"] for p in z2["proposed"]}
+    assert sum(x["population"] for x in z2["zones"]) == 120000      # its part went to the other two
+    assert wz.plan(grid(n=20, pop=300), [], crit, removed=True)["proposed"] == []

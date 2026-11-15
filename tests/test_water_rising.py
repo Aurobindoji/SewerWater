@@ -261,3 +261,31 @@ def test_only_as_many_tube_wells_as_the_oz_needs():
     R = rising.plan(wnet, z, oht, mapped, wide, SIZES, rate, {"OHT-1": 110.0}, {"OHT-1": 2}, auto={"OHT-1"})
     assert [(t["name"], t["placed"]) for t in R["tws"]] == [("TW near", True), ("TW mid", True)] and not R["flags"]
     assert [(d["name"], d["why"]) for d in R["dropped"]] == [("TW far", "auto")]
+
+
+def test_standby_tube_wells_the_farthest_and_the_page_s_table():
+    """User decisions 15-Nov-2026: the standby tube wells of an OZ are the farthest from its OHT along the roads (at
+    least one stays working); the page may give the tube wells their own standby table (the pumps keep CPHEEO's)."""
+    from water_app import demand as dm
+    from water_app import ui_api
+    wnet, z = _line()
+    rate = lambda s, c="K7": 1000.0
+    mapped = [{"name": "TW far", "xy": (361.0, 0.0)}, {"name": "TW near", "xy": (121.0, 1.0)},
+              {"name": "TW mid", "xy": (241.0, 0.0)}]
+    R = rising.plan(wnet, z, [{"name": "OHT-1", "node": "J0"}], mapped, CRIT, SIZES, rate, {"OHT-1": 110.0},
+                    {"OHT-1": 3}, standby={"OHT-1": 1})
+    assert {t["name"]: t["standby"] for t in R["tws"]} == {"TW far": True, "TW near": False, "TW mid": False}
+    R = rising.plan(wnet, z, [{"name": "OHT-1", "node": "J0"}], mapped[:1], CRIT, SIZES, rate, {"OHT-1": 110.0},
+                    {"OHT-1": 1}, standby={"OHT-1": 1})
+    assert [t["standby"] for t in R["tws"]] == [False]                            # the only one works
+    # CPHEEO 5.7.5 by default (1-2 working: 1, 3-5: 2, 6-10: 3, beyond: 3), the same for the pumps
+    assert [dm.standby(w, CRIT, "standby_tubewells") for w in (0, 1, 2, 3, 5, 6, 10, 14)] == [0, 1, 1, 2, 2, 3, 3, 3]
+    # the page's own table: the tube wells only
+    crit = ui_api._crit({"tw_standby": {"on": "1", "rows": [[4, "1"], ["8", 2]]}})
+    assert crit["standby_tubewells"]["value"] == [[4, 1], [8, 2]] and "given on the page" in crit["standby_tubewells"]["ref"]
+    assert [dm.standby(w, crit, "standby_tubewells") for w in (3, 4, 5, 12)] == [1, 1, 2, 2]
+    assert crit["standby_pumps"]["value"] == CRIT["standby_pumps"]["value"]
+    assert ui_api._crit({"tw_standby": {"on": "", "rows": [[4, 1]]}})["standby_tubewells"]["value"] == [[2, 1], [5, 2], [10, 3]]
+    for bad in ([], [[4, 1], [3, 2]], [[0, 1]], [[2.5, 1]], [["x", 1]]):
+        with pytest.raises(ValueError):
+            ui_api._crit({"tw_standby": {"on": "1", "rows": bad}})

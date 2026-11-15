@@ -86,12 +86,13 @@ def storage_share(crit, windows=None):
     return max(crit["esr_capacity_share"]["value"], mass_balance(crit, windows)["share"])
 
 
-def standby(working, crit):
-    """Standby for working pumps / tube wells as CPHEEO 5.7.5 (crit "standby_pumps": [[working up to, standby]])."""
+def standby(working, crit, key="standby_pumps"):
+    """Standby for working pumps / tube wells as CPHEEO 5.7.5 (crit "standby_pumps", the tube wells' own
+    "standby_tubewells": [[working up to, standby]])."""
     w = int(working or 0)
     if w <= 0:
         return 0
-    tab = crit["standby_pumps"]["value"]
+    tab = (crit.get(key) or crit["standby_pumps"])["value"]
     return next((s for up, s in tab if w <= up), tab[-1][1])
 
 

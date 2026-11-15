@@ -1084,6 +1084,25 @@ def _proj_flags(f, s0):
     return out
 
 
+def standby_table(rows):
+    """The page's standby table for the tube wells: [[working up to, standby], ...] - whole numbers, the working
+    rising row by row; more working than the last row: the last row's standby."""
+    tab = []
+    for r in rows or []:
+        try:
+            u, s = (float(str(x).strip()) for x in r)
+        except (TypeError, ValueError):
+            raise ValueError(f"standby tube wells: '{r}' - दो अंक दें (working तक, standby)")
+        if u != int(u) or s != int(s) or u < 1 or s < 0 or s > 20:
+            raise ValueError(f"standby tube wells: {u:g} / {s:g} - working 1 या अधिक, standby 0-20, पूरे अंक")
+        if tab and u <= tab[-1][0]:
+            raise ValueError("standby tube wells: 'working तक' हर पंक्ति में पिछली से अधिक हो")
+        tab.append([int(u), int(s)])
+    if not tab:
+        raise ValueError("standby tube wells: कम से कम एक पंक्ति दें")
+    return tab
+
+
 def _crit(req):
     crit = wd.load_criteria()
     ppc = req.get("persons_per_connection")
@@ -1102,6 +1121,12 @@ def _crit(req):
             crit["floating_share"] = {"value": v / 100.0,
                                       "ref": "given on the page (default 10 %: " + crit["floating_share"]["ref"]
                                              + "; CPHEEO Annexure 2.8: 1-3 % without figures)"}
+    sb = req.get("tw_standby") or {}             # the tube wells' standby table of the page (user decision 15-Nov-2026)
+    if sb.get("on"):
+        tab = standby_table(sb.get("rows"))
+        crit["standby_tubewells"] = {"value": tab, "ref": "given on the page: " + ", ".join(
+            f"up to {u} working + {s} standby" for u, s in tab) + " (CPHEEO 5.7.5 p245-246: 1 W + 1 S, 2 W + 1 S, "
+            "3-5 W + 2 S, 6-10 W + 3 S)"}
     win = req.get("oht_inflow")
     if win not in (None, ""):
         crit["oht_inflow_hours"] = dict(crit["oht_inflow_hours"], value=dm.parse_windows(win),
@@ -1119,7 +1144,7 @@ def _crit(req):
 def _keep(stem, kind, res, req):
     folder = os.path.join(ui.out_root(), stem)
     os.makedirs(folder, exist_ok=True)
-    keep = dict(res, req={k: req.get(k) for k in ("ohts", "pop_factor", "persons_per_connection", "floating_pct", "oht_inflow", "near_m",
+    keep = dict(res, req={k: req.get(k) for k in ("ohts", "pop_factor", "persons_per_connection", "floating_pct", "oht_inflow", "near_m", "tw_standby",
                                                   "pop_total", "edits", "barriers", "loops", "crossings", "wards", "bulk",
                                                   "projection", "ward_table")
                           + ui.STAGE_KEYS},
@@ -1721,8 +1746,9 @@ def _rising(stem, req, wnet, z, ohts, res, crit):
     if not placed and not any(need.values()):
         return None
     auto = {o["name"] for o in res["outlets"] if o.get("proposed")}     # the zoning's OHTs: their tube wells too
+    sby = {zn["name"]: int(zn.get("tubewells_standby") or 0) for zn in z["zones"] if zn["name"] in top}
     R = wrising.plan(wnet, z, [o for o in ohts if o["name"] in top], placed, crit, wd.load_pipes(), wdpr_rm.laid_rate(S),
-                     top, need, below=_tw_below(S), auto=auto)
+                     top, need, below=_tw_below(S), auto=auto, standby=sby)
     r2 = lambda x, d=2: round(x, d) if isinstance(x, float) else x
     tws = []
     for t in R["tws"]:
@@ -2208,7 +2234,7 @@ def _excel(folder, stem, res, z, crit):
     ws2 = wb.create_sheet("Zones")
     ws2.append(["OZ (OHT)", "OHT", "population", "connections", "demand KLD", "OHT capacity KL (existing)",
                 "required KL (max 33 % / mass balance)", "staging m", "staging", "VFD pump head m", "VFD pump kW", "CWR KL", "tube wells",
-                "tube wells new (+15 years)", "standby tube wells (CPHEEO 5.7.5)", "rebored tube wells",
+                "tube wells new (+15 years)", "standby tube wells (CPHEEO 5.7.5 / the page's table)", "rebored tube wells",
                 "DMAs", "GL min", "GL max"])
     for x in z["zones"]:
         o = next((o for o in res["outlets"] if o["name"] == x["name"]), {})

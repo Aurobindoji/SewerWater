@@ -11,6 +11,14 @@
   found); in an OZ of an OHT placed on the map, the map's tube wells nearest to the OHT along the roads are taken and
   the rest left out. The design lists the tube wells left out, per OZ. Before, every tube well on the map was designed,
   however many the OZ needed.
+- Water supply, a **hover card on every tube well and tank**: its zone, discharge or capacity, CWR, staging, outlet,
+  whether it is yours (on the map) or the app's (auto), and main or standby; the map's own have ✕ (remove) and
+  ✥ move. Moving a suggested tube well or a proposed OHT makes it yours: a proposed OHT comes on the map with its
+  OZ's suggested tube wells (a suggested tube well of such an OZ the same way), so the next design keeps them.
+- Water supply: the **standby tube wells** of an OZ are now the ones farthest from its OHT along the roads (marked on
+  the map and in the card). A new option under Zoning, "Standby tube wells अपने हिसाब से" (off and grey by default:
+  CPHEEO 5.7.5), gives the new tube wells a table of your own - up to how many working, how many standby - with the
+  CPHEEO rule in a popup. Booster and CWR pumps keep the CPHEEO table.
 
 ## 0.9.9 (beta) - 2026-11-14
 

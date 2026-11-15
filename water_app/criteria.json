@@ -124,6 +124,10 @@
     "value": 3,
     "ref": "UPJN rule: a CWR is mandatory when more than 3 tube wells fill one ESR (CPHEEO p126-127 only recommends a common CWR); only the NEW tube wells are counted - the existing ones stay engaged with the existing structures (user decision 27-Oct-2026); only the WORKING new ones - the standby tube wells (standby_pumps) not counted (user decision 7-Nov-2026)"
   },
+  "standby_tubewells": {
+    "value": [[2, 1], [5, 2], [10, 3]],
+    "ref": "CPHEEO water manual Part A (2024) 5.7.5 p245-246 (PDF p350-351): standby by the working pumps - 1 W + 1 S, 2 W + 1 S (generally), 3-5 W + 2 S, 6-10 W + 3 S ([[working up to, standby]]; more than 10: the last) - for the new tube wells of an OZ (user decision 7-Nov-2026), each a whole tube well of its own; the page may give its own table (user decision 15-Nov-2026: tube wells only, the booster and CWR pumps keep standby_pumps)"
+  },
   "standby_pumps": {
     "value": [[2, 1], [5, 2], [10, 3]],
     "ref": "CPHEEO water manual Part A (2024) 5.7.5 p245-246 (PDF p350-351): standby by the working pumps - 1 W + 1 S, 2 W + 1 S (generally), 3-5 W + 2 S, 6-10 W + 3 S ([[working up to, standby]]; more than 10: the last). Booster and CWR pumps; and the new tube wells of an OZ (user decision 7-Nov-2026): standby tube wells, each a whole tube well of its own - boring, pump house, pumping plant, power connection, rising main - as built on site"

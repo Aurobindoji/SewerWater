@@ -1083,7 +1083,8 @@ def tube_wells(B):
                 f"={s}!E{rf['q_pump'] - 3}", f"=(C{x}+P{x})*D{x}*E{x}*60/1000", f"={s}!E{rf['q_pump'] - 4}",
                 f"=MAX(0,G{x}-F{x})", B.crit["tubewell_discharge_lpm"]["value"], f"=H{x}*1000/(I{x}*E{x}*60)", None,
                 f"=ROUNDUP(J{x},0)", f"=IFERROR(G{x}*1000/(((C{x}+P{x})*D{x}+L{x}*I{x})*60),0)",
-                "=" + standby(f"L{x}", B.crit["standby_pumps"]["value"]), f"=L{x}+N{x}", z.get("rebore") or 0]
+                "=" + standby(f"L{x}", (B.crit.get("standby_tubewells") or B.crit["standby_pumps"])["value"]),
+                f"=L{x}+N{x}", z.get("rebore") or 0]
         for c, v in enumerate(vals, 1):
             if c == 11:
                 continue

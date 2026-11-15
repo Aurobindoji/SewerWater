@@ -235,6 +235,23 @@
   .ohtpop .row label { min-width: 96px; }
   .ohtpop input, .ohtpop select { width: 110px; }
   .ohtpop .warn { margin-top: 6px; }
+  /* hover card of a tube well / tank (user 15-Nov-2026): its data, delete / move */
+  .hovcard .leaflet-popup-content { margin: 7px 10px; font-size: 12px; line-height: 1.45; min-width: 190px; }
+  .hovcard .hc-act { margin-top: 6px; display: flex; gap: 6px; }
+  .hovcard .hc-act button { padding: 2px 9px; font-size: 12px; cursor: pointer; }
+  .hovcard .hc-act button.del { color: #c62828; }
+  .hovcard .hc-k { color: #666; }
+  .tw-icon.sb { box-shadow: 0 0 0 2px #e65100; }
+  .hc-moving { filter: drop-shadow(0 0 4px #ffd600); cursor: move; }
+  /* the tube wells' standby table (user 15-Nov-2026): grey until switched on */
+  .sbtab { margin: 2px 0 6px 4px; font-size: 12px; }
+  .sbtab.off { opacity: .45; }
+  .sbtab input { width: 4em; }
+  .sbtab td { padding: 1px 3px; }
+  .cpop { position: fixed; z-index: 3000; max-width: 420px; background: #fff; border: 1px solid #90a4ae; border-radius: 8px;
+    box-shadow: 0 4px 18px #0004; padding: 10px 14px; font-size: 12.5px; line-height: 1.5; }
+  .cpop table { border-collapse: collapse; margin: 6px 0; }
+  .cpop td, .cpop th { border: 1px solid #cfd8dc; padding: 2px 8px; text-align: center; }
   .closed-icon { color: #c62828; font: bold 14px/14px sans-serif; text-align: center; text-shadow: 0 0 2px #fff, 0 0 2px #fff; }
   table.wz { width: 100%; border-collapse: collapse; font-size: 11.5px; margin-top: 6px; }
   table.wz th, table.wz td { padding: 2px 3px; border-bottom: 1px solid var(--line); text-align: right; }
@@ -509,6 +526,10 @@
         <input type="number" id="wppc" value="6" min="1" max="15" step="0.1"></div>
       <div class="row"><label title="OHT में पानी किन घंटों में भरता है (tube well / pump चलने का समय); CPHEEO Table 2.7 S.No.12 (p175): क्षमता = mass balance या 33 %, जो अधिक हो (न्यूनतम 33 %) + fire demand का 1/3 (S.No.13)">OHT भरने के घंटे</label>
         <input type="text" id="winflow" value="5-12, 13-22" placeholder="5-12, 13-22" style="width:9em"></div>
+      <div class="row"><label style="min-width:0" title="चालू न हो तो CPHEEO 5.7.5 की table: 1-2 working पर 1, 3-5 पर 2, 6-10 पर 3 standby tube well (हर standby एक पूरा tube well)। सिर्फ़ नए tube wells पर; booster / CWR pumps पर हमेशा CPHEEO की table।">
+        <input type="checkbox" id="wsbon"> Standby tube wells अपने हिसाब से</label>
+        <button type="button" id="wsbinfo" title="CPHEEO का नियम">ⓘ CPHEEO</button></div>
+      <div id="wsbtab" class="sbtab off"></div>
       <div class="row"><label title="drawing के दो अलग टुकड़े (कोई pipe नहीं जोड़ता) इतनी दूरी या कम पर हों तो Zoning चेतावनी देती है (नक्शे पर लाल बिंदीदार रेखा) - शायद drawing में छूटा जोड़">Gap की चेतावनी (m तक)</label>
         <input type="number" id="wnearm" value="50" min="1" max="1000" step="1"></div>
       <div class="stepact"><button id="wzrun" class="primary">Zoning (OZ / DMA)</button>
@@ -1083,7 +1104,8 @@ function label(layer) {
       { sticky: true, direction: "right", offset: [22, 0] });
   else if (layer.kind === "road" && p.name) layer.bindTooltip(p.name, { sticky: true, direction: "right", offset: [22, 0] });
   else if (layer.kind === "tw")
-    layer.bindTooltip(`${p.name || "TW"}: ${p.discharge_lpm || 1500} LPM`, { direction: "right", offset: [10, 0] });
+    hoverCard(layer, () => ({ html: twCardHtml(layer.props.name, layer.props.discharge_lpm, true) + hcStale(),
+      acts: [["✕", tr("नक्शे से हटाएँ", "remove from the map"), () => hcDelete(layer), "del"], ["✥ move", tr("खींचकर नई जगह", "drag to a new place"), () => hcMove(layer)]] }));
   else if (layer.kind === "prv")
     layer.bindTooltip(`${p.name || "PRV"}: setting ${p.setting_m ? `${p.setting_m} m` : tr("अपने-आप", "by itself")}`, { direction: "right", offset: [10, 0] });
   else if (layer.kind === "bulk")
@@ -1095,6 +1117,9 @@ function label(layer) {
   else if (layer.kind === "barrier")
     layer.bindTooltip(`${p.name || ""} (${barrierType(p.type)}) - ${tr("कोई pipe पार नहीं करेगा", "no pipe crosses it")}`, { sticky: true, direction: "right", offset: [22, 0] });
   if (layer.kind === "oht" && layer.setIcon) layer.setIcon(icon("oht", layer === selected, p));     // the name on the marker
+  if (layer.kind === "oht")
+    hoverCard(layer, () => ({ html: ohtCardHtml(layer.props.name, true, layer.props) + hcStale(),
+      acts: [["✕", tr("नक्शे से हटाएँ", "remove from the map"), () => hcDelete(layer), "del"], ["✥ move", tr("खींचकर नई जगह", "drag to a new place"), () => hcMove(layer)]] }));
 }
 function select(layer) {
   const reEdit = editing && layer && layer !== editTarget;       // editing: a click on another feature edits that one
@@ -1965,12 +1990,173 @@ function wInputs() {
   const tws = [];                       // new tube wells (water phase 2, user 31-Oct-2026)
   drawn.eachLayer(l => { if (l.kind === "tw") { const ll = l.getLatLng(); tws.push({ name: l.props.name, lat: ll.lat, lng: ll.lng, discharge_lpm: l.props.discharge_lpm ?? "" }); } });
   return { name: $("pname").value, ohts, barriers, loops, crossings, wards, bulk, prvs, tws, projection: pjInputs(), pop_factor: $("wpopf").value, floating_pct: $("wfloat").value, persons_per_connection: $("wppc").value, use_prv: $("wprv").checked ? "1" : "",
-           oht_inflow: $("winflow").value, near_m: $("wnearm").value, ward_table: wtInputs(), intze: izInputs(),
+           oht_inflow: $("winflow").value, near_m: $("wnearm").value, ward_table: wtInputs(), intze: izInputs(), tw_standby: sbInputs(),
            pop_total: $("poptot").hidden ? "" : $("poptot").value, edits: WEDITS, ...stageInputs() };
 }
 // stage-wise check (CPHEEO sewer Table 2.1 p2-9, water Table 2.7 S.No.1 p168): base year and the populations of the
 // base year and +15 years; the design population is +30 years. Empty populations = no stage check.
 function stageInputs() { return { base_year: $("byear").value, pop_initial: $("popb").value, pop_mid: $("popm").value }; }
+// ---- standby tube wells (user 15-Nov-2026): CPHEEO 5.7.5 by default; the page's own table when switched on - the new
+// tube wells only (booster / CWR pumps: always CPHEEO). Rows [working up to, standby]; beyond the last: its standby.
+const SB_DEF = [[2, 1], [5, 2], [10, 3]];
+let SB = SB_DEF.map(r => r.slice());
+function sbInputs() { return { on: $("wsbon").checked ? "1" : "", rows: SB.map(r => r.slice()) }; }
+function sbRender() {
+  const on = $("wsbon").checked, box = $("wsbtab");
+  box.classList.toggle("off", !on);
+  box.innerHTML = `<table><tr><th>${tr("working tube wells तक", "working tube wells up to")}</th><th>standby</th><th></th></tr>` +
+    SB.map((r, i) => `<tr><td>≤ <input type="number" min="1" step="1" data-i="${i}" data-c="0" value="${r[0]}"${on ? "" : " disabled"}></td>` +
+      `<td><input type="number" min="0" max="20" step="1" data-i="${i}" data-c="1" value="${r[1]}"${on ? "" : " disabled"}></td>` +
+      `<td>${on && SB.length > 1 ? `<button type="button" data-del="${i}" title="${tr("पंक्ति हटाएँ", "remove the row")}">✕</button>` : ""}</td></tr>`).join("") +
+    `</table>` + (on ? `<button type="button" id="wsbadd">+ ${tr("पंक्ति", "row")}</button> <button type="button" id="wsbdef">${tr("CPHEEO वाली", "CPHEEO's")}</button>` : "") +
+    `<div class="hint">${tr("अंतिम पंक्ति से अधिक working हों तो अंतिम पंक्ति के standby। Zoning / Design दोबारा चलाने पर लागू।", "More working than the last row: the last row's standby. Applies when Zoning / Design run again.")}</div>`;
+  box.querySelectorAll("input").forEach(el => el.onchange = () => { SB[+el.dataset.i][+el.dataset.c] = Math.max(0, Math.round(+el.value || 0)); changed(); });
+  box.querySelectorAll("[data-del]").forEach(el => el.onclick = () => { SB.splice(+el.dataset.del, 1); sbRender(); changed(); });
+  if ($("wsbadd")) $("wsbadd").onclick = () => { const l = SB[SB.length - 1] || [0, 0]; SB.push([l[0] + 5, l[1] + 1]); sbRender(); changed(); };
+  if ($("wsbdef")) $("wsbdef").onclick = () => { SB = SB_DEF.map(r => r.slice()); sbRender(); changed(); };
+}
+$("wsbon").onchange = () => { sbRender(); changed(); };
+$("wsbinfo").onclick = ev => {
+  document.querySelectorAll(".cpop").forEach(e => e.remove());
+  const d = document.createElement("div"); d.className = "cpop";
+  d.innerHTML = `<b>${tr("Standby - CPHEEO का नियम", "Standby - the CPHEEO rule")}</b> <button type="button" style="float:right">✕</button>
+    <div>CPHEEO Manual on Water Supply and Treatment Systems, Part A (2024), 5.7.5 (p245-246) - ${tr("working pumps के अनुसार standby:", "standby by the working pumps:")}</div>
+    <table><tr><th>working</th><th>standby</th></tr><tr><td>1</td><td>1</td></tr><tr><td>2</td><td>1 (${tr("सामान्यतः", "generally")})</td></tr>
+    <tr><td>3 - 5</td><td>2</td></tr><tr><td>6 - 10</td><td>3</td></tr></table>
+    <div>${tr("App नए tube wells पर यही लगाता है (निर्णय 7-Nov-2026): हर standby एक पूरा tube well - boring, pump house, pump, बिजली कनेक्शन, अपनी rising main। Design में OHT से सड़क के रास्ते सबसे दूर वाले standby गिने जाते हैं। Booster और CWR pumps पर हमेशा यही table।",
+      "The app applies it to the new tube wells (decision 7-Nov-2026): each standby a whole tube well - boring, pump house, pump, power connection, its own rising main. In the design the farthest from the OHT along the roads are the standby ones. Booster and CWR pumps always take this table.")}</div>
+    <div class="hint">${tr("अपने हिसाब से (checkbox) चालू करने पर ऊपर की table सिर्फ़ नए tube wells पर लगेगी।", "Switched on (checkbox), the table above applies to the new tube wells only.")}</div>`;
+  document.body.appendChild(d);
+  const r = ev.target.getBoundingClientRect();
+  d.style.left = Math.max(8, Math.min(r.left, innerWidth - d.offsetWidth - 8)) + "px";
+  d.style.top = Math.min(r.bottom + 6, innerHeight - d.offsetHeight - 8) + "px";
+  d.querySelector("button").onclick = () => d.remove();
+};
+sbRender();
+
+// ---- hover card of a tube well / tank (user 15-Nov-2026): its zone, capacity, staging, by whom, main / standby; ✕ and
+// move for those on the map. A suggested tube well or a proposed OHT moved becomes the user's: a proposed OHT moved
+// comes on the map with its OZ's suggested tube wells (else the next design would leave them out), a suggested tube
+// well of a proposed OHT's OZ the same way (the map's tube wells of such an OZ are not taken).
+let hcPop = null, hcTimer = null;
+function hcClose(now) {
+  clearTimeout(hcTimer);
+  const go = () => { if (hcPop) map.closePopup(hcPop); hcPop = null; };
+  if (now) go(); else hcTimer = setTimeout(go, 350);
+}
+function hoverCard(marker, build) {
+  if (marker._hc) return;
+  marker._hc = true;
+  marker.on("mouseover", () => {
+    if (marker._hcDrag) return;
+    clearTimeout(hcTimer);
+    const c = build(); if (!c) return;
+    const el = document.createElement("div");
+    el.innerHTML = c.html;
+    if (c.acts && c.acts.length) {
+      const bar = document.createElement("div"); bar.className = "hc-act";
+      for (const [lab, title, fn, cls] of c.acts) {
+        const b = document.createElement("button"); b.type = "button"; b.textContent = lab; b.title = title; if (cls) b.className = cls;
+        b.onclick = ev => { L.DomEvent.stopPropagation(ev); hcClose(true); fn(); };
+        bar.appendChild(b);
+      }
+      el.appendChild(bar);
+    }
+    L.DomEvent.disableClickPropagation(el);
+    el.addEventListener("mouseenter", () => clearTimeout(hcTimer));
+    el.addEventListener("mouseleave", () => hcClose());
+    if (hcPop) map.closePopup(hcPop);
+    hcPop = L.popup({ closeButton: false, autoPan: false, autoClose: false, className: "hovcard", offset: [0, -10] })
+      .setLatLng(marker.getLatLng()).setContent(el).openOn(map);
+  });
+  marker.on("mouseout", () => hcClose());
+}
+const hcRow = (k, v) => v === undefined || v === null || v === "" ? "" : `<div><span class="hc-k">${k}:</span> ${v}</div>`;
+const hcStale = () => `<div class="hint">${tr("बदलाव के बाद Zoning / Design दोबारा चलाएँ।", "After a change run Zoning / Design again.")}</div>`;
+function hcMove(layer) {                         // a marker of the map dragged once to its new place
+  if (!layer.dragging) return;
+  layer._hcDrag = true;
+  layer.dragging.enable();
+  const el = layer.getElement && layer.getElement();
+  if (el) el.classList.add("hc-moving");
+  layer.once("dragend", () => {
+    if (!(selected === layer && layer.kind === "oht")) layer.dragging.disable();
+    layer._hcDrag = false;
+    if (el) el.classList.remove("hc-moving");
+    label(layer); changed();
+  });
+  if ($("wstatus")) { $("wstatus").className = "status"; $("wstatus").textContent = tr(`${layer.props.name}: खींचकर नई जगह पर छोड़ें`, `${layer.props.name}: drag it to its new place`); }
+}
+function hcDelete(layer, also) {
+  if (!confirm(tr(`${layer.props.name} नक्शे से हटाएँ?`, `Remove ${layer.props.name} from the map?`))) return;
+  if (selected === layer) select(null);
+  drawn.removeLayer(layer);
+  (also || []).forEach(m => m && m.remove());
+  showProps(); changed();
+}
+function nextTw() {                               // a name after the highest "TW n" on the map
+  let n = 0; drawn.eachLayer(l => { const m = l.kind === "tw" && /^TW (\d+)$/.exec(l.props.name || ""); if (m) n = Math.max(n, +m[1]); });
+  return `TW ${n + 1}`;
+}
+const drawnBy = (kind, name) => { let t = null; drawn.eachLayer(l => { if (l.kind === kind && l.props.name === name) t = l; }); return t; };
+function twInfo(name) {
+  const R = wDesign && wDesign.rising;
+  return { t: R && (R.tws || []).find(x => x.name === name), d: R && (R.dropped || []).find(x => x.name === name) };
+}
+function twCardHtml(name, lpm, user) {
+  const { t, d } = twInfo(name);
+  return `<b>${esc(name)}</b> <span class="hint">${user ? tr("आपका (नक्शे पर)", "yours (on the map)") : tr("auto - app का सुझाव", "auto - suggested by the app")}</span>` +
+    hcRow("Zone", t ? esc(t.oz) : d ? esc(d.oz) : "") +
+    hcRow("Discharge", `${fmt(+(lpm || (t && t.lpm) || 1500))} LPM`) +
+    (t ? hcRow(tr("भूमिका", "role"), t.standby ? `<b style="color:#e65100">standby</b>` : `<b>main</b> (working)`) : "") +
+    (t && t.size ? hcRow("Rising main", `${fmt(t.length_m)} m ${esc(t.size)}${t.cls ? " " + esc(t.cls) : ""}, head ${fmt(t.head_m, 1)} m`) : "") +
+    (d ? `<div style="color:#c62828">${d.why === "auto" ? tr("इस design में नहीं लिया: OHT zoning की proposed है", "Not taken in this design: its OHT is the zoning's proposed one")
+                                                      : tr("इस design में नहीं लिया: OZ में ज़रूरत से ज़्यादा", "Not taken in this design: more than its OZ needs")}</div>` : "") +
+    (!t && !d ? `<div class="hint">${tr("Design के बाद zone और main / standby दिखेगा।", "Zone and main / standby show after a design.")}</div>` : "");
+}
+function ohtInfo(name) {
+  const o = wDesign && (wDesign.outlets || []).find(x => x.name === name);
+  const z = wZoning && (wZoning.zones || []).find(x => x.name === name);
+  const tws = ((wDesign && wDesign.rising && wDesign.rising.tws) || []).filter(t => t.oz === name);
+  return { o, z, tws };
+}
+function ohtCardHtml(name, user, props) {
+  const { o, z, tws } = ohtInfo(name), ex = o ? o.existing : z ? z.existing : isExOht(props);
+  const cap = ex ? (o ? o.capacity_kl : z ? z.capacity_kl : props && props.capacity_kl) : (o ? o.required_kl : z ? z.required_kl : "");
+  const stg = o && o.staging_m !== null && o.staging_m !== undefined ? `${fmt(o.staging_m, 1)} m${o.staging_auto ? " (" + tr("design से", "from the design") + ")" : ""}`
+            : props && props.staging_m ? `${props.staging_m} m` : tr("design से", "from the design");
+  const sb = tws.filter(t => t.standby).length;
+  return `<b>${esc(name)}</b> <span class="hint">${user ? tr("आपकी (नक्शे पर)", "yours (on the map)") : tr("auto - zoning की proposed", "auto - proposed by the zoning")}, ${ex ? tr("पुरानी", "existing") : tr("नई", "new")}</span>` +
+    hcRow("Zone", o || z ? `${esc(name)}${z && z.dma_count ? `, ${z.dma_count} DMA` : ""}` : "") +
+    hcRow(ex ? tr("क्षमता", "capacity") : tr("आवश्यक क्षमता", "required capacity"), cap ? `${fmt(cap)} KL` : "") +
+    hcRow("CWR", (o && o.cwr_kl) || (z && z.cwr_kl) ? `${fmt((o && o.cwr_kl) || z.cwr_kl)} KL` : "") +
+    hcRow("Staging", stg) +
+    hcRow(tr("आबादी", "population"), o ? fmt(o.population) : z ? fmt(z.population) : "") +
+    (o ? hcRow(tr("निकास", "outlet"), `${fmt(o.flow, 1)} L/s, ${esc(o.size || "")}`) + hcRow(tr("OZ में न्यूनतम residual head", "lowest residual head in the OZ"), `${fmt(o.lowest_p, 2)} m`) : "") +
+    (o && o.vfd_head_m ? `<div><b style="color:#6a1b9a">${tr("outlet पर VFD pump", "VFD pump at the outlet")}: +${fmt(o.vfd_head_m, 1)} m, ~${fmt(o.vfd_kw, 1)} kW</b></div>` : "") +
+    (o && o.short_m ? `<div><b style="color:#c62828">${tr(`staging कम: ${o.short_m} m और चाहिए`, `staging too low: ${o.short_m} m more needed`)}</b></div>` : "") +
+    hcRow(tr("नए tube wells", "new tube wells"), tws.length ? `${tws.length - sb} main + ${sb} standby` : z && z.tubewells_new !== undefined ? `${z.tubewells_new} + ${z.tubewells_standby || 0} standby (zoning)` : "");
+}
+function convertOht(name, ll, also) {              // a proposed OHT becomes the user's, with its OZ's suggested tube wells
+  let o = drawnBy("oht", name);
+  if (!o) o = addFeature(L.marker(ll), "oht", { name, existing: "0", capacity_kl: "", staging_m: "", tubewells: "" });
+  for (const t of (wDesign && wDesign.rising && wDesign.rising.tws) || [])
+    if (t.oz === name && !t.placed && t.latlng && !t._mapped) t._mapped = addFeature(L.marker(t.latlng), "tw", { name: nextTw(), discharge_lpm: "" });
+  (also || []).forEach(m => m && m.remove());
+  ohtTouched(); changed();
+  return o;
+}
+function ohtLatLng(name) {
+  const { o, z } = ohtInfo(name);
+  return (o && o.latlng) || (z && z.latlng);
+}
+function moveSuggestedTw(t, also) {
+  let l;
+  if (t.auto) { convertOht(t.oz, ohtLatLng(t.oz)); l = t._mapped; }
+  else { l = t._mapped || addFeature(L.marker(t.latlng), "tw", { name: nextTw(), discharge_lpm: "" }); t._mapped = l; changed(); }
+  (also || []).forEach(m => m && m.remove());
+  if (l) hcMove(l);
+}
 // ---- population projection (user request 30-Oct-2026, as the Elmwood 'T'): the base year and its population (popb)
 // with the census of the town -> the population of the base year, +15 and +30 years by five methods (population.py),
 // one adopted (default geometrical); then the +15 years population and the factor (+30 / base) follow from it and
@@ -2667,6 +2853,7 @@ function zoneColor(names) { const c = {}; names.forEach((n, i) => c[n] = ZPAL[i 
 
 function renderWZoning(r, note) {
   wZoning = r;
+  const sbOwn = r.req ? !!(r.req.tw_standby && r.req.tw_standby.on) : $("wsbon").checked;   // the standby table used
   $("wzbox").before($("wstatus"));       // its message in the zoning step (the sidebar's steps, 10-Nov-2026)
   zoneLayer.clearLayers();
   const col = zoneColor(r.zones.map(z => z.name));
@@ -2690,10 +2877,12 @@ function renderWZoning(r, note) {
       L.marker(d.label, { interactive: false, icon: L.divIcon({ className: "", html: `<div class="zlabel sub">${esc(d.name.split("/")[1])}</div>`, iconSize: null }) }).addTo(zoneLayer);
   const drawnOht = {}; drawn.eachLayer(l => { if (l.kind === "oht") drawnOht[l.props.name] = l; });
   const placed = (r.proposed || []).length > 0 && r.proposed.every(p => drawnOht[p.name]);
-  for (const z of r.zones.filter(z => z.proposed && !drawnOht[z.name]))
-    L.marker(z.latlng, { icon: icon("oht", false, { name: z.name, existing: "0" }) })
-      .bindTooltip(tr(`${z.name}: प्रस्तावित नई OHT - क्षमता ${fmt(z.required_kl)} KL${z.cwr_kl ? `, CWR ${fmt(z.cwr_kl)} KL` : ""}; staging design से`,
-                      `${z.name}: proposed new OHT - capacity ${fmt(z.required_kl)} KL${z.cwr_kl ? `, CWR ${fmt(z.cwr_kl)} KL` : ""}; staging from the design`)).addTo(zoneLayer);
+  for (const z of r.zones.filter(z => z.proposed && !drawnOht[z.name])) {
+    const m = L.marker(z.latlng, { icon: icon("oht", false, { name: z.name, existing: "0" }) }).addTo(zoneLayer);
+    hoverCard(m, () => ({ html: ohtCardHtml(z.name, false) +
+      `<div class="hint">${tr("Move: OHT (और उसके OZ के सुझाए tube wells) आपके हो जाएँगे, नक्शे पर।", "Move: the OHT (and its OZ's suggested tube wells) become yours, on the map.")}</div>`,
+      acts: [["✥ move", tr("आपकी बनाकर खींचें", "make it yours and drag it"), () => hcMove(convertOht(z.name, z.latlng, [m]))]] }));
+  }
   for (const p of r.unserved_pts || [])
     L.circleMarker(p, { radius: 5, color: "#616161", weight: 2, fill: false, dashArray: "2 2", renderer: netRenderer })
       .bindTooltip(tr("किसी OHT से जुड़ा नहीं (सड़क का अलग टुकड़ा)", "joined to no OHT (a separate road piece)")).addTo(zoneLayer);
@@ -2741,8 +2930,8 @@ function renderWZoning(r, note) {
         (z.fire_store_kl != null ? tr(` = संतुलन ${fmt(z.balancing_kl)} + अग्निशमन ${fmt(z.fire_store_kl)} KL (fire का 1/3), ऊपर पूर्णांकित`, ` = balancing ${fmt(z.balancing_kl)} + fire ${fmt(z.fire_store_kl)} KL (1/3 of the fire), rounded up`) : "")}">` +
       `${z.existing ? `${fmt(z.capacity_kl)} / ${fmt(z.required_kl)}` : `${tr("नई", "new")} ${fmt(z.required_kl)}`}</td>` +
       // tube wells filling the OHT: given on the map + new for the +15 years demand (UPJN: more than 3 -> CWR)
-      `<td title="${tr(`नलकूप: नक्शे पर ${z.tubewells}${z.rebore ? ` + rebore ${z.rebore}` : ""} + नए ${z.tubewells_new ?? 0} (+15 वर्ष की माँग) + standby ${z.tubewells_standby ?? 0} (CPHEEO 5.7.5; हर एक पूरा नया नलकूप); नए चालू 3 से अधिक हों तो CWR (जल निगम नियम; पुराने नलकूप पुराने structures से जुड़े रहते हैं)`,
-                       `tube wells: ${z.tubewells} on the map${z.rebore ? ` + ${z.rebore} rebored` : ""} + ${z.tubewells_new ?? 0} new (+15 years demand) + ${z.tubewells_standby ?? 0} standby (CPHEEO 5.7.5; each a whole new tube well); more than 3 new working: CWR (UPJN rule; the existing ones stay with the existing structures)`)}">` +
+      `<td title="${tr(`नलकूप: नक्शे पर ${z.tubewells}${z.rebore ? ` + rebore ${z.rebore}` : ""} + नए ${z.tubewells_new ?? 0} (+15 वर्ष की माँग) + standby ${z.tubewells_standby ?? 0} (${sbOwn ? "page की table" : "CPHEEO 5.7.5"}; हर एक पूरा नया नलकूप); नए चालू 3 से अधिक हों तो CWR (जल निगम नियम; पुराने नलकूप पुराने structures से जुड़े रहते हैं)`,
+                       `tube wells: ${z.tubewells} on the map${z.rebore ? ` + ${z.rebore} rebored` : ""} + ${z.tubewells_new ?? 0} new (+15 years demand) + ${z.tubewells_standby ?? 0} standby (${sbOwn ? "the page's table" : "CPHEEO 5.7.5"}; each a whole new tube well); more than 3 new working: CWR (UPJN rule; the existing ones stay with the existing structures)`)}">` +
       `${z.cwr_kl ? fmt(z.cwr_kl) : "-"}</td><td>${z.dma_count}</td>` +
       // the population of each DMA of the OZ (user request 21-Oct-2026), its connections in the tooltip
       `<td title="${esc(r.dmas.filter(d => d.zone === z.name).map(d => `${d.name}: ${fmt(d.connections)} ${tr("कनेक्शन", "connections")}` +
@@ -2844,8 +3033,16 @@ function drawRising(r) {
     const tip = esc(t.size ? `${t.name} → ${t.oz}: ${fmt(t.length_m)} m ${t.size}${t.cls ? " " + t.cls : ""}, ${fmt(t.q_lps, 1)} L/s, V ${fmt(t.v, 2)} m/s, ${tr("घर्षण", "friction")} ${fmt(t.hf_m, 2)} m, head ${fmt(t.head_m, 1)} m`
                                : `${t.name}: ${t.note || ""}`);
     if (t.path) L.polyline(t.path, { color: "#00897b", weight: 4, opacity: .85, dashArray: "10 6", renderer: netRenderer }).bindTooltip(tip).addTo(designLayer);
-    L.marker(t.latlng, { icon: L.divIcon({ className: "tw-icon" + (t.placed ? "" : " sug"), html: t.placed ? "T" : "T?", iconSize: [20, 20] }), zIndexOffset: 850 })
-      .bindTooltip(tip).addTo(designLayer);
+    const line = t.path ? designLayer.getLayers()[designLayer.getLayers().length - 1] : null;
+    const m = L.marker(t.latlng, { icon: L.divIcon({ className: "tw-icon" + (t.placed ? "" : " sug") + (t.standby ? " sb" : ""), html: t.placed ? "T" : "T?", iconSize: [20, 20] }), zIndexOffset: 850 })
+      .addTo(designLayer);
+    if (t.placed) hoverCard(m, () => { const l = drawnBy("tw", t.name);
+      return { html: twCardHtml(t.name, t.lpm, true) + hcStale(), acts: l ? [["✕", tr("नक्शे से हटाएँ", "remove from the map"), () => hcDelete(l, [m, line]), "del"],
+                                                                         ["✥ move", tr("खींचकर नई जगह", "drag to a new place"), () => { m.remove(); if (line) line.remove(); hcMove(l); }]] : [] }; });
+    else hoverCard(m, () => ({ html: twCardHtml(t.name, t.lpm, false) +
+      `<div class="hint">${t.auto ? tr("Move: इसका OZ (OHT और सुझाए tube wells) आपका हो जाएगा, नक्शे पर।", "Move: its OZ (the OHT and the suggested tube wells) becomes yours, on the map.")
+                                  : tr("Move: यह tube well आपका हो जाएगा, नक्शे पर।", "Move: this tube well becomes yours, on the map.")}</div>`,
+      acts: [["✥ move", tr("आपका बनाकर खींचें", "make it yours and drag it"), () => moveSuggestedTw(t, [m, line])]] }));
   }
 }
 function renderWDesign(r, note) {
@@ -2875,19 +3072,18 @@ function renderWDesign(r, note) {
   for (const p of r.unsupplied_pts || [])
     L.circleMarker(p, { radius: 5, color: "#616161", weight: 2, fill: false, dashArray: "2 2", renderer: netRenderer })
       .bindTooltip(tr("किसी OHT से जुड़ा नहीं (सड़क का अलग टुकड़ा)", "joined to no OHT (a separate road piece)")).addTo(designLayer);
-  for (const o of r.outlets)
-    L.marker(o.latlng, { icon: icon("oht", false, { name: o.name, existing: o.existing ? "1" : "0" }) })
+  for (const o of r.outlets) {
+    const om = L.marker(o.latlng, { icon: icon("oht", false, { name: o.name, existing: o.existing ? "1" : "0" }) })
       .on("click", ev => { let t = null; drawn.eachLayer(l => { if (l.kind === "oht" && l.props.name === o.name) t = l; });
-                           if (t) { L.DomEvent.stopPropagation(ev); select(t); } })
-      .bindTooltip(`<b>${esc(o.name)}</b>: ` +
-        // capacity: an existing tank's own (and what its OZ needs), a new one's required = max(33 %, mass balance) of its OZ's demand
-        (o.existing ? `${tr("क्षमता", "capacity")} ${fmt(o.capacity_kl)} KL (${tr("आवश्यक", "required")} ${fmt(o.required_kl)} KL)`
-                    : `${tr("आवश्यक क्षमता", "required capacity")} <b>${fmt(o.required_kl)} KL</b>`) +
-        (o.cwr_kl ? `, CWR ${fmt(o.cwr_kl)} KL` : "") +
-        `<br>staging ${fmt(o.staging_m, 1)} m${o.staging_auto ? " (" + tr("design से", "from the design") + ")" : ""}, ` +
-        `${tr("निकास", "outlet")} ${fmt(o.flow, 1)} L/s, ${esc(o.size || "")}<br>${tr("OZ में न्यूनतम residual head", "lowest residual head in the OZ")} ${fmt(o.lowest_p, 2)} m` +
-        (o.vfd_head_m ? `<br><b style="color:#6a1b9a">${tr("outlet पर VFD pump", "VFD pump at the outlet")}: +${fmt(o.vfd_head_m, 1)} m, ${fmt(o.flow, 1)} L/s, ~${fmt(o.vfd_kw, 1)} kW</b>` : "") +
-        (o.short_m ? `<br><b style="color:#c62828">${tr(`staging कम: ${o.short_m} m और चाहिए`, `staging too low: ${o.short_m} m more needed`)}</b>` : "")).addTo(designLayer);
+                           if (t) { L.DomEvent.stopPropagation(ev); select(t); } });
+    hoverCard(om, () => { const l = drawnBy("oht", o.name);
+      return { html: ohtCardHtml(o.name, !!l, l && l.props) + (l ? hcStale() :
+               `<div class="hint">${tr("Move: OHT (और उसके OZ के सुझाए tube wells) आपके हो जाएँगे, नक्शे पर।", "Move: the OHT (and its OZ's suggested tube wells) become yours, on the map.")}</div>`),
+               acts: l ? [["✕", tr("नक्शे से हटाएँ", "remove from the map"), () => hcDelete(l, [om]), "del"],
+                          ["✥ move", tr("खींचकर नई जगह", "drag to a new place"), () => { om.remove(); hcMove(l); }]]
+                       : [["✥ move", tr("आपकी बनाकर खींचें", "make it yours and drag it"), () => hcMove(convertOht(o.name, o.latlng, [om]))]] }; });
+    om.addTo(designLayer);                         // its data in the hover card
+  }
   const otab = `<table class="wz"><tr><th>OHT</th><th>${tr("क्षमता KL", "capacity KL")}</th><th>staging m</th><th>VFD</th><th>CWR KL</th><th>${tr("आबादी", "population")}</th><th>DMA</th><th>${tr("न्यूनतम दबाव", "lowest head")}</th></tr>` +
     r.outlets.map(o => `<tr><td>${esc(o.name)} <span class="hint">${o.proposed ? tr("प्रस्तावित", "proposed") : o.existing ? tr("मौजूदा", "existing") : tr("नई", "new")}</span></td>` +
       `<td>${o.existing ? `${fmt(o.capacity_kl)}${o.required_kl > o.capacity_kl ? " ⚠" : ""}` : `<b>${fmt(o.required_kl)}</b>`}</td>` +
@@ -2943,6 +3139,10 @@ async function restoreWater(name) {
   $("wfloat").value = q.floating_pct ?? 10;             // a run from before 11-Nov-2026: the 10 % it was made with
   if (q.persons_per_connection) $("wppc").value = q.persons_per_connection;
   if (q.oht_inflow) $("winflow").value = q.oht_inflow;
+  const qs = q.tw_standby || (r.design && r.design.req && r.design.req.tw_standby) || {};   // a zoning from before it: the design's
+  $("wsbon").checked = !!qs.on;
+  SB = Array.isArray(qs.rows) && qs.rows.length ? qs.rows.map(r => [+r[0], +r[1]]) : SB_DEF.map(r => r.slice());
+  sbRender();
   if (q.ward_table && q.ward_table.rows) {
     const g = JSON.parse(JSON.stringify(WARD_GROWTH_DEF));
     const qg = charKeys(q.ward_table.growth), qd = q.ward_table.dens ? charKeys(q.ward_table.dens) : null, qc = charKeys(q.ward_table.city);   // the old names as the new (9-Nov-2026)

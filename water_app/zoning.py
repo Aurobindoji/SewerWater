@@ -230,7 +230,7 @@ def make_zones(net, ohts, crit, city_pop=None, assign=None):
         z["tubewells_new"] = dm.tubewells_new(round(p_ * mid), crit, tw + rb, bulk)    # bulk: the same every stage
         # standby tube wells as CPHEEO 5.7.5 (user decision 7-Nov-2026), each built whole; the CWR rule counts the
         # working ones (those filling the OHT at a time)
-        z["tubewells_standby"] = dm.standby(z["tubewells_new"], crit)
+        z["tubewells_standby"] = dm.standby(z["tubewells_new"], crit, "standby_tubewells")
         if z["tubewells_new"] > _v(crit, "cwr_when_tubewells_over"):
             z["cwr_kl"] = math.ceil(_v(crit, "cwr_capacity_share") * (cap or need) / rnd) * rnd
         if over(k):

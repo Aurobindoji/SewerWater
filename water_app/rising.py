@@ -128,7 +128,7 @@ def economic(L, q_m3s, static, sizes, rate, crit):
     return out
 
 
-def plan(wnet, z, ohts, placed, crit, sizes, rate, top, need, below=6.0, auto=()):
+def plan(wnet, z, ohts, placed, crit, sizes, rate, top, need, below=6.0, auto=(), standby=None):
     """The new tube wells and their rising mains.
         wnet   nodes {n: {xy, elev}}, pipes {lab: {a, b, length}} (the roads: closed pipes too)
         z      the zoning (z["oz"]: junction -> OZ)
@@ -139,6 +139,8 @@ def plan(wnet, z, ohts, placed, crit, sizes, rate, top, need, below=6.0, auto=()
         rate   (size name, class) -> Rs per m laid (supply + laying; K9 at its own supply rate)
         below  the water level of a tube well under its ground (m)
         auto   the OZs whose OHT the zoning proposed: the map's tube wells there left out
+        standby {OZ: standby tube wells of its need} - the farthest from the OHT along the roads marked "standby"
+               (user decision 15-Nov-2026); at least one stays working
     {"tws": [...], "oz": {OZ: {friction_m, length_m, n}}, "flags": [...],
      "dropped": [{name, oz, xy, why: "auto" | "extra"}] - the map's tube wells not taken}
     The candidate sizes: those of the materials of crit rising_main_material (DI only - user decision 7-Nov-2026)."""
@@ -208,6 +210,13 @@ def plan(wnet, z, ohts, placed, crit, sizes, rate, top, need, below=6.0, auto=()
             flags.append(f"{oz}: {short} of the {k} new tube wells found no site {spacing:g} m from the others "
                          f"- place them on the map")
     dropped += [{"name": t["name"], "oz": oz, "xy": t["xy"], "why": "auto"} for oz, ts in spare.items() for t in ts]
+    for oz in {t["oz"] for t in tws}:                    # main / standby: the farthest along the roads stand by
+        dist = route.get(oz, ({}, {}))[0]
+        mine = sorted((t for t in tws if t["oz"] == oz), key=lambda t: (dist.get(t["node"], math.inf) + t["snap_m"],
+                                                                        t["name"]))
+        k = min(int((standby or {}).get(oz) or 0), len(mine) - 1)
+        for i, t in enumerate(mine):
+            t["standby"] = k > 0 and i >= len(mine) - k
     per_oz = {}
     for t in tws:
         dist, prev = route.get(t["oz"], ({}, {}))

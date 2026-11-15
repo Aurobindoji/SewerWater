@@ -14,6 +14,10 @@ import pytest
 
 from sewer_app import netedit, network, ui
 
+from sewer_app import inputs as sinputs
+
+from sewer_app import project as sproject
+
 from synthetic import INP
 from test_dxf_extract import make_dxf
 
@@ -92,10 +96,10 @@ def test_edits_undo_and_log(st):
 
 @pytest.fixture
 def server(tmp_path, monkeypatch):
-    monkeypatch.setattr(ui, "PROJECTS", str(tmp_path / "projects"))
-    monkeypatch.setattr(ui, "OUT_ROOT", str(tmp_path / "output"))
-    ui.NETS.clear()
-    ui.ZCACHE.clear()
+    monkeypatch.setattr(sproject, "PROJECTS", str(tmp_path / "projects"))
+    monkeypatch.setattr(sproject, "OUT_ROOT", str(tmp_path / "output"))
+    sproject.NETS.clear()
+    sinputs.ZCACHE.clear()
     srv = ThreadingHTTPServer(("127.0.0.1", 0), ui.Handler)
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     yield f"http://127.0.0.1:{srv.server_address[1]}"

@@ -123,3 +123,35 @@ def number(v):
     """A number from a KML data value such as '12,345' or '12345 persons'; None if none."""
     m = re.search(r"-?\d[\d,]*\.?\d*", str(v or ""))
     return float(m.group(0).replace(",", "")) if m else None
+
+
+# polygons in metres (restructure stage 6: out of ui.py)
+def ring_area(r):
+    return sum(x1 * y2 - x2 * y1 for (x1, y1), (x2, y2) in zip(r, r[1:] + r[:1])) / 2.0
+
+
+def inside(p, ring):
+    x, y = p
+    c = False
+    for (x1, y1), (x2, y2) in zip(ring, ring[1:] + ring[:1]):
+        if (y1 > y) != (y2 > y) and x < x1 + (y - y1) * (x2 - x1) / (y2 - y1):
+            c = not c
+    return c
+
+
+def interior(ring, n=14):
+    """A point well inside a (possibly concave) ring: of a grid over its box, the inside point farthest from the
+    ring's vertices."""
+    xs, ys = [p[0] for p in ring], [p[1] for p in ring]
+    x0, x1, y0, y1 = min(xs), max(xs), min(ys), max(ys)
+    step = max(len(ring) // 300, 1)
+    verts = ring[::step]
+    best, bd = None, -1.0
+    for i in range(1, n):
+        for j in range(1, n):
+            p = (x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * j / n)
+            if inside(p, ring):
+                d = min((p[0] - v[0]) ** 2 + (p[1] - v[1]) ** 2 for v in verts)
+                if d > bd:
+                    best, bd = p, d
+    return best or (sum(xs) / len(xs), sum(ys) / len(ys))

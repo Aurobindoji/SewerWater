@@ -5,6 +5,7 @@ import json
 from test_water_ui import SAMPLE, call, server  # noqa: F401  (the fixture)
 from test_dxf_extract import make_dxf
 from sewer_app import ui
+from sewer_app import project as sproject
 from water_app import netedit, server as wserver
 
 
@@ -34,8 +35,8 @@ def test_names(server):  # noqa: F811
 
 
 def test_sewer_layout_names(tmp_path, monkeypatch):
-    monkeypatch.setattr(ui, "PROJECTS", str(tmp_path / "projects"))
-    monkeypatch.setattr(ui, "OUT_ROOT", str(tmp_path / "output"))
+    monkeypatch.setattr(sproject, "PROJECTS", str(tmp_path / "projects"))
+    monkeypatch.setattr(sproject, "OUT_ROOT", str(tmp_path / "output"))
     with open(SAMPLE, encoding="utf-8") as fh:
         kml = fh.read()
     r = ui.run_layout("sp", kml)

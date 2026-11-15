@@ -1,7 +1,8 @@
 """Trunk sewers marked on the page (user request 21-Oct-2026, CPHEEO 3.71.2 Table 3.31 p3-127): a sewer with no house
 connections gets its manholes at 60 / 90 / 120 / 150 m by the designed diameter instead of 30 m - so it is not cut at
 30 m before the design (spacing.presplit), and its pieces cut at bends are trunk too."""
-from sewer_app import check, edits, spacing, ui
+from sewer_app import check, edits, spacing
+from sewer_app import inputs as sinputs
 from sewer_app.criteria import load_criteria
 
 from test_bends import net_of
@@ -18,8 +19,8 @@ def test_clean_and_pieces():
 def test_trunk_not_cut_at_30_m():
     poly = [(0.0, 0.0), (20.0, 0.0), (20.0, 50.0)]                    # 20 m, a 90 deg bend, 50 m
     net = net_of([("CO-1", "MH-1", "MH-9", poly)], {"MH-1": 80.0, "MH-9": 79.3})
-    assert [r["why"] for r in spacing.presplit(net, ui.criteria_for())[1]] == ["bend 90 deg", "spacing"]
-    crit = ui.criteria_for(trunk=["CO-1"])
+    assert [r["why"] for r in spacing.presplit(net, sinputs.criteria_for())[1]] == ["bend 90 deg", "spacing"]
+    crit = sinputs.criteria_for(trunk=["CO-1"])
     assert crit["sewer"]["trunk_conduits"]["value"] == ["CO-1"]
     assert "marked in the map UI" in crit["sewer"]["trunk_conduits"]["note"]
     assert [r["why"] for r in spacing.presplit(net, crit)[1]] == ["bend 90 deg"]       # the bend only

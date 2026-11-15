@@ -90,15 +90,15 @@ def test_planned_after_the_design():
 def test_bend_angle_from_the_page():
     """The page's 'मोड़ पर manhole (इतने ° या ज़्यादा)' (default 20) reaches presplit; outside 1 - 90 deg: refused."""
     import pytest
-    from sewer_app import ui
-    assert ui.criteria_for()["sewer"]["bend_manhole_min_angle_deg"]["value"] == 20
-    c45 = ui.criteria_for(bend_angle=45)
+    from sewer_app import inputs as sinputs
+    assert sinputs.criteria_for()["sewer"]["bend_manhole_min_angle_deg"]["value"] == 20
+    c45 = sinputs.criteria_for(bend_angle=45)
     assert c45["sewer"]["bend_manhole_min_angle_deg"]["value"] == 45.0
     assert "user input in the map UI" in c45["sewer"]["bend_manhole_min_angle_deg"]["note"]
     for deg, n in ((30, 0), (50, 1)):
         net = net_of([("CO-1", "MH-1", "MH-9", leg(deg, 14.0))])                 # 28 m: no spacing manhole
         assert len(spacing.presplit(net, c45)[1]) == n, deg
-    assert len(spacing.presplit(net_of([("CO-1", "MH-1", "MH-9", leg(30, 14.0))]), ui.criteria_for())[1]) == 1
+    assert len(spacing.presplit(net_of([("CO-1", "MH-1", "MH-9", leg(30, 14.0))]), sinputs.criteria_for())[1]) == 1
     for bad in (0, 95):
         with pytest.raises(ValueError):
-            ui.criteria_for(bend_angle=bad)
+            sinputs.criteria_for(bend_angle=bad)

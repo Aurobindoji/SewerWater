@@ -11,6 +11,8 @@ import openpyxl
 import pytest
 
 from sewer_app import ui
+
+from sewer_app import project as sproject
 from water_app import server as wserver
 from water_app import project as wproject
 
@@ -20,8 +22,8 @@ SAMPLE = os.path.join(HERE, "samples", "sample_area.kml")
 
 @pytest.fixture
 def server(tmp_path, monkeypatch):
-    monkeypatch.setattr(ui, "PROJECTS", str(tmp_path / "projects"))
-    monkeypatch.setattr(ui, "OUT_ROOT", str(tmp_path / "output"))
+    monkeypatch.setattr(sproject, "PROJECTS", str(tmp_path / "projects"))
+    monkeypatch.setattr(sproject, "OUT_ROOT", str(tmp_path / "output"))
     srv = ThreadingHTTPServer(("127.0.0.1", 0), ui.Handler)
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     yield f"http://127.0.0.1:{srv.server_address[1]}"

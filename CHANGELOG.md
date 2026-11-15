@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- A window's **close button (✕) or Alt+F4 now hides it to the tray**: the app keeps running, its servers and the
+  pages' work stay; a double click on the tray icon brings the windows back. The first time a notice says so. The app
+  ends from the tray menu ("Quit") or from the new "Quit" in the menu "App". Windows shutting down or logging off
+  still closes the app, and the one-click update still closes it before the setup runs.
+
 ## 0.9.9 (beta) - 2026-11-14
 
 - The taskbar showed the icon of an older version after 0.9.8: the app now has its own name on the taskbar, its

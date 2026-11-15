@@ -1,8 +1,9 @@
 """The map UI as a desktop app (user request 30-Oct-2026): the start page (the launcher's: language, then sewer or
 water) in a window of its own (pywebview: Edge WebView2 on Windows) - no browser, no address bar, no tabs. Only the
 module chosen is started, in that same window (user decision 10-Nov-2026: the two apps fully independent); the other
-starts only from its button in a module's page, in a second window. Closing every window ends the app (and its
-servers).
+starts only from its button in a module's page, in a second window. A window's close button (or Alt+F4) only
+hides it - the app stays in the tray, its servers and the pages' work kept (user request 15-Nov-2026); the app ends
+(and its servers) from the tray menu or the menu "App": Quit.
 
     .venv\\Scripts\\pythonw app.py          (desktop.bat; packed: SewerWater.exe, its setup: installer\\SewerWater.iss)
 
@@ -108,10 +109,16 @@ def own_taskbar_name():
 class Tray:
     """The app's icon in the notification area (user request 14-Nov-2026) while the app runs: a double click brings
     its windows forward; the menu: show, the master folder, updates, About, quit. Made with Windows Forms' own
-    NotifyIcon (the library of the app's windows - nothing more to install), on the windows' thread."""
+    NotifyIcon (the library of the app's windows - nothing more to install), on the windows' thread.
+
+    A kept window (the start page / a module's) closed by the user is only hidden (user request 15-Nov-2026) - not when
+    Windows shuts down or the user logs off (the app would hold that up), nor when the app quits. Without the tray
+    icon the windows close as before (else a hidden app could not be reached)."""
 
     def __init__(self, api, icon):
         self.api, self.icon, self.ni = api, icon, None
+        self.quitting = False
+        self._told = False                                   # the "still running" notice: once a run
 
     def attach(self, window):
         """Called when the first window is shown."""
@@ -122,6 +129,32 @@ class Tray:
             window.native.Invoke(Action(self._make))
         except Exception as e:                               # no tray icon: the app works without it
             print(f"tray icon not made: {type(e).__name__}: {e}")
+
+    def keep(self, window):
+        """The window hidden when the user closes it (called when it is shown: it has its form then)."""
+        if os.name != "nt":
+            return
+        try:
+            from System import Action
+
+            def add():
+                window.native.FormClosing += self._on_closing
+            window.native.Invoke(Action(add))
+        except Exception as e:
+            print(f"close-to-tray not set: {type(e).__name__}: {e}")
+
+    def _on_closing(self, sender, args):
+        # after pywebview's own handler (added first); on the windows' thread
+        import System.Windows.Forms as WF
+        if self.ni is None or self.quitting or args.Cancel or args.CloseReason != WF.CloseReason.UserClosing:
+            return
+        args.Cancel = True
+        sender.Hide()
+        if not self._told:
+            self._told = True
+            self.ni.ShowBalloonTip(4000, TITLE, "App tray में चल रहा है - खोलने के लिए icon पर double-click, बंद करने "
+                                   "के लिए right-click → बंद करें।\nThe app keeps running in the tray: double-click "
+                                   "its icon to open it; right-click → Quit to close it.", WF.ToolTipIcon.Info)
 
     def _make(self):
         import System.Windows.Forms as WF
@@ -161,8 +194,8 @@ class Tray:
             except Exception:
                 pass
 
-    @staticmethod
-    def quit():
+    def quit(self):
+        self.quitting = True                                 # the windows then really close
         for w in list(webview.windows):
             w.destroy()
 
@@ -253,6 +286,7 @@ class Api:
         self._main = None                                         # the first window (first run, then the start page)
         self._master = None
         self._last_dir = None                                     # the file dialog opens where the last file was
+        self._tray = None                                         # its quit closes the hidden windows too
 
     def open_window(self, url, name=""):
         """A page's window.open: one window per name (a module: 'sewer_network_design' / 'water_network_design');
@@ -265,6 +299,8 @@ class Api:
         title = "Water supply network design" if "/water" in url else "Sewer network design" if "/sewer" in url else TITLE
         w = webview.create_window(title, url, js_api=self, min_size=(900, 600), **WINDOW)
         w.events.loaded += lambda: w.evaluate_js(OPEN_JS)
+        if self._tray is not None:
+            w.events.shown += lambda: self._tray.keep(w)
         if name:
             self._windows[name] = w
 
@@ -387,8 +423,16 @@ class Api:
         subprocess.Popen([p, "/SILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/CURRENTUSER", "/SP-"],
                          creationflags=getattr(subprocess, "DETACHED_PROCESS", 0) | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0),
                          close_fds=True)
-        threading.Timer(0.5, lambda: [w.destroy() for w in list(webview.windows)]).start()
+        threading.Timer(0.5, self.quit).start()
         return None
+
+    def quit(self):
+        """The app ended: every window closed (hidden ones too), the servers with it."""
+        if self._tray is not None:
+            self._tray.quit()
+        else:
+            for w in list(webview.windows):
+                w.destroy()
 
 
 # the update window (menu App -> Check for updates)
@@ -455,8 +499,9 @@ def main():
     api = Api()
     icon = icon_path()
     tray = Tray(api, icon)
+    api._tray = tray
     m = read_master()
-    storage = None
+    storage, bad = None, []
     if m is not None:
         try:
             use_master(m)
@@ -474,10 +519,13 @@ def main():
             api._main = webview.create_window(TITLE, START_URL, js_api=api, min_size=(900, 600), **WINDOW)
     api._main.events.loaded += lambda: api._main.evaluate_js(OPEN_JS)
     api._main.events.shown += lambda: tray.attach(api._main)
+    if not bad:                                                  # the problem page closes: nothing runs to keep
+        api._main.events.shown += lambda: tray.keep(api._main)
     menu = [Menu("App", [MenuAction("Master folder खोलें / Open the master folder", api.open_master),
                          MenuAction("Master folder बदलें… / Change the master folder…", api.change_master),
                          MenuAction("Update देखें… / Check for updates…", api.show_update),
-                         MenuAction("About", api.show_about)])]
+                         MenuAction("About", api.show_about),
+                         MenuAction("बंद करें / Quit", api.quit)])]
     try:                                                       # localStorage kept (in <master>\App); the windows'
         webview.start(private_mode=False, storage_path=storage, menu=menu, icon=icon)   # icon: the file, every size
     finally:

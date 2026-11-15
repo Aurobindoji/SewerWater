@@ -37,7 +37,9 @@ from . import zoning as wz
 BOUNDARY_GAP_M = 120.0         # zone boundaries drawn across open land up to this between points - the blocks
                                # between streets; wider empty land stays outside the zones, their lines go round
                                # it (user 14-Nov-2026; 400 m before, which drew the zones on into empty land)
-BLOCK_MAX_M2 = 30000.0         # land the zones close in on every side is theirs up to this size (a large block)
+BLOCK_MAX_M2 = None            # land the zones close in on every side is theirs, whatever its size: no ring round
+                               # empty land inside the zones, lines only where zones meet and at the outer edge, as
+                               # the DPR's key plan (user 15-Nov-2026; 3 ha before - larger land was ringed)
 STEP_M = 10.0                  # points along the pipes / the project boundary for drawing the zone boundaries: as
                                # near each other as two mains along one road lie (40 m let a zone's line cut the
                                # other zone's main between its points - user 14-Nov-2026)

@@ -114,3 +114,19 @@ def test_open_land_the_zones_close_in_is_theirs():
     assert ui_api._enclosed(tri.neighbors, keep, np.ones(len(T), dtype=bool), a2, 400000.0)[middle & ~keep].all()
     # the same middle outside the project boundary: stays out
     assert not ui_api._enclosed(tri.neighbors, keep, ~middle).any()
+
+
+def test_land_closed_in_by_the_zones_is_theirs_whatever_its_size():
+    """User 15-Nov-2026: no ring round empty land inside the zones (as the DPR's key plan) - land the zones close in on
+    every side is theirs, however large; open land reaching the outside stays out."""
+    import numpy as np
+    from water_app import ui_api
+    assert ui_api.BLOCK_MAX_M2 is None
+    # triangle 1: left out, closed in by the kept 0, 2, 3; triangle 4: left out, on the outer edge (-1)
+    nb = np.array([[1, -1, -1], [0, 2, 3], [1, -1, -1], [1, 4, -1], [3, -1, -1]])
+    keep = np.array([True, False, True, True, False])
+    inside = np.ones(5, dtype=bool)
+    area = np.array([10.0, 1e6, 10.0, 10.0, 1e6])                     # 100 ha closed in
+    got = ui_api._enclosed(nb, keep, inside, area, ui_api.BLOCK_MAX_M2)
+    assert got.tolist() == [False, True, False, False, False]
+    assert not ui_api._enclosed(nb, keep, inside, area, 30000.0)[1]   # the 3 ha of before: left as a ring

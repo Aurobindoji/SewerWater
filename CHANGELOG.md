@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Water supply, the zone lines: **no ring round empty land inside the zones** any more. Land the zones close in on
+  every side is now theirs whatever its size (3 ha before - larger land got a line of its own round it, in the map
+  and in the DXF); the lines run only where two zones meet and along the outer edge, as in a DPR's key plan. Open
+  land reaching the outside still stays outside the zones. The zones' areas grow by that land (persons per hectare
+  change; the design does not). An existing project shows it after its Zoning runs again.
+
 ## 0.9.10 (beta) - 2026-11-15
 
 - A window's **close button (✕) or Alt+F4 now hides it to the tray**: the app keeps running, its servers and the

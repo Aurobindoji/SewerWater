@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.9.14 (beta) - 2026-11-15
+
+- Inside only: the code of both modules arranged anew, in stages, nothing the app makes changed. Each module is in
+  layers - calculations, the network, a project's files, the outputs (DPR, report, drawings), the work behind a page
+  call, the server - and a module imports only from the layers below it (a test keeps it so). Water: the page's calls
+  in zoning / design / wards / results modules, the DPR one package; sewer: the server apart from the zoning and
+  design runs and from the command line, the zoning apart from its workbooks and drawings. Both map pages are now an
+  HTML file, a stylesheet and a set of scripts.
+- Checked by comparing 73 outputs of mock projects (every API answer, every DPR / report cell, every DXF entity) with
+  those of 0.9.13: all the same.
+
 ## 0.9.13 (beta) - 2026-11-15
 
 - Water supply: the **DPR workbook is made only by the Export DPR (xlsx) button**, no longer with every design. The

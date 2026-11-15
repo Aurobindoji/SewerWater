@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.9.12 (beta) - 2026-11-15
 
 - Water supply: **✕ on the app's own suggestions** too, beside "move" in the hover card. A suggested OHT taken away
   just goes: the next zoning has no OHT there and its area joins the neighbouring OZs (or stays joined to no OHT). A

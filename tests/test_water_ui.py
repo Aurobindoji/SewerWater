@@ -446,7 +446,18 @@ def test_water_dxf_export(server):
     msp = ezdxf.readfile(r["path"]).modelspace()
     txt = [e.dxf.text for e in msp.query("TEXT")]
     p = next(p for p in d["pipes"] if p["nominal"])
-    assert any(t.startswith(f"{p['label']}/{p['nominal']:g}mm") or t == p["label"] for t in txt)
+    # the pipe's name, material and diameter, then its length (user request 15-Nov-2026): "P-12 HDPE 110mm L=31.0"
+    assert any(t.startswith(f"{p['label']} {p['size']}mm") or t == p["label"] for t in txt)
+    assert not any("/" in t and t.endswith("mm") for t in txt)
+    # each size on a layer and in a colour of its own, a legend of the sizes with their lengths
+    from water_app import wdxf
+    doc = ezdxf.readfile(r["path"])
+    sizes = sorted({q["size"] for q in d["pipes"] if q["size"] and not q.get("closed")})
+    assert all(len(doc.modelspace().query(f"LWPOLYLINE[layer=='{wdxf.size_layer(x)}']")) > 1 for x in sizes)
+    cols = [doc.layers.get(wdxf.size_layer(x)).color for x in sizes]
+    assert len(set(cols)) == len(cols) and not {1, 3, 4} & set(cols)
+    assert "Pipe sizes" in txt and all(any(t.startswith(f"{x} mm - ") for t in txt) for x in sizes)
+    assert set(r["counts"]["sizes"]) >= set(sizes)
     n = next(x for x in d["nodes"] if x["head"] is not None)
     assert f"HGL {n['head']:.2f}" in txt and f"P {n['p']:.2f}" in txt
     assert len(msp.query("SOLID[layer=='W_FLOW_ARROW']")) > 0

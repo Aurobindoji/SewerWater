@@ -13,8 +13,10 @@ a layout: UTM metres), its layers switched on / off in AutoCAD:
         W_OHT            the OHTs (a square) with name, capacity, staging
         W_BARRIER        the barrier lines of the page (highway / railway ...: no pipe crosses one) and their names
     design (the last design, when it was made on this zoning):
-        W_PIPE, W_PIPE_CLOSED   pipes (closed ones: the boundary pipes)
-        W_PIPE_TEXT      "P-17111/110mm" above, "L=21.0" below - or one line, smaller, label only, or on a leader,
+        W_PIPE_<size>    the pipes of each size on a layer and in a colour of their own (user request 15-Nov-2026),
+                         e.g. W_PIPE_HDPE_110, W_PIPE_DI_350; a legend of the sizes and their lengths under the network
+        W_PIPE_CLOSED    the closed pipes (the boundary pipes), red whatever their size
+        W_PIPE_TEXT      "P-17111 HDPE 110mm" above, "L=21.0" below - or one line, smaller, label only, or on a leader,
                          as the sewer's plan drawing (pipe_text)
         W_FLOW_ARROW     the direction of the peak flow
         W_JUNCTION, W_JUNCTION_LOW (residual head below 17 m), W_JUNCTION_TEXT: name, GL, HGL, residual head
@@ -36,6 +38,9 @@ LAYERS = {"W_PIPE": 5, "W_PIPE_CLOSED": 1, "W_PIPE_TEXT": 4, "W_FLOW_ARROW": 5, 
           "W_JUNCTION_TEXT": 7, "W_OHT": 6, "W_VALVE": 1, "W_DMA_INLET": 2, "W_DMA_BOUNDARY": 8, "W_TITLE": 7,
           "W_BARRIER": 250, "W_PRV": 30, "W_TUBEWELL": 130, "W_RISING_MAIN": 130}
 OZ_COLOURS = [1, 3, 5, 6, 30, 4, 2, 140, 200, 40, 90, 170, 230, 10, 110, 60, 250]     # AutoCAD colour index per OZ
+# a colour per pipe size, in the order of pipes.json (user request 15-Nov-2026: each diameter its own colour); not red
+# (closed pipes), green (junctions) or cyan (the texts)
+SIZE_COLOURS = [150, 30, 6, 2, 200, 40, 5, 230, 110, 90, 190, 50, 210, 130]
 LEADER = 3.0                  # x the text height: leader line of a pipe label that does not fit on its pipe
 RESIDUAL_HEAD_M = 17.0        # below this a junction is drawn on W_JUNCTION_LOW (CPHEEO Table 2.7 S.No.4)
 # the boundaries told apart at a glance (user request 14-Nov-2026): an OZ boundary thick and dash-dot, a DMA
@@ -49,11 +54,17 @@ OZ_LINEWEIGHT, DMA_LINEWEIGHT = 80, 25
 PLINEGEN = 128                # LWPOLYLINE flag: the pattern runs on through the corners
 
 
-def pipe_text(label, nominal, length, chord, h, r):
+def size_layer(size):
+    """The layer of the pipes of a size: W_PIPE_HDPE_110, W_PIPE_DI_350 ..."""
+    return "W_PIPE_" + "".join(c if c.isalnum() else "_" for c in str(size).upper())
+
+
+def pipe_text(label, size, length, chord, h, r):
     """[(text, side)] and the height: side +1 above, -1 below, 0 off the pipe on a leader - as sewer_app.cad.pipe_text
     (one line if it fits between the junctions, else two, smaller down to PIPE_TEXT_MIN, else the label only, else
-    the label on a leader), the water's text: no slope."""
-    top, bottom = f"{label}/{('%g' % nominal) if nominal else '-'}mm", f"L={cad.fmt(length, 1)}"
+    the label on a leader), the water's text: no slope. size: the design's pipe ("HDPE 110", "DI 350"; user request
+    15-Nov-2026: the material with the diameter), none without a design."""
+    top, bottom = (f"{label} {size}mm" if size else label), f"L={cad.fmt(length, 1)}"
     room = chord - 2 * cad.MH_CLEAR * r
     one = f"{top} {bottom}"
     if cad.text_width(one, h) <= room:
@@ -259,12 +270,23 @@ def export(stem, path=None, what="both"):
     # ---- the network: designed pipes (size, flow) and junctions (GL, HGL, residual head)
     dp = {p["label"]: p for p in (d or {}).get("pipes", [])}
     dn = {x["label"]: x for x in (d or {}).get("nodes", [])}
+    from . import design as wd
+    order = [x["name"] for x in wd.load_pipes()]
+    used = sorted({p["size"] for p in dp.values() if p.get("size")},
+                  key=lambda x: (order.index(x) if x in order else len(order), x))
+    for x in used:                                        # a layer and a colour per size
+        k = order.index(x) if x in order else len(order) + used.index(x)
+        doc.layers.add(size_layer(x), color=SIZE_COLOURS[k % len(SIZE_COLOURS)])
+    size_len = {}
     for c in net["conduits"]:
         P = pts_of(c)
         if len(P) < 2:
             continue
         p = dp.get(c["label"], {})
-        msp.add_lwpolyline(P, dxfattribs={"layer": "W_PIPE_CLOSED" if p.get("closed") else "W_PIPE"})
+        layer = "W_PIPE_CLOSED" if p.get("closed") else size_layer(p["size"]) if p.get("size") else "W_PIPE"
+        msp.add_lwpolyline(P, dxfattribs={"layer": layer})
+        if p.get("size"):
+            size_len[p["size"]] = size_len.get(p["size"], 0.0) + (c.get("length_m") or 0.0)
         n["pipes"] += 1
         chord = math.dist(P[0], P[-1])
         (x1, y1), (x2, y2) = cad.longest_segment(P)
@@ -272,7 +294,7 @@ def export(stem, path=None, what="both"):
         ang = cad.readable_angle(tb[0] - ta[0], tb[1] - ta[1])
         tx, ty = cad.point_along(P, 0.5)
         nx, ny = -math.sin(math.radians(ang)), math.cos(math.radians(ang))
-        lines, th = pipe_text(c["label"], p.get("nominal"), c.get("length_m"), chord, h, r)
+        lines, th = pipe_text(c["label"], p.get("size"), c.get("length_m"), chord, h, r)
         for t, side in lines:
             if side == 0:                                   # off the pipe: away from the junction texts (up-right)
                 if nx + ny > 0:
@@ -320,6 +342,15 @@ def export(stem, path=None, what="both"):
             "zoning (OZ / DMA)" if what == "zoning" else "zoning (OZ / DMA) - no design of this zoning yet")
     text(f"Water distribution network {stem}: {head} - zoning {z.get('time')}" + (f", design {d.get('time')}" if d else ""),
          (min(xs), max(ys) + 10 * h), "W_TITLE", 4 * h, TextEntityAlignment.BOTTOM_LEFT)
+    if used:                         # the legend of the pipe sizes, under the network: a line in its colour, its length
+        x0, y0 = min(xs), min(ys) - 6 * h
+        text("Pipe sizes", (x0, y0), "W_TITLE", 1.6 * h, TextEntityAlignment.BOTTOM_LEFT)
+        for i, x in enumerate(used):
+            y = y0 - (i + 1) * 2.2 * h
+            msp.add_lwpolyline([(x0, y), (x0 + 8 * h, y)], dxfattribs={"layer": size_layer(x), "const_width": 0.3 * h})
+            text(f"{x} mm - {size_len.get(x, 0.0):,.0f} m", (x0 + 9 * h, y), size_layer(x), h,
+                 TextEntityAlignment.MIDDLE_LEFT)
+    n["sizes"] = {x: round(size_len.get(x, 0.0), 1) for x in used}
     try:
         from ezdxf import zoom
         doc.header["$TILEMODE"] = 1

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.24 (beta) - 2026-11-16
+
+- The windows' **title bar** is dark when the pages are dark (the dark theme, or System with Windows in dark mode),
+  light otherwise - it changes at once when the theme is changed on a page.
+- **Check for updates** in one language (the one chosen last, as About) and in the pages' theme; its messages too.
+
 ## 0.9.23 (beta) - 2026-11-16
 
 - The app opens fast again: about 1 s to its window (0.9.22 took about 3.4 s). The check for a copy already running

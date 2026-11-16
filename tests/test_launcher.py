@@ -98,8 +98,14 @@ def test_a_second_start_shows_the_running_app(launcher, monkeypatch):
     import time
 
     import app
-    monkeypatch.setattr(L, "APP_HOOKS", {})
+    monkeypatch.setattr(L, "APP_HOOKS", {"show": lambda: (_ for _ in ()).throw(AssertionError("asked"))})
     monkeypatch.setattr(app, "START_URL", launcher + "/")
+    # no other copy (its named mutex absent): not even asked - a start without the 2 s of a closed port (16-Nov-2026)
+    monkeypatch.setattr(app, "another_app_running", lambda: False)
+    t0 = time.time()
+    assert app.show_running_app() is False and time.time() - t0 < 0.2
+    monkeypatch.setattr(app, "another_app_running", lambda: True)
+    monkeypatch.setattr(L, "APP_HOOKS", {})
     assert json.loads(get(launcher + "/api/app_show")[0]) == {"ok": True, "shown": False}
     assert app.show_running_app() is False
     shown = []

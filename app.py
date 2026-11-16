@@ -339,18 +339,40 @@ class Tray:
 
 
 # ---------------------------------------------------------------------------------------------- the servers
-def _version(port):
+def _version(port, timeout=2):
     try:
-        with urllib.request.urlopen(f"http://127.0.0.1:{port}/api/version", timeout=2) as r:
+        with urllib.request.urlopen(f"http://127.0.0.1:{port}/api/version", timeout=timeout) as r:
             return json.loads(r.read()).get("version")
     except Exception:
         return None
 
 
+_INSTANCE = []                                    # the app's named mutex, held while it runs
+
+
+def another_app_running():
+    """True when another copy of the app runs - its named mutex is there. Instant (user 16-Nov-2026: asking the
+    launcher's port when nothing listens took Windows 2 s at every start). The mutex is made here and held."""
+    if os.name != "nt":
+        return True                                  # elsewhere: ask the port (show_running_app)
+    try:
+        import ctypes
+        k32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        k32.CreateMutexW.restype = ctypes.c_void_p
+        h = k32.CreateMutexW(None, False, "Local\\Aurobindoji.SewerWater.app")
+        running = ctypes.get_last_error() == 183     # ERROR_ALREADY_EXISTS
+        _INSTANCE.append(h)
+        return running
+    except Exception:
+        return True
+
+
 def show_running_app():
     """The app already running (user 16-Nov-2026: started again while hidden in the tray, two icons): asked to bring
     its windows forward - True when it did, and this second start then ends. An app of before 0.9.22 has no such call:
-    False, the start goes on as before."""
+    False, the start goes on as before. Asked only when another copy runs (another_app_running): no wait otherwise."""
+    if not another_app_running():
+        return False
     try:
         with urllib.request.urlopen(START_URL + "api/app_show", timeout=2) as r:
             return bool(json.loads(r.read().decode("utf-8")).get("shown"))
@@ -367,7 +389,7 @@ def start_servers(wait_s=15.0):
     threading.Thread(target=launcher.serve, kwargs={"open_browser": False}, daemon=True).start()
     t0, seen = time.time(), {}
     while time.time() - t0 < wait_s:
-        seen = {k: _version(p) for k, (p, _) in ports.items()}
+        seen = {k: _version(p, timeout=0.5) for k, (p, _) in ports.items()}   # short: not Windows' 2 s
         if all(seen[k] == v for k, (_, v) in ports.items()):
             return []
         time.sleep(0.2)

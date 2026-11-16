@@ -135,6 +135,8 @@ function startDraw(kind) {
   if (activeHandler.addVertex && map.dragging._draggable) map.dragging._draggable.options.clickTolerance = CLICK_TOL_PX;
   document.querySelectorAll(".tools button[data-kind]").forEach(b => b.classList.toggle("on", b.dataset.kind === kind));
   $("drawbar").classList.toggle("show", kind === "road" || kind === "barrier" || kind === "crossing" || kind === "boundary" || kind === "ward" || kind === "zone_loop" || kind === "lasso");
+  uiToolHint("draw", kind === "lasso" ? toolName('#ntools button[data-t="lasso"]') : toolName(`.tools button[data-kind="${kind}"]`) || kind,
+             toolWhat(kind), true);                                   // the tool on, at the mouse (ui.js)
 }
 function stopDraw() {
   if (map.dragging._draggable) map.dragging._draggable.options.clickTolerance = map.options.clickTolerance || 3;
@@ -142,6 +144,7 @@ function stopDraw() {
   activeHandler = null; activeKind = null;
   document.querySelectorAll(".tools button[data-kind]").forEach(b => b.classList.remove("on"));
   $("drawbar").classList.remove("show");
+  uiToolHint("draw", null);
 }
 document.querySelectorAll(".tools button[data-kind]").forEach(b =>
   b.addEventListener("click", () => activeKind === b.dataset.kind ? stopDraw() : startDraw(b.dataset.kind)));

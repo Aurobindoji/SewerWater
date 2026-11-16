@@ -668,6 +668,7 @@ function setTool(t) {
   $("placerow").hidden = t !== "place";
   if (t === "place") hasBase() || gmap.addTo(map);       // a local drawing: the map to find its place on
   $("nhint").textContent = HINT[t];
+  uiToolHint("net", t === "select" ? null : toolName(`#ntools button[data-t="${t}"]`), $("nhint").textContent, false);
 }
 document.querySelectorAll("#ntools button").forEach(b => b.onclick = () => setTool(b.dataset.t));
 const SAME_SPOT_M = 1.0;                 // as repair.OVERLAP_M: junctions this close are "on the same spot"

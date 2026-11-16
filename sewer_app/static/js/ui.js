@@ -111,6 +111,69 @@ function uiBuild() {
   new MutationObserver(() => uiTabsState()).observe(side, { attributes: true, attributeFilter: ["hidden"], subtree: true });
   if (window.matchMedia) matchMedia("(prefers-color-scheme: dark)").addEventListener("change", uiTheme);
 }
+// ---- an active tool shown at the mouse (user request 16-Nov-2026: after pressing a tool button nothing told that it
+// was on until the mouse reached the map): the cursor a cross wherever it is, and a note following it - the tool and
+// what to do next (go to the map, click the place ...). Two slots: "draw" (a drawing tool, draw.js) and "net" (a
+// network tool, dxfnet.js); the drawing one shown first. On the map a drawing tool has Leaflet.draw's own note at the
+// mouse, so this one only off the map there.
+const TOOLHINT = { draw: null, net: null, x: -1, y: -1, onMap: false };
+{
+  const st = document.createElement("style");
+  st.textContent = `#toolfollow { position: fixed; z-index: 4000; pointer-events: none; max-width: 300px; padding: 5px 9px;
+      border-radius: 6px; background: rgba(32, 33, 36, .92); color: #fff; font: 12px/1.4 system-ui, sans-serif;
+      box-shadow: 0 2px 8px #0005; display: none; }
+    #toolfollow b { color: #ffd54f; font-weight: 600; }
+    #toolfollow .k { opacity: .75; font-size: 11px; }
+    body.toolon #side, body.toolon #uibar { cursor: crosshair; }
+    body.toolon .leaflet-container { cursor: crosshair; }`;
+  document.head.appendChild(st);
+}
+function toolHintShow() {
+  let el = document.getElementById("toolfollow");
+  const h = TOOLHINT.draw || TOOLHINT.net;
+  document.body.classList.toggle("toolon", !!h);
+  if (!h) { if (el) el.style.display = "none"; return; }
+  if (!el) { el = document.createElement("div"); el.id = "toolfollow"; document.body.appendChild(el); }
+  if (el._h !== h) {
+    el._h = h;
+    el.innerHTML = `<b>${h.name.replace(/[<&]/g, c => (c === "<" ? "&lt;" : "&amp;"))}</b> ${tr("चालू", "on")}<br>` +
+      `${h.what.replace(/[<&]/g, c => (c === "<" ? "&lt;" : "&amp;"))}<br><span class="k">${h.slot === "draw" ? tr("Esc या बटन दोबारा = बंद", "Esc or the button again = off") : tr("Esc या \"चुनें\" = बंद", "Esc or \"Select\" = off")}</span>`;
+  }
+  const hideHere = TOOLHINT.onMap && h === TOOLHINT.draw && h.ownOnMap;
+  if (TOOLHINT.x < 0 || hideHere) { el.style.display = "none"; return; }
+  el.style.display = "block";
+  const w = el.offsetWidth, ht = el.offsetHeight;
+  let x = TOOLHINT.x + 16, y = TOOLHINT.y + 18;
+  if (x + w > innerWidth - 4) x = TOOLHINT.x - w - 12;
+  if (y + ht > innerHeight - 4) y = TOOLHINT.y - ht - 12;
+  el.style.left = Math.max(4, x) + "px"; el.style.top = Math.max(4, y) + "px";
+}
+// slot "draw" | "net"; name: the tool (its button's text); what: what to do now; ownOnMap: the map shows its own note
+function uiToolHint(slot, name, what, ownOnMap) {
+  TOOLHINT[slot] = name ? { slot, name, what, ownOnMap: !!ownOnMap } : null;
+  toolHintShow();
+}
+document.addEventListener("pointermove", e => {
+  TOOLHINT.x = e.clientX; TOOLHINT.y = e.clientY;
+  TOOLHINT.onMap = !!(e.target.closest && e.target.closest(".leaflet-container"));
+  if (TOOLHINT.draw || TOOLHINT.net) toolHintShow();
+}, { passive: true });
+document.addEventListener("pointerleave", () => { TOOLHINT.x = -1; toolHintShow(); });
+// what a drawing tool asks for, by its kind
+function toolWhat(kind) {
+  const line = ["road", "barrier", "crossing"], area = ["boundary", "ward", "zone_loop", "lasso"];
+  if (line.includes(kind)) return tr("नक्शे पर जाएँ: हर click एक बिंदु; आखिरी बिंदु पर दोबारा click, Enter या right-click से पूरा",
+    "Go to the map: each click a point; click the last point again, Enter or right-click to finish");
+  if (area.includes(kind)) return tr("नक्शे पर जाएँ और घेरा खींचें: हर click एक कोना; Enter या right-click से पूरा",
+    "Go to the map and draw the area: each click a corner; Enter or right-click to finish");
+  if (kind === "prv") return tr("नक्शे पर जाएँ और pipe के ऊपर उसकी जगह click करें", "Go to the map and click its place on the pipe");
+  return tr("नक्शे पर जाएँ और उसकी जगह click करें", "Go to the map and click its place");
+}
+function toolName(sel) {
+  const b = document.querySelector(sel);
+  return b ? b.textContent.replace(/\s+/g, " ").trim() : "";
+}
+
 uiBuild();
 setTimeout(() => { UI.settled = true; }, 5000);       // not while the page opens its project
 uiApply();

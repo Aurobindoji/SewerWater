@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.9.22 (beta) - 2026-11-16
+
+- The start page in the welcome video's look: when the video ends its last picture stays, slowly dims and the
+  choices rise in front of it - the PravaahForge title in its blue and orange, glowing buttons (water supply now on
+  the left).
+- The dark tray menu and menu **App**: their text now white and clear.
+- **One app at a time:** starting the app again while it runs (for example hidden in the tray) brings the running
+  one forward instead of a second app with a second tray icon.
+
 ## 0.9.21 (beta) - 2026-11-16
 
 - A short **welcome video** (the PravaahForge logo, 5 s, silent) when the app opens, then the start page. A click or

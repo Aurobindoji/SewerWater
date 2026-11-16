@@ -43,7 +43,8 @@ def test_start_page_and_open(launcher, monkeypatch):
     assert 'id="intro"' in page and "/intro.mp4" in page
     with urllib.request.urlopen(launcher + "/intro.mp4", timeout=10) as r:
         data, kind = r.read(), r.headers.get("Content-Type")
-    assert kind == "video/mp4" and data[4:8] == b"ftyp" and b"soun" not in data and len(data) < 2_000_000
+    # 1920 px from the original since 16-Nov-2026 (user: the 1280 px copy looked low-res): about 4 MB
+    assert kind == "video/mp4" and data[4:8] == b"ftyp" and b"soun" not in data and len(data) < 5_000_000
     with urllib.request.urlopen(launcher + "/intro_end.jpg", timeout=10) as r:     # its last frame: the backdrop
         assert r.headers.get("Content-Type") == "image/jpeg" and r.read(3) == b"\xff\xd8\xff"
     with pytest.raises(urllib.error.HTTPError) as e:

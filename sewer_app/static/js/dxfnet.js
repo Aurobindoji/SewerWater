@@ -72,10 +72,14 @@ $("dxffile").onchange = async e => {
 };
 let LAYERS = null;
 $("dxflayers").onclick = async () => {
+  // the project's name from the file's name at once, and a project of that name asked about before the drawing is
+  // read (user request 16-Nov-2026: no wait for the layers - only the name is compared)
+  $("dxfname").value = $("dxfpath").value.trim().replace(/^"|"$/g, "").split(/[\\/]/).pop().replace(/\.[^.]*$/, "");
+  const nameNote = (await dxfNameOk()) ? "" : $("dxfstatus").textContent;
   $("dxfstatus").className = "status"; $("dxfstatus").textContent = "Drawing पढ़ रहे हैं …";
   const r = await withLoading(tr("Drawing पढ़ रहे हैं …", "Reading the drawing …"), () => api("/api/dxf_layers", { path: $("dxfpath").value }));
   if (!r.ok) { $("dxfstatus").className = "status err"; $("dxfstatus").textContent = r.log; return; }
-  LAYERS = r; $("dxfstatus").textContent = "";
+  LAYERS = r; $("dxfstatus").textContent = nameNote; $("dxfstatus").className = nameNote ? "status err" : "status";
   const rows = r.layers.filter(l => l.line_m > 0 || l.texts > 0 || l.blocks > 0 || l.circles > 0);
   const ck = (kind, lay) => `<input type="checkbox" data-k="${kind}" value="${esc(lay)}"${r.guess[kind === "gl" ? "level" : kind].includes(lay) && kind !== "gl" ? " checked" : ""}>`;
   $("laybox").innerHTML = `<table class="lay"><tr><th title="नक्शे पर देखें">👁</th><th>Layer</th><th title="lines की लंबाई (m)">Lines m</th><th>Texts</th><th title="MH-12 जैसे नाम">नाम</th><th title="81.25 जैसे स्तर">स्तर</th><th title="blocks / circles - manhole के चिह्न">Symbols</th><th>Pipe</th><th>MH</th><th>GL</th></tr>` +
@@ -85,8 +89,8 @@ $("dxflayers").onclick = async () => {
     tr(`GL खाली छोड़ें तो सबसे उपयुक्त layer अपने-आप (सुझाव: ${esc(r.guess.level.join(", ") || "-")}). 👁 से layers की lines, texts (पास zoom पर शब्द) और चिह्न (बिंदु) नक्शे पर देखकर पक्का करें - कई 👁 एक साथ, हर layer अपने रंग में; उसी 👁 पर दोबारा click = वह layer बंद। नाला, सड़क, भवन, घरों के नाम pipe / MH नहीं हैं`,
        `leave GL empty for the best layer automatically (suggested: ${esc(r.guess.level.join(", ") || "-")}). Check layers with 👁 - their lines, texts (words when zoomed in) and symbols (points) on the map, several at once, each in its own colour; the same 👁 again = that layer off. Drains, roads, buildings, house names are no pipes / MHs`) + `</div>`;
   document.querySelectorAll("#laybox .lprev").forEach(b => b.onclick = () => previewLayer(b.dataset.l, b));
-  $("dxfname").value = r.name; $("dxfopts").hidden = false;
-  dxfNameOk();             // a project of this name already there: asked now, before the layers (user 16-Nov-2026)
+  if (!$("dxfname").value.trim()) $("dxfname").value = r.name;     // (set from the file's name before the reading)
+  $("dxfopts").hidden = false;
 };
 // ---- layers of the drawing on the map (before choosing the layers): several at once, each in its own colour - its
 // lines, and its texts / symbols as points with their text (user request 22-Oct-2026, water - then sewer)
@@ -234,7 +238,7 @@ async function glOptions(run) {
   };
 }
 // a project of this name already there (user request 16-Nov-2026): the import would replace it without a word -
-// asked as soon as the DXF is read (its name filled in), not again at the import; Cancel suggests a free name.
+// asked as soon as a DXF is chosen (before its layers are read), not again at the import; Cancel suggests a free name.
 async function dxfNameOk() {
     const stem = s => (s || "").trim().replace(/[^\p{L}\p{N}\p{M}_-]+/gu, " ").trim().replace(/\s+/g, "_").slice(0, 80) || "project";
     let have = null;

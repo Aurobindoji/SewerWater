@@ -517,6 +517,21 @@ class Handler(BaseHTTPRequestHandler):
         with LOCK:
             return _answer(export, plain=ValueError)
 
+    def _post_water_map(self, u, req):                   # the project's map as KML / KMZ (kmlmap, 16-Nov-2026)
+        import base64
+
+        from . import kmlmap
+
+        def run():
+            stem = safe_name(req.get("name"))
+            path, cnt = kmlmap.export(stem, req.get("req") or {}, req.get("parts") or kmlmap.DEFAULT, req.get("fmt") or "kml")
+            with open(path, "rb") as fh:
+                data = base64.b64encode(fh.read()).decode("ascii")
+            return {"ok": True, "path": path, "file": os.path.basename(path), "folder": os.path.dirname(path),
+                    "counts": cnt, "b64": data}
+        with LOCK:
+            return _answer(run, plain=ValueError)
+
     def _post_water_dpr(self, u, req):                   # the last design's DPR workbook, opened (15-Nov-2026)
         from . import design_run, results, wards, zoning_run  # noqa: F401
         return _answer(results.dpr_file, safe_name(req.get("name")), plain=ValueError)
@@ -552,7 +567,7 @@ class Handler(BaseHTTPRequestHandler):
             "/api/city_wards_import": _post_city_wards_import, "/api/water_join_plan": _post_water_join_plan,
             "/api/water_zoning": _post_water_zoning, "/api/water_design": _post_water_design,
             "/api/water_intze": _post_water_intze, "/api/water_intze_list": _post_water_intze_list,
-            "/api/water_export": _post_water_export, "/api/water_dpr": _post_water_dpr,
+            "/api/water_export": _post_water_export, "/api/water_map": _post_water_map, "/api/water_dpr": _post_water_dpr,
             "/api/water_rates": _post_water_rates}
 
 

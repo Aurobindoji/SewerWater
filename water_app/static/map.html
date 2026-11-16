@@ -61,6 +61,28 @@
       <button id="pnew" class="danger">नया (सब हटाएँ)</button>
       <input type="file" id="kmlfile" accept=".kml,.kmz" hidden>
     </div>
+    <!-- the project's map as KML / KMZ (user request 16-Nov-2026; kmlmap.py) -->
+    <div class="row"><button id="mapmake" title="Project का पूरा नक्शा (network, टंकियाँ, tube wells, OZ / DMA, वार्ड ...) KML या KMZ file में - Google Earth में खुलता है, हर चीज़ अपने folder में">नक्शा बनाएँ (KML / KMZ)</button></div>
+    <div class="box" id="mapbox" hidden>
+      <div><b>नक्शे में क्या हो</b></div>
+      <div id="mapparts" class="mapparts">
+        <label><input type="checkbox" value="network" checked> Pipes (design के बाद size-वार रंग)</label>
+        <label><input type="checkbox" value="junctions"> Junctions (नाम, GL, HGL, RH) - बहुत सारे</label>
+        <label><input type="checkbox" value="tanks" checked> टंकियाँ (OHT)</label>
+        <label><input type="checkbox" value="tubewells" checked> नए tube wells + rising mains</label>
+        <label><input type="checkbox" value="bulk" checked> Bulk consumers</label>
+        <label><input type="checkbox" value="prv" checked> PRV</label>
+        <label><input type="checkbox" value="zones" checked> OZ सीमाएँ</label>
+        <label><input type="checkbox" value="dma" checked> DMA सीमाएँ</label>
+        <label><input type="checkbox" value="valves" checked> सीमा के valves (बंद pipes)</label>
+        <label><input type="checkbox" value="wards" checked> वार्ड</label>
+        <label><input type="checkbox" value="barriers" checked> रुकावट रेखाएँ</label>
+      </div>
+      <div class="row"><label>File</label>
+        <select id="mapfmt"><option value="kmz">KMZ</option><option value="kml">KML</option></select>
+        <button id="mapget" class="primary">नक्शा download</button></div>
+      <div class="hint" id="mapst">OZ / DMA, valves तभी जब zoning हो; pipes के size तभी जब design हो। File project के output folder में भी रहती है (Outputs tab)।</div>
+    </div>
 
     </div>
 

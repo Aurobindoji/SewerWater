@@ -401,6 +401,40 @@ def test_water_network_from_a_dxf(server, sewer):
     assert call(url + "/api/w/wards?name=wsmall")["wards"] == keep
 
 
+def test_water_map_kml(server):
+    """'नक्शा बनाएँ' (user request 16-Nov-2026): the project's map as KML / KMZ - the parts asked for, one folder each;
+    the zoning's parts once there is a zoning, pipe sizes once there is a design; the map's own items from req."""
+    import base64
+    import io
+    import xml.etree.ElementTree as ET
+    import zipfile
+    url, tmp = server
+    K = "{http://www.opengis.net/kml/2.2}"
+    with open(SAMPLE, encoding="utf-8") as fh:
+        kml = fh.read()
+    assert call(url + "/api/w/layout", {"name": "wm", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100})["ok"]
+
+    def folders(r):
+        data = base64.b64decode(r["b64"])
+        if r["file"].endswith(".kmz"):
+            data = zipfile.ZipFile(io.BytesIO(data)).read("doc.kml")
+        root = ET.fromstring(data)
+        return {f.find(K + "name").text.split(" (")[0]: len(f.findall(K + "Placemark")) for f in root.iter(K + "Folder")}
+    bulk = [{"name": "Hospital", "lat": 25.31, "lng": 82.97, "kld": "50", "peak": "2"}]
+    r = call(url + "/api/w/water_map", {"name": "wm", "fmt": "kml", "req": {"bulk": bulk}})
+    assert r["ok"] and r["file"].endswith(".kml") and os.path.isfile(r["path"]) and not r["counts"]["zoning"]
+    f = folders(r)
+    assert f["Pipes"] == r["counts"]["pipes"] > 0 and f["Bulk consumers"] == 1 and not any(k.startswith("Operational") for k in f)
+    assert call(url + "/api/w/water_zoning", {"name": "wm", "pop_factor": 1.5})["ok"]
+    assert call(url + "/api/w/water_design", {"name": "wm", "pop_factor": 1.5})["ok"]
+    r = call(url + "/api/w/water_map", {"name": "wm", "fmt": "kmz", "parts": ["network", "tanks", "zones", "junctions"]})
+    assert r["ok"] and r["file"].endswith(".kmz") and r["counts"]["design"] and r["counts"]["zoning"]
+    f = folders(r)
+    assert any(k.startswith("Pipes - ") and k.endswith(" mm") for k in f) and f["Tanks"] >= 1
+    assert f["Operational zones"] >= 1 and f["Junctions"] == r["counts"]["junctions"] > 0 and "DMAs" not in f
+    assert any(x["file"] == r["file"] for x in call(url + "/api/w/outputs?name=wm")["files"])
+
+
 def test_water_dxf_export(server):
     """Export DXF (user request 21-Oct-2026): the last zoning and, when made on it, its design in one drawing."""
     import ezdxf

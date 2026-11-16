@@ -72,6 +72,30 @@ $("kmlget").onclick = () => {
   a.href = URL.createObjectURL(new Blob([toKML()], { type: "application/vnd.google-earth.kml+xml" }));
   a.download = ($("pname").value || "project") + ".kml"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 };
+// the project's map as KML / KMZ (user request 16-Nov-2026; kmlmap.py): the parts ticked, then download
+$("mapmake").onclick = () => { $("mapbox").hidden = !$("mapbox").hidden; };
+$("mapget").onclick = async () => {
+  const parts = [...document.querySelectorAll("#mapparts input:checked")].map(i => i.value);
+  if (!parts.length) return status(tr("कम से कम एक चीज़ चुनें", "Tick at least one part"), "err");
+  const name = $("pname").value || "project", fmt = $("mapfmt").value;
+  loading(true, tr("नक्शा बन रहा है …", "Making the map …"));
+  try {
+    const r = await api("/api/water_map", { name, fmt, parts, req: wInputs() });
+    if (!r.ok) throw new Error(r.log || r.error || "");
+    const bin = atob(r.b64), u8 = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([u8], { type: fmt === "kmz" ? "application/vnd.google-earth.kmz" : "application/vnd.google-earth.kml+xml" }));
+    a.download = r.file; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    const c = r.counts || {}, got = [["pipes", "pipes"], ["tanks", tr("टंकियाँ", "tanks")], ["tubewells", "tube wells"],
+      ["zones", "OZ"], ["dma", "DMA"], ["junctions", "junctions"], ["wards", tr("वार्ड", "wards")]].filter(([k]) => c[k]).map(([k, t]) => `${c[k]} ${t}`);
+    const miss = [!c.zoning && tr("zoning नहीं (या पुरानी)", "no (current) zoning"), !c.design && tr("design नहीं - pipes बिना size", "no design - pipes without sizes")].filter(Boolean);
+    $("mapst").textContent = `${r.file}: ${got.join(", ")}` + (miss.length ? ` - ${miss.join("; ")}` : "") + tr(` (folder: ${r.folder})`, ` (folder: ${r.folder})`);
+    status(tr(`नक्शा बना: ${r.file}`, `Map made: ${r.file}`), "ok");
+    if (window.outRefresh) outRefresh();
+  } catch (err) { status(tr("नक्शा नहीं बना: ", "Map not made: ") + err.message, "err"); }
+  finally { loading(false); }
+};
 async function kmlText(f) {           // a KML file's text; a KMZ unpacked by the server
   if (!/\.kmz$/i.test(f.name)) return f.text();
   const b = new Uint8Array(await f.arrayBuffer()); let s = "";

@@ -6,6 +6,7 @@ const OUT_KINDS = [
   { hi: "Layout drawing (DXF)", en: "Layout drawing (DXF)", re: /_layout\.dxf$/,
     note: ["Layout बनाने पर बनती है", "made with the layout"] },
   { hi: "नक्शे की boundary (KML)", en: "Map boundary (KML)", re: /_boundary\.kml$/ },
+  { hi: "Project का नक्शा (KML / KMZ)", en: "Project map (KML / KMZ)", re: /_map_\d{8}_\d{4}\.km[lz]$/, make: "mapget", tab: "project" },
   { hi: "वार्ड-वार आबादी (xlsx)", en: "Ward-wise population (xlsx)", re: /_wards\.xlsx$/, tab: "pop" },
   { hi: "Zoning drawing (DXF)", en: "Zoning drawing (DXF)", re: /_zoning_\d{8}_\d{4}\.dxf$/, make: "wexportz", tab: "zoning" },
   { hi: "Network design drawing (DXF)", en: "Network design drawing (DXF)", re: /_design_\d{8}_\d{4}\.dxf$/, make: "wexport", tab: "design" },

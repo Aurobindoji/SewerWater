@@ -86,6 +86,7 @@ $("dxflayers").onclick = async () => {
        `leave GL empty for the best layer automatically (suggested: ${esc(r.guess.level.join(", ") || "-")}). Check layers with 👁 - their lines, texts (words when zoomed in) and symbols (points) on the map, several at once, each in its own colour; the same 👁 again = that layer off. Drains, roads, buildings, house names are no pipes / MHs`) + `</div>`;
   document.querySelectorAll("#laybox .lprev").forEach(b => b.onclick = () => previewLayer(b.dataset.l, b));
   $("dxfname").value = r.name; $("dxfopts").hidden = false;
+  dxfNameOk();             // a project of this name already there: asked now, before the layers (user 16-Nov-2026)
 };
 // ---- layers of the drawing on the map (before choosing the layers): several at once, each in its own colour - its
 // lines, and its texts / symbols as points with their text (user request 22-Oct-2026, water - then sewer)
@@ -233,7 +234,7 @@ async function glOptions(run) {
   };
 }
 // a project of this name already there (user request 16-Nov-2026): the import would replace it without a word -
-// asked first; Cancel suggests a free name. Called before the GL box (start.js).
+// asked as soon as the DXF is read (its name filled in), not again at the import; Cancel suggests a free name.
 async function dxfNameOk() {
     const stem = s => (s || "").trim().replace(/[^\p{L}\p{N}\p{M}_-]+/gu, " ").trim().replace(/\s+/g, "_").slice(0, 80) || "project";
     let have = null;
@@ -248,7 +249,7 @@ async function dxfNameOk() {
       while (names.has(`${base}_${k}`)) k++;
       $("dxfname").value = `${base}_${k}`; $("dxfname").focus(); $("dxfname").select();
       $("dxfstatus").className = "status err";
-      $("dxfstatus").textContent = tr(`नया नाम सुझाया: ${base}_${k} - बदलें या "Network निकालें" फिर दबाएँ`, `A new name suggested: ${base}_${k} - change it or press the button again`);
+      $("dxfstatus").textContent = tr(`नया नाम सुझाया: ${base}_${k} - चाहें तो बदलें`, `A new name suggested: ${base}_${k} - change it if you like`);
       return false;
     }
     return true;

@@ -77,7 +77,7 @@ const isErr = id => /err/.test($(id).className);
     : ["Layout बन गया", $("status").textContent, "ok"]);
   const dxf0 = $("dxfimport").onclick;
   // no GL layer ticked: the layers the GL could come from first, the user ticks one and confirms (glOptions)
-  $("dxfimport").onclick = async () => { if (await dxfNameOk()) glOptions(dxfRun); };   // sewer: the GL / IL box every time
+  $("dxfimport").onclick = () => glOptions(dxfRun);      // sewer: the GL / IL box every time
   const dxfRun = () => longTask("DXF से network निकाल रहे हैं", dxf0, () => (isErr("dxfstatus") || !NET)
     ? ["Network नहीं निकला", $("dxfstatus").textContent + "\n" + ($("log").textContent || "").slice(-600), "err"]
     : ["Network निकल आया", `${NET.summary.manholes} manholes, ${NET.summary.conduits} sewers, ${(NET.summary.length / 1000).toFixed(2)} km\n` +

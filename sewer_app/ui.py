@@ -197,7 +197,7 @@ def run_layout(name, kml, gl_mode="spots", flat_gl=None, snap=1.0, spacing=30.0,
 
 # ---------------------------------------------------------------------------------------- the page's calls (HTTP)
 LOCAL_HOSTS = ("127.0.0.1", "localhost")
-PAGES = {"/sewer": ("map.html", "text/html; charset=utf-8"), "/i18n.js": ("i18n.js", "text/javascript; charset=utf-8"),
+PAGES = {"/sewer": ("map.html", "text/html; charset=utf-8"), "/guide": ("guide.html", "text/html; charset=utf-8"), "/i18n.js": ("i18n.js", "text/javascript; charset=utf-8"),
          "/favicon.ico": ("favicon.ico", "image/x-icon"),        # the app icon on the tab (14-Nov-2026)
          "/map.css": ("map.css", "text/css; charset=utf-8")}
 # the page's scripts (restructure stage 8, 15-Nov-2026: map.html's one script split into static/js/*.js)

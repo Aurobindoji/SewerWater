@@ -331,3 +331,22 @@
   .ofile .otime { color: var(--muted); font-size: 11px; white-space: nowrap; }
   .ofile button { padding: 1px 7px; font-size: 11.5px; flex: none; }
   .ofile.old { opacity: .8; }
+  /* the help buttons beside the theme (guide.html, tour.js) */
+  #uihelp { display: inline-flex; gap: 4px; }
+  #uihelp button { padding: 3px 8px; font-size: 12.5px; }
+  #uibar .uirow { flex-wrap: wrap; }
+
+  /* the tour (js/tour.js): the page dimmed around the lit part, a card beside it */
+  #tourlit, #tourcard, #tourblock { display: none; }
+  body.touring #tourblock { display: block; position: fixed; inset: 0; z-index: 3999; }
+  body.touring #tourlit { display: block; position: fixed; z-index: 4000; border-radius: 8px; pointer-events: none;
+    box-shadow: 0 0 0 3px var(--accent); transition: all .25s ease; }
+  .tourdim { position: fixed; background: rgba(0, 0, 0, .58); transition: all .25s ease; }
+  body.touring #tourcard { display: block; position: fixed; z-index: 4001; background: var(--card, #fff); color: var(--text);
+    border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; box-shadow: 0 8px 30px rgba(0, 0, 0, .35); }
+  #tourcard h3 { margin: 2px 0 4px; font-size: 16px; color: var(--accent); }
+  #tourcard p { margin: 0 0 10px; font-size: 13.5px; line-height: 1.5; }
+  #tourcard .tc-n { font-size: 11.5px; color: var(--muted); }
+  #tourcard .tc-act { display: flex; gap: 6px; align-items: center; }
+  #tourcard .tc-act span { flex: 1; }
+  #tourcard button { padding: 5px 11px; }

@@ -12,7 +12,7 @@ manuals के अनुसार करता है - नक्शे या C
 इस पुस्तिका में:
 
 1. [Install और पहली बार शुरू करना](#1-install-और-पहली-बार-शुरू-करना)
-2. [App की बनावट - दो स्वतंत्र apps](#2-app-की-बनावट---दो-स्वतंत्र-apps)
+2. [App की बनावट - दो स्वतंत्र apps](#2-app-की-बनावट---दो-स्वतंत्र-apps) (tabs, Simple / Advanced, रंग, मदद, tour)
 3. [दोनों apps में साझा चरण - project, नक्शा, DXF](#3-दोनों-apps-में-साझा-चरण)
 4. [सीवर app - चरण-दर-चरण](#4-सीवर-app---चरण-दर-चरण)
 5. [पेयजल app - चरण-दर-चरण](#5-पेयजल-app---चरण-दर-चरण)
@@ -45,6 +45,18 @@ Uninstall करने पर आपका data folder नहीं हटता
   (इसी पन्ने की भाषा बदलें) और **↗ पेयजल / ↗ सीवर** (दूसरा app अपनी window में खोलें - वह तभी शुरू होता है;
   पहले से खुला हो तो उसकी window आगे आ जाती है, उसका काम नहीं मिटता)।
 - Menu **App**: master folder खोलें / बदलें, **Update देखें**, **About**।
+
+### 2.1 Page की बनावट - tabs, Simple / Advanced, रंग, मदद
+- **Tabs** (बाईं ओर ऊपर), काम के क्रम में: पेयजल में **Project | Network | आबादी | Zoning | Network Design |
+  Tank Design | Outputs**; सीवर में **Project | Network | आबादी | Zoning | Network Design | Outputs**। जिस चरण से
+  पहले का काम बाकी है, उसका tab धुँधला रहता है; अगला चरण खुलने पर उसके tab पर लाल बिंदु।
+- **Simple / Advanced**: Simple में सिर्फ़ ज़रूरी खाने दिखते हैं, और Zoning / Design चलाने पर छिपे खाने CPHEEO /
+  UPJN के default पर जाते हैं (जो भी उनमें भरा हो)। Advanced में सब खाने (पहली बार यही)।
+- **रंग**: ☀ हल्का / 🌙 गहरा / 🖥 Windows जैसा - start page और दोनों apps पर एक साथ; गहरे में नक्शा भी।
+- **❓ मदद**: इस tab की **पूरी मार्गदर्शिका** अपनी window में - हर चरण का क्रम, फिर हर खाना: क्या भरें, क्यों, कहाँ
+  से लाएँ, default और CPHEEO / UPJN का हवाला; नतीजे कैसे पढ़ें, आम गलतियाँ; खोज और छापना / PDF।
+- **▶ Tour**: page पहली बार खुलने पर एक-एक हिस्सा चमकाकर उसका काम बताता है (आगे / पीछे / छोड़ें; Esc);
+  ▶ Tour से कभी भी फिर।
 
 ## 3. दोनों apps में साझा चरण
 
@@ -143,10 +155,21 @@ Arithmetical, Incremental, Geometrical (default), Decreasing rate of growth, Sim
 **Design**: हर pipe का diameter, junctions पर residual head, वेग, head loss - अपना network solver (Hazen-Williams)।
 तीनों stages (आधार, +15, +30) की जाँच; rising mains (economical size, surge), tube wells, CWR, pumps।
 **PRV का विकल्प** (default बंद - U.P. जल निगम की DPRs में आम नहीं)। ☷ तालिका में बदलाव → **बदलाव के साथ design
-दोबारा**; **Export DXF** (zoning + design)। Design के साथ DPR (Excel) भी बनती है।
+दोबारा**; **Export DXF** (design की drawing); **Export DPR (xlsx)** से DPR (Design के साथ नहीं बनती)।
 
-### 5.6 Intze OHT drawings
-**🏗 Intze OHT drawings (नई टंकियाँ)** panel: Seismic zone, Net SBC (kN/m²), मिट्टी का प्रकार, हवा की गति Vb,
+- **आबादी junctions पर** (आबादी tab): pipe की लंबाई से (default), निकटतम क्षेत्रफल (Thiessen) से, या बराबर।
+  **Peak factor**: 2.5 शहरी / 3.0 ग्रामीण (CPHEEO Table 2.7 S.No.7 p172) या अपना।
+- **Load cases**: बने network पर औसत, रात (draw-off pattern का सबसे कम घंटा) और fire flow (हर OZ के सबसे कमज़ोर
+  junction पर, page पर दिया L/s और न्यूनतम m) - दबाव की सीमा और 17 m से नीचे के junctions।
+- **24 घंटे की simulation**: हर घंटे की माँग = औसत x draw-off pattern; हर OHT भरने के घंटों में भरती, outlet से
+  खाली - उसका % (chart), network का दबाव (chart), घंटे-दर-घंटे तालिका; टंकी खाली हो या छलके तो जाँच fail, 5 % से
+  नीचे जाए तो लाल ⚠ (गुंजाइश नहीं)। WaterGEMS 2024 से तुलना (steady state और EPS): दबाव लगभग 1 cm तक।
+- **Design की सीमाएँ** (हर एक checkbox से, बंद = पहले जैसा): load cases (सबसे व्यस्त घंटा, fire flow) पर भी design,
+  अधिकतम दबाव (रात में), pipe sizes (न्यूनतम / अधिकतम / HDPE कहाँ तक), head loss (m/km), नई OHT की अधिकतम
+  staging, OHT की क्षमता पर गुंजाइश (%)।
+
+### 5.6 Tank Design - Intze OHT
+**Tank Design** tab, **🏗 टंकियाँ और उनके inputs** panel: Seismic zone, Net SBC (kN/m²), मिट्टी का प्रकार, हवा की गति Vb,
 नींव की गहराई, concrete / steel (M30 / M25 नींव-सीढ़ी, Fe500), टंकी-वार SBC (`Prop-OHT-1=120, …`)।
 आख़िरी design की हर नई टंकी की पंक्ति पर **Design** बटन - **एक बार में एक टंकी**। हर टंकी के लिए: A1 sheets
 (staging-foundation, container, सीढ़ी, BBS) DXF + PDF, design calculation PDF, design / BBS / quantities xlsx।
@@ -155,6 +178,12 @@ Drawings "⚠" दिखें तो वे आख़िरी design से �
 ## 6. Output files और DPR
 
 सब files `<master folder>\Sewer\output\<project>` या `...\Water\output\<project>` में; सब export English में।
+
+**Outputs tab**: ऊपर project के output folder का रास्ता और **📁 Folder खोलें**; फिर हर output (layout, zoning,
+design की drawings, design Excel, DPR, rates, Intze, वार्ड xlsx; सीवर में zoning options, चुने option का export,
+report, plan, L-section) - **बनाएँ / फिर बनाएँ** (उसी चरण का बटन) या **चरण पर जाएँ**, आख़िरी file (समय, आकार),
+**खोलें** (Excel / AutoCAD में) और **📁** (Explorer में वह file चुनी हुई); पुरानी files नीचे। सिर्फ़ उसी project के
+output folder की files खुलती हैं।
 
 - **सीवर**: zoning Excel, costs Excel, zone / GL band maps (PNG), design report Excel, plan DXF, L-section DXF,
   `<नाम>_inputs.json` (वही run दोबारा)। **सीवर DPR** (47 sheets): Project, Coverage, Certificate, Index, Form J,

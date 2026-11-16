@@ -47,7 +47,14 @@ network design, CAD drawings and a DPR cost estimate in Excel. You do not need S
   - A check against the saturation density.
 - **Hydraulic design.** The app has its own network solver. Head loss is by Hazen-Williams (CPHEEO). The
   design checks the minimum and maximum residual head, the velocity limits, and sizes for each stage. It also
-  sizes the rising mains and the tube wells. Pressure-reducing valves are an option.
+  sizes the rising mains and the tube wells. Pressure-reducing valves are an option. Compared with WaterGEMS
+  2024 (steady state and extended period): heads within about 1 cm.
+- **Load options:** the population on the junctions by pipe length, by nearest area (Thiessen) or equal; the
+  peak factor 2.5 urban / 3.0 rural or your own.
+- **Load cases and a 24 h simulation:** the designed network at the average, at night and with a fire flow; hour
+  by hour each OHT's water level and the network's pressures, with charts and checks.
+- **Design constraints**, each optional: design for the busiest hour and the fire flow too, a maximum pressure,
+  pipe sizes, a head-loss limit, the largest staging, a margin on the OHT capacity.
 - **Intze OHT design** for each new tank, one tank at a time:
   - Working-stress design to IS 3370, IS 456, IS 1893 (Part 2) and IS 875 (Part 3).
   - An annular raft foundation and an RCC staircase.
@@ -59,22 +66,31 @@ network design, CAD drawings and a DPR cost estimate in Excel. You do not need S
   - Civil and E&M estimates on the UP Jal Nigam schedule of rates.
 
 ### Common
+- The work in **tabs**, step by step; a **Simple / Advanced** switch (Simple shows the essential fields and runs
+  the rest at the CPHEEO / UPJN defaults); a **light / dark / system theme**.
+- A **full guide in the app** (❓ Help): every field of every step - what to give, why, where it comes from, its
+  default and its CPHEEO / UPJN reference. A **tour** on the first start (▶ Tour to see it again).
+- An **Outputs** tab: every output in one list - make it, open it in its program, show it in its folder.
 - Hindi or English interface. Exported files are always in English.
 - Works offline. Only the map tiles need the internet.
 - All projects and results are kept in one folder that you choose.
 
 ## How it works
 
-1. **Start** the app. Choose the language and the module: Sewer or Water.
-2. **Make a project.** Draw on the map (roads, boundary, wards, OHTs, levels), or open a KML / KMZ or DXF.
+The page follows the tabs at its top. **❓ Help** opens the full guide of the tab you are on.
+
+1. **Start** the app. Choose the language and the module: Sewer or Water. A short tour shows the page.
+2. **Project.** Draw on the map (roads, boundary, wards, OHTs, levels), or open a KML / KMZ or DXF.
    **Save** keeps it as a Google Earth KML.
-3. **Layout.** The app builds the network: manholes and sewers, or junctions and pipes. It lists any
+3. **Network.** The app builds the network: manholes and sewers, or junctions and pipes. It lists any
    problems found, and you can fix them on the map.
-4. **Zoning.** The app proposes zones (sewer) or OZ / DMA boundaries (water), shown in colour on the map.
-5. **Design.** The app sizes every pipe and tank and checks it against the CPHEEO limits. The results show
-   on the map with a tooltip for each pipe.
-6. **Outputs.** Excel reports, the DPR, DXF drawings and maps are written to
-   `<your folder>\Sewer\output\<project>` or `<your folder>\Water\output\<project>`.
+4. **Population.** Ward-wise or a total; stages and the projection (Advanced).
+5. **Zoning.** The app proposes zones (sewer) or OZ / DMA boundaries (water), shown in colour on the map.
+6. **Network Design.** The app sizes every pipe and checks it against the CPHEEO limits. The results show
+   on the map with a tooltip for each pipe. Water: load cases, the 24 h simulation and the constraints.
+7. **Tank Design** (water): the Intze design and drawings of each new tank.
+8. **Outputs.** Excel reports, the DPR, DXF drawings and maps, in
+   `<your folder>\Sewer\output\<project>` or `<your folder>\Water\output\<project>` - opened from the tab.
 
 ## Install
 
@@ -111,7 +127,6 @@ python -m venv .venv
 - `sewer_ui.bat` runs the same app in the browser instead.
 - `build_setup.bat` builds the setup. It needs PyInstaller and Inno Setup 6.
 - `.venv\Scripts\python -m pytest` runs the tests.
-- `.venv\Scripts
 - `.venv\Scripts\ruff check` looks for mistakes such as unused or undefined names.
 
 ## Standards used

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>मार्गदर्शिका / Guide</title>
+<!-- The module's full guide (user request 16-Nov-2026): rendered from js/guide_data.js (GUIDE_DOC), in the page's
+     language (i18n.js LANG); opened from the map page's "❓" (its tab's chapter: /guide#<tab>). Same file in both modules. -->
+<script src="i18n.js"></script>
+<style>
+  :root { --bg: #ffffff; --panel: #f6f6f4; --text: #1f1f1d; --muted: #6b6a66; --line: #d9d8d3; --accent: #1f6feb;
+    --chip: #eef2f7; --adv: #8a5a00; --advbg: #fff4dc; }
+  :root[data-theme="dark"] { --bg: #15171c; --panel: #1b1e24; --text: #e3e5e8; --muted: #9ba1aa; --line: #343941;
+    --accent: #4d8eff; --chip: #262b33; --adv: #ffc65c; --advbg: #3a2e14; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 "Segoe UI", "Nirmala UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; z-index: 5; background: var(--panel); border-bottom: 1px solid var(--line); padding: 10px 20px; }
+  header .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  header h1 { font-size: 19px; margin: 0; flex: 1; min-width: 240px; }
+  header input { flex: 0 1 260px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font: inherit; }
+  header a, header button { color: var(--accent); background: none; border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px;
+    font: inherit; font-size: 13.5px; cursor: pointer; text-decoration: none; }
+  nav { display: flex; flex-wrap: wrap; gap: 4px 6px; margin-top: 8px; }
+  nav a { font-size: 13px; padding: 2px 9px; border-radius: 12px; background: var(--chip); color: var(--text); text-decoration: none; border: none; }
+  nav a:hover { color: var(--accent); }
+  main { max-width: 1100px; margin: 0 auto; padding: 8px 20px 60px; }
+  .sub { color: var(--muted); margin: 10px 0 2px; }
+  section { border-bottom: 1px solid var(--line); padding: 8px 0 18px; scroll-margin-top: 120px; }
+  h2 { font-size: 20px; margin: 18px 0 8px; color: var(--accent); }
+  h3 { font-size: 14px; margin: 14px 0 4px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  ol, ul { margin: 4px 0; padding-left: 22px; }
+  li { margin: 3px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-top: 6px; }
+  th, td { border: 1px solid var(--line); padding: 5px 7px; vertical-align: top; text-align: left; }
+  th { background: var(--panel); font-weight: 600; position: sticky; top: 104px; }
+  td.f { font-weight: 600; min-width: 140px; }
+  td.r { font-size: 12px; color: var(--muted); min-width: 130px; }
+  td.d { white-space: nowrap; }
+  .advtag { display: inline-block; margin-left: 4px; padding: 0 6px; border-radius: 8px; font-size: 11px; font-weight: 600; color: var(--adv); background: var(--advbg); }
+  .note { font-size: 12.5px; color: var(--muted); margin-top: 22px; }
+  mark { background: #ffe680; color: #000; }
+  .hide { display: none; }
+  @media (max-width: 760px) { th { position: static; } table, thead, tbody, tr, td, th { font-size: 12.5px; } td.f { min-width: 90px; } }
+  @media print { header { position: static; } header input, header button, header a { display: none; } th { position: static; }
+    section { break-inside: auto; } h2 { break-after: avoid; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="row"><h1 id="gt"></h1>
+    <input type="search" id="q" autocomplete="off">
+    <a id="lang" href="#"></a>
+    <button type="button" id="pr"></button></div>
+  <nav id="toc"></nav>
+</header>
+<main id="doc"></main>
+<script src="js/guide_data.js"></script>
+<script>
+"use strict";
+const G = GUIDE_DOC;
+const t = x => x == null || x === "" ? "-" : typeof x === "string" ? x : (EN ? x.en : x.hi);
+const e = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+document.documentElement.lang = LANG;
+document.title = t(G.title);
+document.getElementById("gt").textContent = "📖 " + t(G.title);
+document.getElementById("q").placeholder = tr("खोजें: खाना, शब्द, ref …", "Search: field, word, ref …");
+document.getElementById("pr").textContent = tr("🖨 छापें / PDF", "🖨 Print / PDF");
+document.getElementById("pr").onclick = () => print();
+const lg = document.getElementById("lang");
+lg.textContent = EN ? "🌐 हिन्दी" : "🌐 English";
+lg.onclick = ev => { ev.preventDefault(); const q = new URLSearchParams(location.search); q.set("lang", EN ? "hi" : "en"); location.href = location.pathname + "?" + q + location.hash; };
+const H = { need: tr("क्या डाटा चाहिए", "Data you need"), steps: tr("क्रम", "Steps"), fields: tr("हर खाना", "Every field"),
+  results: tr("नतीजे कैसे पढ़ें", "Reading the results"), mistakes: tr("आम गलतियाँ", "Common mistakes") };
+const COLS = [tr("खाना / बटन", "Field / button"), tr("क्या भरें", "What to give"), tr("क्यों", "Why"), tr("कहाँ से", "From where"), "Default", "Ref"];
+let html = `<p class="sub">${e(t(G.sub))}</p>`;
+for (const c of G.chapters) {
+  html += `<section id="${c.id}"><h2>${e(t(c.title))}</h2>`;
+  for (const p of c.text || []) html += `<p>${e(t(p))}</p>`;
+  if (c.need) html += `<h3>${H.need}</h3><ul>${c.need.map(x => `<li>${e(t(x))}</li>`).join("")}</ul>`;
+  if (c.steps) html += `<h3>${H.steps}</h3><ol>${c.steps.map(x => `<li>${e(t(x))}</li>`).join("")}</ol>`;
+  if (c.fields) html += `<h3>${H.fields}</h3><table><thead><tr>${COLS.map(x => `<th>${x}</th>`).join("")}</tr></thead><tbody>` +
+    c.fields.map(f => `<tr><td class="f">${e(EN ? f.en : f.hi)}${f.adv ? ` <span class="advtag" title="${tr("सिर्फ़ Advanced mode में; Simple में default", "Advanced mode only; Simple uses the default")}">Advanced</span>` : ""}</td>` +
+      `<td>${e(t(f.what))}</td><td>${e(t(f.why))}</td><td>${e(t(f.from))}</td><td class="d">${e(t(f.def))}</td><td class="r">${e(t(f.ref))}</td></tr>`).join("") +
+    `</tbody></table>`;
+  if (c.results) html += `<h3>${H.results}</h3><ul>${c.results.map(x => `<li>${e(t(x))}</li>`).join("")}</ul>`;
+  if (c.mistakes) html += `<h3>${H.mistakes}</h3><ul>${c.mistakes.map(x => `<li>${e(t(x))}</li>`).join("")}</ul>`;
+  html += `</section>`;
+}
+html += `<p class="note">${e(t(G.refnote))}</p>`;
+document.getElementById("doc").innerHTML = html;
+document.getElementById("toc").innerHTML = G.chapters.map(c => `<a href="#${c.id}">${e(t(c.title))}</a>`).join("");
+// search: the rows / items holding the words stay, the rest of each chapter folds away
+const doc = document.getElementById("doc");
+document.getElementById("q").addEventListener("input", ev => {
+  const w = ev.target.value.trim().toLowerCase();
+  for (const el of doc.querySelectorAll("tr, li, p")) {
+    if (el.closest("thead")) continue;
+    el.classList.toggle("hide", !!w && !el.textContent.toLowerCase().includes(w));
+  }
+  for (const s of doc.querySelectorAll("section"))
+    s.classList.toggle("hide", !!w && !s.querySelector("tbody tr:not(.hide), li:not(.hide), p:not(.hide)"));
+});
+if (location.hash) { const s = document.querySelector(location.hash); if (s) setTimeout(() => s.scrollIntoView(), 50); }
+// the theme of the app (the start page's server keeps it; this browser's own when alone)
+(async () => {
+  let th = "system";
+  try { const r = await fetch("http://127.0.0.1:8764/api/ui", { signal: AbortSignal.timeout(1500) }); if (r.ok) th = (await r.json()).theme || th; }
+  catch (err) { try { th = (JSON.parse(localStorage.getItem("sw_ui") || "{}").theme) || th; } catch (e2) { } }
+  const dark = th === "dark" || (th === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
+  document.documentElement.dataset.theme = dark ? "dark" : "light";
+})();
+</script>
+</body>
+</html>

@@ -83,7 +83,9 @@ function uiBuild() {
     `<button type="button" data-m="advanced" title="${tr("सब खाने और विकल्प", "Every field and option")}">Advanced</button></span>` +
     `<select id="uitheme" title="${tr("रंग: हल्का / गहरा / Windows जैसा", "Colours: light / dark / as Windows")}">` +
     `<option value="system">🖥 ${tr("Windows जैसा", "System")}</option><option value="light">☀ ${tr("हल्का", "Light")}</option>` +
-    `<option value="dark">🌙 ${tr("गहरा", "Dark")}</option></select></div>` +
+    `<option value="dark">🌙 ${tr("गहरा", "Dark")}</option></select>` +
+    `<span id="uihelp"><button type="button" id="uiguide" title="${tr("इस चरण की पूरी मार्गदर्शिका: हर खाना, क्यों, कहाँ से, CPHEEO / UPJN ref", "This step's full guide: every field, why, from where, CPHEEO / UPJN ref")}">❓ ${tr("मदद", "Help")}</button>` +
+    `<button type="button" id="uitour" title="${tr("Page का tour फिर से", "The page's tour again")}">▶ Tour</button></span></div>` +
     `<div class="hint uisimple">${tr("Simple: छिपे खाने CPHEEO / UPJN के default पर चलते हैं - बदलने के लिए Advanced।",
                                     "Simple: the hidden fields run at the CPHEEO / UPJN defaults - Advanced to change them.")}</div>` +
     `<div id="uitabs">` + keys.map((t, i) => `<button type="button" data-t="${t[0]}"><i>${i + 1}</i>${tr(t[1], t[2])}</button>`).join("") + `</div>`;
@@ -99,6 +101,9 @@ function uiBuild() {
   };
   bar.querySelector("#uitheme").onchange = e => { UI.theme = e.target.value; uiApply(); uiSave(); };
   bar.querySelector("#uitabs").onclick = e => { const b = e.target.closest("button"); if (b) uiTab(b.dataset.t); };
+  // the guide (guide.html, its chapter of the tab shown) in a window of its own; the tour (tour.js)
+  bar.querySelector("#uiguide").onclick = () => window.open(`/guide?lang=${LANG}#${UI.tab}`, "sw_guide");
+  bar.querySelector("#uitour").onclick = () => { if (window.tourStart) tourStart(); };
   let t0 = null;
   try { t0 = localStorage.getItem(uiTabKey); } catch (e) { }
   uiTab(keys.some(t => t[0] === t0) ? t0 : keys[0][0]);

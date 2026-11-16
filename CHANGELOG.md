@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.21 (beta) - 2026-11-16
+
+- A short **welcome video** (the PravaahForge logo, 5 s, silent) when the app opens, then the start page. A click or
+  any key skips it; it does not play again when you come back from a module.
+
 ## 0.9.20 (beta) - 2026-11-16
 
 - The start page has **PravaahForge** as its title; the choice of language is a small line under it. Under Sewer and

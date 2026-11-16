@@ -38,12 +38,14 @@ def test_loading_the_launcher_loads_no_module():
 def test_start_page_and_open(launcher, monkeypatch):
     page, _ = get(launcher + "/")
     assert "Choose language" in page and "/api/open?module=" in page
-    assert '<h1 class="brand">PravaahForge</h1>' in page                # the app's name the title (16-Nov-2026)
+    assert '<span class="p">Pravaah</span><span class="f">Forge</span>' in page    # the app's name the title (16-Nov-2026)
     # the welcome video (16-Nov-2026): served as video/mp4, silent (no audio stream: no 'soun' handler), small
     assert 'id="intro"' in page and "/intro.mp4" in page
     with urllib.request.urlopen(launcher + "/intro.mp4", timeout=10) as r:
         data, kind = r.read(), r.headers.get("Content-Type")
     assert kind == "video/mp4" and data[4:8] == b"ftyp" and b"soun" not in data and len(data) < 2_000_000
+    with urllib.request.urlopen(launcher + "/intro_end.jpg", timeout=10) as r:     # its last frame: the backdrop
+        assert r.headers.get("Content-Type") == "image/jpeg" and r.read(3) == b"\xff\xd8\xff"
     with pytest.raises(urllib.error.HTTPError) as e:
         get(launcher + "/api/open?module=other")
     assert e.value.code == 400
@@ -87,3 +89,26 @@ def test_the_pages_look_is_shared(launcher, monkeypatch, tmp_path):
     assert 'data-theme="dark"' in page and "Credits" in page and "श्रेय" not in page
     body, _ = get(launcher + "/about?lang=hi")
     assert "श्रेय" in body and "Credits" not in body
+
+
+def test_a_second_start_shows_the_running_app(launcher, monkeypatch):
+    """One app at a time (user 16-Nov-2026: started again while hidden in the tray - two tray icons): a second start
+    asks /api/app_show; the running app (its hook) brings its windows forward and the second start ends; without
+    the hook (the launcher alone, or no app) it goes on."""
+    import time
+
+    import app
+    monkeypatch.setattr(L, "APP_HOOKS", {})
+    monkeypatch.setattr(app, "START_URL", launcher + "/")
+    assert json.loads(get(launcher + "/api/app_show")[0]) == {"ok": True, "shown": False}
+    assert app.show_running_app() is False
+    shown = []
+    L.APP_HOOKS["show"] = lambda: shown.append(1)
+    assert app.show_running_app() is True
+    for _ in range(50):
+        if shown:
+            break
+        time.sleep(0.02)
+    assert shown == [1]
+    monkeypatch.setattr(app, "START_URL", "http://127.0.0.1:9/")         # nothing there: the start goes on
+    assert app.show_running_app() is False

@@ -32,8 +32,11 @@ STATIC = os.path.join(HERE, "static")
 MODULES = {"sewer": (8765, "/sewer"), "water": (8766, "/water")}
 ORIGINS = {f"http://{h}:{p}" for h in ("127.0.0.1", "localhost") for p in (PORT, 8765, 8766)}
 # the app icon, and the welcome video of the start page (16-Nov-2026: silent, 5 s, played once when the app opens)
-ICONS = {"/favicon.ico": "image/x-icon", "/icon.png": "image/png", "/intro.mp4": "video/mp4"}
+ICONS = {"/favicon.ico": "image/x-icon", "/icon.png": "image/png", "/intro.mp4": "video/mp4",
+         "/intro_end.jpg": "image/jpeg"}                  # the video's last frame: the start page's backdrop
 _LOCK = threading.Lock()
+# set by the desktop app (app.py): APP_HOOKS["show"]() brings its windows forward - asked by a second start of the app
+APP_HOOKS = {}
 _STARTED = {}                                   # module -> the version its server must answer with
 # the pages' look (mode, theme): kept beside the app's config.json, for every master folder
 UI_FILE = os.environ.get("APP_UI_PREFS") or os.path.join(os.environ.get("APPDATA") or os.path.expanduser("~"),
@@ -147,6 +150,11 @@ class Handler(BaseHTTPRequestHandler):
         if u.path == "/api/version":
             from . import about
             return self._send(200, {"ok": True, "version": VERSION, "app_version": about.APP_VERSION, "pid": os.getpid()})
+        if u.path == "/api/app_show":                    # a second start of the desktop app: this one shows itself
+            fn = APP_HOOKS.get("show")
+            if fn:
+                threading.Thread(target=fn, daemon=True).start()
+            return self._send(200, {"ok": True, "shown": bool(fn)})
         if u.path == "/api/ui":
             q = {k: v[0] for k, v in parse_qs(u.query).items()}
             return self._send(200, dict(ui_prefs(q), ok=True))

@@ -173,9 +173,17 @@ class MenuLook:
         r.RenderArrow += arrow
 
     def apply(self, strip, dark):
+        """The colours on a strip and on each of its items - the text's own colour too (user 16-Nov-2026: the text
+        looked dim; the renderer's TextColor event comes only after the text is drawn)."""
+        from System.Drawing import Color
         rend = self.dark if dark else self.light
         if strip.Renderer is not rend:
             strip.Renderer = rend
+        for it in list(strip.Items):
+            if dark:
+                it.ForeColor = Color.White
+            else:
+                it.ResetForeColor()
 
 
 _LOOK = []
@@ -337,6 +345,17 @@ def _version(port):
             return json.loads(r.read()).get("version")
     except Exception:
         return None
+
+
+def show_running_app():
+    """The app already running (user 16-Nov-2026: started again while hidden in the tray, two icons): asked to bring
+    its windows forward - True when it did, and this second start then ends. An app of before 0.9.22 has no such call:
+    False, the start goes on as before."""
+    try:
+        with urllib.request.urlopen(START_URL + "api/app_show", timeout=2) as r:
+            return bool(json.loads(r.read().decode("utf-8")).get("shown"))
+    except Exception:
+        return False
 
 
 def start_servers(wait_s=15.0):
@@ -620,6 +639,8 @@ def main():
     if os.environ.get("APP_DEBUG_PORT"):                         # checks from outside: the pages over CDP
         webview.settings["REMOTE_DEBUGGING_PORT"] = int(os.environ["APP_DEBUG_PORT"])
     own_taskbar_name()
+    if show_running_app():                                     # the app runs already (perhaps hidden in the tray)
+        sys.exit(0)
     api = Api()
     icon = icon_path()
     tray = Tray(api, icon)
@@ -637,6 +658,9 @@ def main():
     else:
         api._master, storage = m, os.path.join(m, SUBDIRS["app"], "webview")
         bad = start_servers()
+        if not bad:                                          # a second start of the app shows this one's windows
+            from launcher import server as launcher
+            launcher.APP_HOOKS["show"] = Tray.show
         if bad:
             api._main = webview.create_window(TITLE, html=problem_page(bad), width=640, height=360)
         else:

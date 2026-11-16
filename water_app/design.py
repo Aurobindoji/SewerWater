@@ -12,6 +12,14 @@
    check still passes - pipe cost saved.
 If the source itself is too low (staging), no pipe size helps: the design stops and says how much head is missing.
 A pipe with "fixed": True (an existing pipe to be kept) is never resized.
+
+Constraints of the page (user request 16-Nov-2026), each only when given:
+    pipes            the catalogue the design may use (allowed_pipes: smallest / largest nominal, HDPE up to a size)
+    crit "max_hl_distribution_m_per_km"   a pipe with a steeper head loss at the peak goes one size up, as a fast one
+    crit "max_pressure_m"                 the junctions above it reported (instead of residual_head_max + 10)
+    cases            other loads the design must also pass: [{"name", "factor" (x the AVERAGE), "extra": {node: L/s},
+                     "min_head": m}] - each solved with the same sizes; a junction below its min_head there gets the
+                     pipes on its way back to the source upsized, as at the peak; economising keeps them passing.
 """
 import collections
 import json
@@ -45,9 +53,32 @@ def check(net, res, crit, fixed=None):
         fixed = {n for n, v in net["nodes"].items() if v.get("head") is not None}
     low = {n: p for n, p in res["pressure"].items() if n not in fixed and p < rh - 1e-6}
     fast = {p: v for p, v in res["velocity"].items() if v > vmax + 1e-9}
+    if "max_hl_distribution_m_per_km" in crit:            # too steep: one size up, as too fast (a constraint)
+        g = _val(crit, "max_hl_distribution_m_per_km")
+        fast.update({p: res["velocity"][p] for p, h in res["hl_per_km"].items() if h > g + 1e-9 and p not in fast})
     slow = {p: v for p, v in res["velocity"].items() if 1e-9 < v < vmin}
-    high = {n: p for n, p in res["pressure"].items() if n not in fixed and p > _val(crit, "residual_head_max_m") + 10}
+    top = high_limit(crit)
+    high = {n: p for n, p in res["pressure"].items() if n not in fixed and p > top}
     return low, fast, slow, high
+
+
+def high_limit(crit):
+    """The residual head above which a junction is reported (and a PRV suggested): the page's maximum pressure, else
+    residual_head_max + 10 (31 m)."""
+    if "max_pressure_m" in crit:
+        return _val(crit, "max_pressure_m")
+    return _val(crit, "residual_head_max_m") + 10
+
+
+def allowed_pipes(crit, cat=None):
+    """The catalogue within the page's size limits (crit "pipe_sizes": {dmin, dmax, hdpe_max} nominal mm, each
+    optional): HDPE only up to hdpe_max, the rest of the sizes as they are. Never empty: the smallest left."""
+    cat = cat or load_pipes()
+    lim = (crit.get("pipe_sizes") or {}).get("value") or {}
+    out = [s for s in cat
+           if (lim.get("dmin") is None or s["nominal"] >= lim["dmin"]) and (lim.get("dmax") is None or s["nominal"] <= lim["dmax"])
+           and not (lim.get("hdpe_max") is not None and "HDPE" in s["name"].upper() and s["nominal"] > lim["hdpe_max"])]
+    return out or cat[-1:]
 
 
 def _path_pipe(net, res, start, adj, fixed=None):
@@ -121,7 +152,7 @@ def _down_min(net, res, adj, fixed):
     return low
 
 
-def design(net, crit=None, pipes=None, economise=True, max_rounds=400, log=None, economise_seconds=120):
+def design(net, crit=None, pipes=None, economise=True, max_rounds=400, log=None, economise_seconds=120, cases=None):
     crit = crit or load_criteria()
     cat = pipes or load_pipes()
     say = log or (lambda *_: None)
@@ -144,22 +175,41 @@ def design(net, crit=None, pipes=None, economise=True, max_rounds=400, log=None,
     rh = _val(crit, "residual_head_m")
 
     model = hy.Model(net, minor_loss=minor, demand_factor=pf)        # built once; the sizes change in it
+    cases = list(cases or [])
+    cmodels = []                                                      # the other loads: their own models, same sizes
+    for c in cases:
+        cn = {"nodes": {n: v if v.get("head") is not None else
+                        dict(v, demand=(v.get("avg", v.get("demand")) or 0.0) * c.get("factor", 1.0)
+                             + (c.get("extra") or {}).get(n, 0.0))
+                        for n, v in net["nodes"].items()}, "pipes": net["pipes"]}
+        cmodels.append(hy.Model(cn, minor_loss=minor, demand_factor=1.0))
 
     def run(prev=None):
         return model.solve()                                          # from the last flows
+
+    def run_cases():
+        return [m.solve() for m in cmodels]
+
+    def case_low(c, r):
+        return {n: p for n, p in r["pressure"].items() if n not in fixed_nodes and p < c["min_head"] - 1e-6}
 
     def set_size(pid, i):
         size[pid] = i
         net["pipes"][pid]["d_mm"], net["pipes"][pid]["C"] = cat[i]["id_mm"], cat[i]["C"]
         model.set_pipe(pid, cat[i]["id_mm"], cat[i]["C"])
+        for m in cmodels:
+            m.set_pipe(pid, cat[i]["id_mm"], cat[i]["C"])
 
     res = run()
+    cres = run_cases()
     rounds, stuck, hopeless = 0, None, set()
+    chopeless = [set() for _ in cases]
     while rounds < max_rounds:
         rounds += 1
         low, fast, _, _ = check(net, res, crit, fixed_nodes)
         work = {n: p for n, p in low.items() if n not in hopeless}
-        if not work and not fast:
+        cwork = [{n: p for n, p in case_low(c, r).items() if n not in ch} for c, r, ch in zip(cases, cres, chopeless)]
+        if not work and not fast and not any(cwork):
             break
         grow = {pid for pid in fast if pid in size and size[pid] + 1 < len(cat)}     # too fast: one size up
         # junctions below the residual head: for the PER_SOURCE weakest of each source (OHT), the steepest pipe on
@@ -181,11 +231,31 @@ def design(net, crit=None, pipes=None, economise=True, max_rounds=400, log=None,
                 continue
             done[src] += 1
             grow.add(pid)
+        # the other loads: their weakest junctions' ways back to the source, in each load's own heads
+        for c, r, cw, ch in zip(cases, cres, cwork, chopeless):
+            if not cw:
+                continue
+            done = collections.Counter()
+            table = _path_table(net, r, adj, fixed_nodes)
+            for n in sorted(cw, key=cw.get):
+                pid, src = table.get(n, (None, None))
+                h0 = net["nodes"][src]["head"] if src is not None else None
+                if h0 is not None and h0 - float(net["nodes"][n].get("elev") or 0.0) < c["min_head"] - 1e-6:
+                    ch.add(n)
+                    continue
+                if pid is None or size.get(pid, len(cat)) + 1 >= len(cat):
+                    ch.add(n)
+                    continue
+                if done[src] >= PER_SOURCE:
+                    continue
+                done[src] += 1
+                grow.add(pid)
         if not grow:
             break
         for pid in grow:
             set_size(pid, size[pid] + 1)
         res = run(res)
+        cres = run_cases()
     low, fast, slow, high = check(net, res, crit)
     stuck = min(low, key=low.get) if low else None
     say(f"upsize: {rounds} rounds, {len(low)} junctions below {rh} m ({len(hopeless & set(low))} no pipe size helps - "
@@ -198,10 +268,17 @@ def design(net, crit=None, pipes=None, economise=True, max_rounds=400, log=None,
         import time as _t
         t_end = _t.time() + economise_seconds
         base_low = dict(low)
+        cbase = [case_low(c, r) for c, r in zip(cases, cres)]
 
         def ok(r):
             l2, f2, _, _ = check(net, r, crit, fixed_nodes)
-            return not f2 and all(n in base_low and r["pressure"].get(n, -1e9) >= base_low[n] - 1e-3 for n in l2)
+            if f2 or not all(n in base_low and r["pressure"].get(n, -1e9) >= base_low[n] - 1e-3 for n in l2):
+                return False
+            for c, m, b in zip(cases, cmodels, cbase):             # the other loads: no junction worse off there
+                rc = m.solve()
+                if not all(n in b and rc["pressure"].get(n, -1e9) >= b[n] - 1e-3 for n in case_low(c, rc)):
+                    return False
+            return True
         # a pipe whose head loss, one size smaller, would grow by more than the spare head at its downstream end
         # cannot go down (in a branch exactly so, in a loop nearly) - not tried; the others with the most room first
         def slack(pid):
@@ -236,6 +313,7 @@ def design(net, crit=None, pipes=None, economise=True, max_rounds=400, log=None,
                 h = len(grp) // 2
                 stack += [grp[h:], grp[:h]]
         res = run(res)
+        cres = run_cases()
         low, fast, slow, high = check(net, res, crit)
         say(f"economise: {kept} pipes one size smaller" + (" (time limit reached - the rest kept their size)" if timed_out else ""))
 
@@ -256,19 +334,32 @@ def design(net, crit=None, pipes=None, economise=True, max_rounds=400, log=None,
     vm = crit["max_velocity_mps"]
     checks.append({"check": f"velocity <= {vm['value']} m/s", "ref": vm["ref"], "ok": not fast,
                    "detail": f"{len(fast)} pipes faster" if fast else f"highest {max(res['velocity'].values() or [0]):.2f} m/s"})
+    if "max_hl_distribution_m_per_km" in crit:
+        g = crit["max_hl_distribution_m_per_km"]
+        steep = [p for p, h in res["hl_per_km"].items() if h > g["value"] + 1e-9]
+        checks.append({"check": f"head loss <= {g['value']:g} m/km", "ref": g["ref"], "ok": not steep,
+                       "detail": f"{len(steep)} pipes steeper" if steep else
+                                 f"steepest {max(res['hl_per_km'].values() or [0]):.2f} m/km"})
+    for c, r in zip(cases, cres):
+        lc = case_low(c, r)
+        pc = [p for n, p in r["pressure"].items() if n not in fixed_nodes]
+        checks.append({"check": f"{c['name']}: residual head >= {c['min_head']:g} m (designed for)", "ref": c.get("ref", "-"),
+                       "ok": not lc, "detail": f"{len(lc)} junctions below" if lc else f"lowest {min(pc):.2f} m" if pc else "-"})
     vn = crit["min_velocity_mps"]
     checks.append({"check": f"velocity >= {vn['value']} m/s (flushing below)", "ref": vn["ref"], "ok": True, "note": True,
                    "detail": f"{len(slow)} pipes slower (mostly at the minimum diameter - scour valves)"})
-    if high:
+    if high and "max_pressure_m" not in crit:            # with a maximum of the page: checked at night (design_run)
         checks.append({"check": f"residual head well above {crit['residual_head_max_m']['value']} m",
                        "ref": crit["residual_head_max_m"]["ref"], "ok": True, "note": True,
-                       "detail": f"{len(high)} junctions above {crit['residual_head_max_m']['value'] + 10:g} m - consider PRV / smaller staging"})
+                       "detail": f"{len(high)} junctions above {high_limit(crit):g} m - consider PRV / smaller staging"})
     if res["unsupplied"]:
         checks.append({"check": "every junction connected to an OHT", "ref": "-", "ok": False,
                        "detail": f"{len(res['unsupplied'])} junctions without a path to an OHT"})
     return {"size": {p: cat[i] for p, i in size.items()}, "result": res, "checks": checks,
             "low": low, "fast": fast, "slow": slow, "missing_head_m": missing, "stuck_at": stuck,
             "hopeless": sorted(hopeless & set(low), key=str),
+            "cases": {c["name"]: {"result": r, "low": case_low(c, r), "min_head": c["min_head"]}
+                      for c, r in zip(cases, cres)},
             "summary": {"pipes": len(net["pipes"]), "junctions": len(pr),
                         "min_pressure": round(min(pr), 2) if pr else None,
                         "max_pressure": round(max(pr), 2) if pr else None,

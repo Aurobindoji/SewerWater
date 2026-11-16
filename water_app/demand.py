@@ -83,7 +83,8 @@ def mass_balance(crit, windows=None):
 
 def storage_share(crit, windows=None):
     """Share of the OZ's daily demand an OHT must hold: max(33 %, mass balance) - CPHEEO Table 2.7 S.No.12 p175."""
-    return max(crit["esr_capacity_share"]["value"], mass_balance(crit, windows)["share"])
+    s = max(crit["esr_capacity_share"]["value"], mass_balance(crit, windows)["share"])
+    return s * (1.0 + (crit.get("oht_margin") or {}).get("value", 0.0))     # + the page's margin (16-Nov-2026)
 
 
 def standby(working, crit, key="standby_pumps"):

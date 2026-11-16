@@ -272,6 +272,31 @@
         <input type="number" id="wfirelps" min="0" max="500" step="1" placeholder="खाली = नहीं" style="width:6em">
         <label title="Fire flow के समय उस junction पर न्यूनतम दबाव (m) - खाली = सिर्फ़ दिखाएँ, जाँच नहीं" style="min-width:0">न्यूनतम m</label>
         <input type="number" id="wfiremin" min="0" max="60" step="0.5" placeholder="खाली" style="width:5em"></div>
+      <details id="wcons"><summary class="hint" style="cursor:pointer;font-weight:600">Design की सीमाएँ (constraints) - बंद = अभी जैसा</summary>
+      <div class="row"><label style="min-width:0;flex:1" title="24 घंटे का सबसे व्यस्त घंटा (draw-off pattern, peak factor से अधिक हो तो) और ऊपर दिया fire flow (L/s + न्यूनतम m, दोनों भरे हों) भी design की शर्त बनें - fail हो तो उसी रास्ते के pipes बड़े; design का समय लगभग दुगना">
+        <input type="checkbox" id="wcon_cases"> Load cases पर भी design</label></div>
+      <div class="row"><label style="min-width:0;flex:1" title="रात (सबसे कम माँग) में किसी junction पर इससे अधिक दबाव न हो - जाँच fail; रात का दबाव लगभग static है, छोटे pipes से नहीं घटता: PRV (विकल्प चालू हो तो इसी सीमा से ऊपर सुझाता है), कम staging या दूसरी zoning। CPHEEO Table 2.7 S.No.10: 17-21 m; pipe का pressure class भी देखें">
+        <input type="checkbox" id="wcon_pmax"> अधिकतम दबाव (m)</label>
+        <input type="number" id="wc_pmax" value="35" step="any" style="width:6em"></div>
+      <div class="row"><label style="min-width:0;flex:1" title="इससे छोटा nominal size design नहीं लेगा (CPHEEO Table 2.7 S.No.8: 100 mm)">
+        <input type="checkbox" id="wcon_dmin"> न्यूनतम pipe (mm)</label>
+        <input type="number" id="wc_dmin" value="110" step="any" style="width:6em"></div>
+      <div class="row"><label style="min-width:0;flex:1" title="इससे बड़ा nominal size design नहीं लेगा">
+        <input type="checkbox" id="wcon_dmax"> अधिकतम pipe (mm)</label>
+        <input type="number" id="wc_dmax" value="600" step="any" style="width:6em"></div>
+      <div class="row"><label style="min-width:0;flex:1" title="HDPE इस nominal size तक; उससे बड़े में DI ही">
+        <input type="checkbox" id="wcon_hdpe_max"> HDPE अधिकतम (mm)</label>
+        <input type="number" id="wc_hdpe_max" value="160" step="any" style="width:6em"></div>
+      <div class="row"><label style="min-width:0;flex:1" title="Peak पर किसी pipe का head loss इससे अधिक हो तो वह एक size बड़ा (जैसे 3 m/s से तेज़ pipe)। CPHEEO 6.6(v) p400: transmission mains के लिए 10 m/km">
+        <input type="checkbox" id="wcon_hl"> Head loss (m/km)</label>
+        <input type="number" id="wc_hl" value="10" step="any" style="width:6em"></div>
+      <div class="row"><label style="min-width:0;flex:1" title="नई OHT की staging इससे ऊँची नहीं - pipes बड़े करके 17 m; न हो सके तो जाँच fail (दूसरी जगह / booster)">
+        <input type="checkbox" id="wcon_stg"> अधिकतम staging (m)</label>
+        <input type="number" id="wc_stg" value="25" step="any" style="width:6em"></div>
+      <div class="row"><label style="min-width:0;flex:1" title="नई OHT की balancing क्षमता (mass balance या 33 %) पर इतना % और - Zoning और Design दोनों में; 24 घंटे में टंकी 0 % तक न जाए">
+        <input type="checkbox" id="wcon_margin"> OHT गुंजाइश (%)</label>
+        <input type="number" id="wc_margin" value="10" step="any" style="width:6em"></div>
+      </details>
       <div class="stepact"><button id="wdrun" class="primary">Design</button>
         <button id="wexport" title="Design की DXF, मौजूदा zoning पर - AutoCAD के लिए">Export DXF</button>
         <button id="wexportdpr" title="आख़िरी Design की DPR (Excel) - इसी बटन से बनती है (Design के साथ नहीं) और Excel में खुलती है">Export DPR (xlsx)</button></div>

@@ -526,6 +526,7 @@ async function restoreWater(name) {
   const qd = (r.design && r.design.req) || q;             // the design's own: the load cases and the 24 h run
   $("wsim").checked = qd.simulate === undefined ? true : qd.simulate === "1";
   $("wfirelps").value = qd.fire_lps ?? ""; $("wfiremin").value = qd.fire_min_m ?? "";
+  consRestore(qd.cons || q.cons);
   const pk = String(qd.peak || "urban");                  // the peak factor: urban / rural / a number
   $("wpeak").value = pk === "urban" || pk === "rural" ? pk : "given";
   if ($("wpeak").value === "given") $("wpeakv").value = pk;

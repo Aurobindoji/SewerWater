@@ -19,6 +19,7 @@ from .zoning_run import _barrier_check, _barrier_res, _loop_flags, _loop_res, _n
 
 
 DESIGN_ROUNDS = 1200   # upsizing rounds of a design
+FIRE_PASSES = 4        # designs more at most when the fire flow is designed for (its weakest junctions move)
 
 
 MOVE_ROUNDS = 4        # designs at most: an OHT with a given staging gives up the nodes still below 17 m, again
@@ -110,6 +111,37 @@ def run_design(name, req):
 STAGE_YEARS = {"init": 0, "mid": 15, "ult": 30}
 
 
+def design_cases(req, crit):
+    """The loads the design must pass besides the peak, when the page asks for it (crit "design_cases", user request
+    16-Nov-2026): the 24 h run's busiest hour (draw-off pattern) when it is above the peak factor - the OHT at its
+    lowest level then, as the design takes it."""
+    if not (crit.get("design_cases") or {}).get("value"):
+        return []
+    top = max(crit["draw_off_pattern"]["value"])
+    pf = crit["peak_factor"]["value"]
+    if top <= pf + 1e-9:
+        return []
+    return [{"name": f"busiest hour (x {top:g})", "factor": top, "min_head": crit["residual_head_m"]["value"],
+             "ref": crit["draw_off_pattern"]["ref"]}]
+
+
+def fire_case(req, crit, res, z):
+    """The fire flow of the page as a load to design for (constraint on, a flow and a head given): at each OZ's
+    weakest junction of the design res, with the average demand."""
+    if not (crit.get("design_cases") or {}).get("value"):
+        return None
+    q, m = _fire_inputs(req)
+    if not q or m is None:
+        return None
+    weak = {}
+    for n, p in res["pressure"].items():
+        k = z["oz"].get(n)
+        if k is not None and (k not in weak or p < res["pressure"][weak[k]]):
+            weak[k] = n
+    return {"name": f"fire flow {q:g} L/s", "factor": 1.0, "extra": {n: q for n in weak.values()}, "extra_lps": q,
+            "min_head": m, "ref": wsim.FIRE_REF}
+
+
 def sim_on(req):
     """Load cases and the 24 h simulation with the design: on unless switched off on the page."""
     return str((req or {}).get("simulate", "1")).strip().lower() not in ("", "0", "false", "off")
@@ -139,6 +171,20 @@ def _simulate(req, out, wnet, z, crit, res):
     peak_p = out["res_h"]["pressure"]
     res["load_cases"], res["fires"] = wsim.cases(hnet, crit, prvs, peak_p, z["oz"], fire_lps, fire_min)
     night = next(c for c in res["load_cases"] if c["case"] == "night")
+    if "max_pressure_m" in crit:                             # the page's maximum: checked at night (16-Nov-2026)
+        pm = crit["max_pressure_m"]["value"]
+        res["checks"].append({"check": f"night: residual head <= {pm:g} m", "ok": not night["high_n"],
+                              "ref": crit["max_pressure_m"]["ref"],
+                              "detail": (f"{night['high_n']} junctions above, up to {night['max_p']:g} m at {night['max_at']} - "
+                                         f"at night the head is nearly the static one (the OHT's level - the ground): "
+                                         f"smaller pipes do not lower it; PRVs (the PRV option suggests them above "
+                                         f"{pm:g} m), a lower staging or another zoning do" if night["high_n"] else
+                                         f"highest {night['max_p']:g} m"),
+                              "check_hi": f"रात: दबाव <= {pm:g} m",
+                              "detail_hi": (f"{night['high_n']} junctions ऊपर, {night['max_at']} पर {night['max_p']:g} m तक - "
+                                            f"रात में दबाव लगभग static (OHT का स्तर - ज़मीन): छोटे pipes से नहीं घटता; PRV "
+                                            f"(PRV का विकल्प {pm:g} m से ऊपर सुझाता है), कम staging या दूसरी zoning से घटता है"
+                                            if night["high_n"] else f"सबसे अधिक {night['max_p']:g} m")})
     res["checks"].append({"check": "night (lowest hour)", "ok": True, "note": True, "ref": crit["draw_off_pattern"]["ref"],
                           "detail": f"x {night['factor']:g} of the average: residual head up to {night['max_p']:g} m "
                                     f"at {night['max_at']}",
@@ -525,6 +571,7 @@ def _design_once(stem, req, folder, net, wnet, ohts, crit, z, lines):
     if not ohts:
         raise ValueError("कोई OHT नहीं - Layout / आबादी देखें")
     rh = crit["residual_head_m"]["value"]
+    smax = crit["max_staging_m"]["value"] if "max_staging_m" in crit else math.inf     # a constraint of the page
     auto, vfd = {}, {}            # OHT -> trial staging (none given) / trial head of an existing one with a VFD
     for o in ohts:
         if o["staging_m"] is not None and o.get("low_head") != "vfd":
@@ -536,7 +583,7 @@ def _design_once(stem, req, folder, net, wnet, ohts, crit, z, lines):
         allow = min(10.0, max(2.0, crit["zoning_head_loss_m_per_km"]["value"] * far))   # head loss to the farthest node
         static = (top - gl if top is not None and gl is not None else 0.0) + rh
         if o["staging_m"] is None:
-            auto[o["name"]] = o["_eff"] = o["staging_m"] = math.ceil(max(static + allow, 10.0) * 2) / 2
+            auto[o["name"]] = o["_eff"] = o["staging_m"] = min(math.ceil(max(static + allow, 10.0) * 2) / 2, smax)
         else:
             # its staging, when the ground allows 17 m (the pipes are sized for it); else a trial with a pump
             # (a small allowance: the pipes rather than the pump take the head loss - the pump as small as it can be)
@@ -568,7 +615,23 @@ def _design_once(stem, req, folder, net, wnet, ohts, crit, z, lines):
         gl = wnet["nodes"][o["node"]]["elev"]
         hnet["nodes"][src] = {"elev": gl, "head": gl + o.get("_eff", o["staging_m"])}
         hnet["pipes"][f"{o['name']} outlet"] = {"a": src, "b": o["node"], "length": 20.0}
-    r = wd.design(hnet, crit, log=lines.append, max_rounds=DESIGN_ROUNDS)
+    allowed = wd.allowed_pipes(crit)                     # the page's size limits (16-Nov-2026)
+    cases = design_cases(req, crit)
+    r = wd.design(hnet, crit, pipes=allowed, log=lines.append, max_rounds=DESIGN_ROUNDS, cases=cases)
+    # the fire flow at each OZ's weakest junction of the design: designed again with it too; the weakest move as the
+    # pipes change - each new set a load of its own, until they no longer move (at most FIRE_PASSES designs more)
+    fires, covered = [], set()
+    for k in range(FIRE_PASSES):
+        fire = fire_case(req, crit, r["result"], z)
+        if not fire:
+            break
+        new = {n: q for n, q in fire["extra"].items() if n not in covered}
+        if not new:
+            break
+        covered |= set(new)
+        fires.append(dict(fire, extra=new, name=fire["name"] + (f" (set {k + 1})" if k else "")))
+        lines.append(f"\n-- fire flow {fire['extra_lps']:g} L/s at {', '.join(sorted(new))}: design again with it")
+        r = wd.design(hnet, crit, pipes=allowed, log=lines.append, max_rounds=DESIGN_ROUNDS, cases=cases + fires)
     res_h = r["result"]
     staging_note = {}
     if auto or vfd:
@@ -579,10 +642,17 @@ def _design_once(stem, req, folder, net, wnet, ohts, crit, z, lines):
                 continue
             ps = [res_h["pressure"][n] for n, k in z["oz"].items() if k == o["name"] and n in res_h["pressure"]]
             low = min(ps) if ps else rh
-            need = math.ceil((o["_eff"] - (low - rh)) * 2) / 2
+            spare = low - rh
+            for c in r.get("cases", {}).values():          # the other loads designed for: their spare head too
+                pc = [c["result"]["pressure"][n] for n, k in z["oz"].items() if k == o["name"] and n in c["result"]["pressure"]]
+                if pc:
+                    spare = min(spare, min(pc) - c["min_head"])
+            need = math.ceil((o["_eff"] - spare) * 2) / 2
             if o["name"] in auto:
+                want = need
+                need = min(need, smax)
                 o["staging_m"] = o["_eff"] = need
-                staging_note[o["name"]] = {"trial": auto[o["name"]], "required": need}
+                staging_note[o["name"]] = {"trial": auto[o["name"]], "required": need, "wanted": want}
             else:
                 o["_vfd"] = max(0.0, need - o["staging_m"])
                 o["_eff"] = o["staging_m"] + o["_vfd"]
@@ -591,6 +661,15 @@ def _design_once(stem, req, folder, net, wnet, ohts, crit, z, lines):
         r["result"] = res_h
         _pressure_summary(hnet, res_h, r, crit)
         for nm, v in staging_note.items():
+            if v["wanted"] > smax + 1e-9:
+                r["checks"].append({"check": f"{nm}: staging limit {smax:g} m", "ok": False,
+                                    "ref": crit["max_staging_m"]["ref"],
+                                    "detail": f"it would need {v['wanted']:g} m - kept at {smax:g} m: junctions stay below "
+                                              f"17 m (larger pipes cannot help) - another site (higher ground), a booster "
+                                              f"or a higher limit",
+                                    "check_hi": f"{nm}: staging की सीमा {smax:g} m",
+                                    "detail_hi": f"{v['wanted']:g} m चाहिए - {smax:g} m पर रखा: कुछ junctions 17 m से नीचे रहेंगे "
+                                                 f"- दूसरी जगह (ऊँची ज़मीन), booster या सीमा बढ़ाएँ"})
             if v["required"] > 30:
                 r["checks"].append({"check": f"{nm}: staging {v['required']:g} m", "ok": True, "note": True,
                                     "ref": crit["residual_head_m"]["ref"],

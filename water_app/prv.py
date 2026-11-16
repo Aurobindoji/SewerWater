@@ -171,7 +171,7 @@ def suggest(hnet, res, crit, taken=(), tree=None, limit=MAX_SUGGEST, min_gain=MI
     one brings min_gain of them down at least. res is not changed.
     ([{pipe, down, nodes, setting_m, cut_m, high_before, high_after, max_after}], junctions above 31 m left)"""
     rh = crit["residual_head_m"]["value"]
-    top = crit["residual_head_max_m"]["value"] + 10
+    top = crit["max_pressure_m"]["value"] if "max_pressure_m" in crit else crit["residual_head_max_m"]["value"] + 10
     tree = tree or Tree(hnet)
     p = {n: x for n, x in res["pressure"].items() if n in tree.pos and hnet["nodes"][n].get("head") is None}
     out, taken = [], set(taken)

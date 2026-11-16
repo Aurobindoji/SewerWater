@@ -14,7 +14,8 @@ Load cases - the network as designed (pipe sizes, OHT stagings, PRVs) solved aga
     an OHT is filled in its filling hours (criteria "oht_inflow_hours" / the page) at its OZ's daily demand / those
     hours, and gives what its outlet carries; its water above the fire third (CPHEEO p138: the supply outlet just above
     it) from 0 (the design's head: ground + staging) up to its capacity, the tank taken as a cylinder of the side water
-    depth; at 0 h it holds what the mass balance needs never to run dry (its largest deficit), at most full.
+    depth; at 0 h it holds what the mass balance needs never to run dry (its largest deficit) and half of any room
+    beyond the mass balance's swing (start_kl), at most full.
     A full tank takes no more (overflow / the pumps stop), an empty one gives no more (the hour's shortage).
     d = day(hnet, crit, tanks, prvs, windows)     tanks: [{name, node, kl, swd_m, fire_kl, daily_kl}]
 """
@@ -50,8 +51,10 @@ def _summary(r, hnet, crit, fixed):
     live = {lab: v for lab, v in r["velocity"].items() if not hnet["pipes"][lab].get("closed")}
     lo = min(pr, key=pr.get) if pr else None
     hi = max(pr, key=pr.get) if pr else None
+    top = crit["max_pressure_m"]["value"] if "max_pressure_m" in crit else None
     return {"min_p": round(pr[lo], 2) if lo else None, "min_at": lo, "max_p": round(pr[hi], 2) if hi else None,
             "max_at": hi, "low_n": sum(1 for x in pr.values() if x < rh - 1e-6),
+            "high_n": sum(1 for x in pr.values() if x > top + 1e-6) if top is not None else 0,
             "v_max": round(max(live.values()), 3) if live else None}
 
 
@@ -89,9 +92,17 @@ def cases(hnet, crit, prvs, peak_p, oz_of, fire_lps=None, fire_min_m=None):
 
 
 def start_share(crit, windows):
-    """The water an OHT holds at 0 h, in multiples of the average hourly demand: the mass balance's largest deficit
-    (demand.mass_balance) - what it needs never to run dry."""
+    """The least water an OHT holds at 0 h, in multiples of the average hourly demand: the mass balance's largest
+    deficit (demand.mass_balance) - what it needs never to run dry."""
     return -dm.mass_balance(crit, windows)["deficit"]
+
+
+def start_kl(use_kl, hourly_kl, crit, windows):
+    """The water at 0 h (KL): the least it needs, and half of what the tank holds beyond the mass balance's swing
+    (a margin, user 16-Nov-2026: as far from empty as from full), at most full."""
+    mb = dm.mass_balance(crit, windows)
+    swing = (mb["excess"] - mb["deficit"]) * hourly_kl
+    return min(use_kl, -mb["deficit"] * hourly_kl + max(0.0, use_kl - swing) / 2.0)
 
 
 def day(hnet, crit, tanks, prvs, windows=None):
@@ -113,10 +124,11 @@ def day(hnet, crit, tanks, prvs, windows=None):
         use = max(t["kl"] - t.get("fire_kl", 0.0), 0.0)        # above the fire third: what the supply draws
         area = t["kl"] / t["swd_m"] if t.get("swd_m") and t["kl"] > 0 else None
         hr = t["daily_kl"] / 24.0
-        st[t["name"]] = {"use_kl": use, "area_m2": area, "vol": min(use, s0 * hr), "low_head": net["nodes"][t["name"]]["head"],
+        v0 = start_kl(use, hr, crit, win)
+        st[t["name"]] = {"use_kl": use, "area_m2": area, "vol": v0, "low_head": net["nodes"][t["name"]]["head"],
                          "fire_m": (t.get("fire_kl", 0.0) / area) if area else 0.0, "hourly_kl": hr,
                          "empty_h": [], "full_h": [], "min_pct": 100.0, "spill_kl": 0.0, "short_kl": 0.0,
-                         "start_pct": round(100.0 * min(use, s0 * hr) / use, 1) if use else None}
+                         "start_pct": round(100.0 * v0 / use, 1) if use else None}
     rows = []
     for h in range(24):
         model.dem = base * pattern[h]

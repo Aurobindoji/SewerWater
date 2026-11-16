@@ -38,12 +38,28 @@ function wInputs() {
   drawn.eachLayer(l => { if (l.kind === "prv") { const ll = l.getLatLng(); prvs.push({ name: l.props.name, lat: ll.lat, lng: ll.lng, setting_m: l.props.setting_m ?? "" }); } });
   const tws = [];                       // new tube wells (water phase 2, user 31-Oct-2026)
   drawn.eachLayer(l => { if (l.kind === "tw") { const ll = l.getLatLng(); tws.push({ name: l.props.name, lat: ll.lat, lng: ll.lng, discharge_lpm: l.props.discharge_lpm ?? "" }); } });
-  return { name: $("pname").value, ohts, barriers, loops, crossings, wards, bulk, prvs, tws, projection: pjInputs(), pop_factor: $("wpopf").value, floating_pct: $("wfloat").value, load_by: $("wloadby").value, simulate: $("wsim").checked ? "1" : "0", fire_lps: $("wfirelps").value, fire_min_m: $("wfiremin").value, peak: $("wpeak").value === "given" ? $("wpeakv").value : $("wpeak").value, persons_per_connection: $("wppc").value, use_prv: $("wprv").checked ? "1" : "",
+  return { name: $("pname").value, ohts, barriers, loops, crossings, wards, bulk, prvs, tws, projection: pjInputs(), pop_factor: $("wpopf").value, floating_pct: $("wfloat").value, load_by: $("wloadby").value, cons: consInputs(), simulate: $("wsim").checked ? "1" : "0", fire_lps: $("wfirelps").value, fire_min_m: $("wfiremin").value, peak: $("wpeak").value === "given" ? $("wpeakv").value : $("wpeak").value, persons_per_connection: $("wppc").value, use_prv: $("wprv").checked ? "1" : "",
            oht_inflow: $("winflow").value, near_m: $("wnearm").value, ward_table: wtInputs(), intze: izInputs(), tw_standby: sbInputs(), sug: SUG,
            pop_total: $("poptot").hidden ? "" : $("poptot").value, edits: WEDITS, ...stageInputs() };
 }
 // stage-wise check (CPHEEO sewer Table 2.1 p2-9, water Table 2.7 S.No.1 p168): base year and the populations of the
 // base year and +15 years; the design population is +30 years. Empty populations = no stage check.
+// the design's constraints of the page (user request 16-Nov-2026): a value only when its box is ticked
+const CONS = ["cases", "pmax", "dmin", "dmax", "hdpe_max", "hl", "stg", "margin"];
+function consInputs() {
+  const c = {};
+  for (const k of CONS) c[k] = $("wcon_" + k).checked ? (k === "cases" ? "1" : $("wc_" + k).value) : "";
+  return c;
+}
+function consRestore(c) {
+  c = c || {};
+  for (const k of CONS) {
+    const v = c[k];
+    $("wcon_" + k).checked = v !== undefined && v !== "" && v !== null;
+    if ($("wc_" + k) && $("wcon_" + k).checked && k !== "cases") $("wc_" + k).value = v;
+  }
+  if (CONS.some(k => $("wcon_" + k).checked)) $("wcons").open = true;
+}
 function stageInputs() { return { base_year: $("byear").value, pop_initial: $("popb").value, pop_mid: $("popm").value }; }
 // ---- standby tube wells (user 15-Nov-2026): CPHEEO 5.7.5 by default; the page's own table when switched on - the new
 // tube wells only (booster / CWR pumps: always CPHEEO). Rows [working up to, standby]; beyond the last: its standby.

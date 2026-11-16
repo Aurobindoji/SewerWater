@@ -437,6 +437,47 @@ def standby_table(rows):
     return tab
 
 
+def _constraints(req, crit):
+    """The design's constraints of the page (user request 16-Nov-2026), req "cons" - each only when given (empty =
+    as before): pmax (m, at night), dmin / dmax / hdpe_max (nominal mm), hl (m/km at the peak), stg (m, the largest
+    staging of a new OHT), margin (% on the OHT's balancing capacity), cases (design for the busiest hour and the
+    fire flow too)."""
+    cons = req.get("cons") or {}
+
+    def num(k, lo, hi, what):
+        v = cons.get(k)
+        if v in (None, ""):
+            return None
+        try:
+            x = float(v)
+        except (TypeError, ValueError):
+            raise ValueError(f"{what}: '{v}' अंक नहीं") from None
+        if not lo <= x <= hi:
+            raise ValueError(f"{what}: {x:g} ठीक नहीं - {lo:g} से {hi:g} तक")
+        return x
+    pm = num("pmax", 18, 150, "अधिकतम दबाव (m)")
+    if pm is not None:
+        crit["max_pressure_m"] = {"value": pm, "ref": "given on the page (CPHEEO Table 2.7 S.No.10 p173: 17-21 m at the "
+                                                     "highest node; the pipes' pressure class)"}
+    lim = {k: num(k, 50, 1200, f"pipe size ({k}, mm)") for k in ("dmin", "dmax", "hdpe_max")}
+    if any(v is not None for v in lim.values()):
+        if lim["dmin"] is not None and lim["dmax"] is not None and lim["dmin"] > lim["dmax"]:
+            raise ValueError("pipe size: न्यूनतम dia अधिकतम से बड़ा")
+        crit["pipe_sizes"] = {"value": lim, "ref": "given on the page (CPHEEO Table 2.7 S.No.8 p172: 100 mm the least)"}
+    hl = num("hl", 1, 100, "head loss (m/km)")
+    if hl is not None:
+        crit["max_hl_distribution_m_per_km"] = {"value": hl, "ref": "given on the page (CPHEEO 6.6(v) p400: 10 m/km for "
+                                                                    "transmission mains)"}
+    stg = num("stg", 5, 50, "अधिकतम staging (m)")
+    if stg is not None:
+        crit["max_staging_m"] = {"value": stg, "ref": "given on the page (the largest staging of a new OHT)"}
+    mg = num("margin", 0, 100, "OHT गुंजाइश (%)")
+    if mg:
+        crit["oht_margin"] = {"value": mg / 100.0, "ref": f"given on the page: + {mg:g} % on the balancing capacity"}
+    if cons.get("cases") in (True, "1", 1, "on", "true"):
+        crit["design_cases"] = {"value": True, "ref": "given on the page: the busiest hour and the fire flow designed for"}
+
+
 def _crit(req):
     crit = wd.load_criteria()
     ppc = req.get("persons_per_connection")
@@ -467,6 +508,7 @@ def _crit(req):
         if not 1.0 <= v <= 5.0:
             raise ValueError(f"peak factor: {v:g} ठीक नहीं - 1 से 5 तक दें")
         crit["peak_factor"] = {"value": v, "ref": f"given on the page ({crit['peak_factor']['ref']})"}
+    _constraints(req, crit)
     sb = req.get("tw_standby") or {}             # the tube wells' standby table of the page (user decision 15-Nov-2026)
     if sb.get("on"):
         tab = standby_table(sb.get("rows"))

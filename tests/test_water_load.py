@@ -90,13 +90,13 @@ def test_load_cases():
 def test_day():
     hnet, crit, res = small_design()
     daily = 12.0 * 86.4                                                # 12 L/s average
-    need = dm.storage_share(crit) * daily
-    tank = {"name": "OHT", "kl": need + 30.0, "swd_m": 4.0, "fire_kl": 30.0, "daily_kl": daily}
+    swing = dm.mass_balance(crit)["share"] * daily                     # what the day's swing needs
+    tank = {"name": "OHT", "kl": swing + 30.0, "swd_m": 4.0, "fire_kl": 30.0, "daily_kl": daily}
     d = wsim.day(hnet, crit, [tank], [])
     assert len(d["hours"]) == 24
     t = d["tanks"]["OHT"]
     assert not t["empty_h"] and t["short_kl"] == 0 and t["spill_kl"] == 0
-    assert t["min_pct"] == pytest.approx(0.0, abs=0.5)                 # sized by the mass balance: it touches 0 %
+    assert t["min_pct"] == pytest.approx(0.0, abs=0.5)                 # just the swing: it touches 0 %
     assert t["min_pct"] < wsim.MARGIN_PCT                              # - no margin: the design warns of it
     assert t["end_pct"] == pytest.approx(t["start_pct"], abs=0.5)      # a day's inflow = a day's demand
     outs = sum(h["tanks"]["OHT"]["out_kl"] for h in d["hours"])
@@ -104,7 +104,54 @@ def test_day():
     assert all(h["low_n"] == 0 for h in d["hours"])                     # the water above the design's lowest level
     peak_h = max(d["hours"], key=lambda h: h["factor"])
     assert peak_h["min_p"] > res["pressure"][min(res["pressure"], key=res["pressure"].get)]
-    half = wsim.day(hnet, crit, [dict(tank, kl=0.5 * need + 30.0)], [])["tanks"]["OHT"]
-    assert half["full_h"] and half["spill_kl"] > 0 and half["end_pct"] < half["start_pct"]   # full: inflow lost
-    quarter = wsim.day(hnet, crit, [dict(tank, kl=0.25 * need + 30.0)], [])["tanks"]["OHT"]
-    assert quarter["empty_h"] and quarter["short_kl"] > 0                                  # and then runs dry
+    # CPHEEO's 33 % (more than the swing): half the room beyond the swing at 0 h - as far from empty as from full
+    big = wsim.day(hnet, crit, [dict(tank, kl=dm.storage_share(crit) * daily + 30.0)], [])["tanks"]["OHT"]
+    room = 100.0 * (dm.storage_share(crit) - dm.mass_balance(crit)["share"]) / dm.storage_share(crit)
+    assert big["min_pct"] == pytest.approx(room / 2, abs=1.0) and big["min_pct"] > wsim.MARGIN_PCT
+    assert 100.0 - max(h["tanks"]["OHT"]["full_pct"] for h in wsim.day(hnet, crit, [dict(tank, kl=dm.storage_share(crit) * daily + 30.0)], [])["hours"])         == pytest.approx(room / 2, abs=2.0)
+    half = wsim.day(hnet, crit, [dict(tank, kl=0.5 * swing + 30.0)], [])["tanks"]["OHT"]
+    assert (half["full_h"] and half["spill_kl"] > 0) or half["empty_h"]           # too small: inflow lost or dry
+    quarter = wsim.day(hnet, crit, [dict(tank, kl=0.25 * swing + 30.0)], [])["tanks"]["OHT"]
+    assert quarter["empty_h"] and quarter["short_kl"] > 0
+
+
+def test_storage_margin():
+    crit = wd.load_criteria()
+    base = dm.storage_share(crit)
+    crit["oht_margin"] = {"value": 0.10, "ref": "-"}
+    assert dm.storage_share(crit) == pytest.approx(base * 1.10)
+
+
+def test_constraints_of_the_page():
+    c = _crit({"cons": {"pmax": "35", "dmin": "140", "hdpe_max": "140", "hl": "10", "stg": "25", "margin": "10",
+                        "cases": "1"}})
+    assert c["max_pressure_m"]["value"] == 35 and c["max_hl_distribution_m_per_km"]["value"] == 10
+    assert c["max_staging_m"]["value"] == 25 and c["oht_margin"]["value"] == pytest.approx(0.10)
+    assert c["design_cases"]["value"] is True
+    names = [s["name"] for s in wd.allowed_pipes(c)]
+    assert names[0] == "HDPE 140" and "HDPE 160" not in names and "DI 600" in names
+    assert not any(k in _crit({"cons": {"pmax": "", "cases": ""}}) for k in ("max_pressure_m", "design_cases"))
+    for bad in ({"pmax": "5"}, {"dmin": "300", "dmax": "200"}, {"hl": "x"}):
+        with pytest.raises(ValueError):
+            _crit({"cons": bad})
+
+
+def test_design_with_the_constraints():
+    hnet, crit, res = small_design()
+    base = {p: hnet["pipes"][p]["d_mm"] for p in hnet["pipes"]}
+    # head loss: no pipe steeper than the limit at the peak
+    crit["max_hl_distribution_m_per_km"] = {"value": 2.0, "ref": "-"}
+    r = wd.design(hnet, crit, log=lambda s: None)
+    assert max(r["result"]["hl_per_km"].values()) <= 2.0 + 1e-6
+    assert any(hnet["pipes"][p]["d_mm"] > base[p] for p in base)
+    # another load (a fresh design: the one above grew its pipes)
+    hnet, crit, res = small_design()
+    #: a fire flow at the end of the line, 10 m there - the pipes on its way grow
+    oz = {n: "OHT" for n in hnet["nodes"] if n != "OHT"}
+    far = min(oz, key=lambda n: res["pressure"][n])
+    case = {"name": "fire", "factor": 1.0, "extra": {far: 15.0}, "min_head": 10.0}
+    plain = wsim.cases(hnet, crit, [], res["pressure"], oz, fire_lps=15, fire_min_m=10)[1][0]
+    assert plain["ok"] is False                                         # the peak design alone does not do it
+    r = wd.design(hnet, crit, log=lambda s: None, cases=[case])
+    assert not r["cases"]["fire"]["low"] and r["cases"]["fire"]["result"]["pressure"][far] >= 10.0 - 1e-6
+    assert any(c["check"].startswith("fire: residual head >= 10") and c["ok"] for c in r["checks"])

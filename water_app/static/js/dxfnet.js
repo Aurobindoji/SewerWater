@@ -25,7 +25,14 @@ function setMode(m) {
   mode = m;
   $("kmlsec").hidden = m !== "kml"; $("netsec").hidden = m !== "dxf";
   $(m === "dxf" ? "propslot_dxf" : "propslot_kml").appendChild($("propwrap"));   // the selected item's panel
-  for (const b of ["kmlget", "kmlopen"]) $(b).disabled = m === "dxf";
+  for (const b of ["kmlget", "kmlopen"]) {             // a drawing (KML) of its own only for a map project
+    const e = $(b), off = m === "dxf";
+    if (off && !e.disabled) { e.dataset.help = e.title;           // its own help (start.js) kept for later
+      e.title = tr("DXF वाले project में नहीं - KML वाला project \"नया (सब हटाएँ)\" से शुरू करें",
+                   "Not in a DXF project - start a KML project with \"New (clear all)\""); }
+    else if (!off && e.disabled) e.title = e.dataset.help || "";
+    e.disabled = off;
+  }
   $("psave").title = m === "dxf" ? tr("सुधारा हुआ network (CSV) और बदलावों की सूची सहेजें - zoning / design के लिए ज़रूरी नहीं",
                                       "save the corrected network (CSV) and the list of changes - not needed for zoning / design")
                                  : tr("नक्शे की drawing (KML) सहेजें", "save the drawing of the map (KML)");
@@ -35,7 +42,9 @@ function setMode(m) {
   else { drawn.addTo(map); for (const g of [netLayer, issueLayer, textLayer, selLayer, warnLayer]) map.removeLayer(g); }
 }
 
-$("dxfopen").onclick = () => { $("dxfpanel").hidden = false; $("dxfpath").focus(); };
+// its panel is on the Network tab (user 16-Nov-2026: pressed on the Project tab, nothing seemed to happen)
+$("dxfopen").onclick = () => { if (window.uiTab) uiTab("network"); $("dxfpanel").hidden = false;
+  $("dxfpanel").scrollIntoView({ block: "start" }); $("dxfpath").focus(); };
 $("dxfclose").onclick = () => { $("dxfpanel").hidden = true; };
 // a DXF picked in the file dialog: uploaded as it is (the page cannot know its path), then its layers read
 // in the desktop app (app.py): Windows' own file dialog - the DXF is read where it lies, not uploaded; in a browser

@@ -268,7 +268,7 @@
       <div id="wzbox"></div>
       </div>
       <div data-tab="design">
-      <div class="stepbar">Design</div>
+      <div class="stepbar">Network Design</div>
       <div class="row adv"><label title="Network का peak factor (औसत माँग x यह = design की माँग): CPHEEO Table 2.7 S.No.7(b) p172 शहरी 2.5, S.No.7(c) ग्रामीण 3 (आबादी कोई भी हो); या अपना">Peak factor</label>
         <select id="wpeak"><option value="urban">2.5 शहरी (CPHEEO)</option><option value="rural">3.0 ग्रामीण (CPHEEO)</option><option value="given">अपना</option></select>
         <input type="number" id="wpeakv" value="2.5" min="1" max="5" step="0.1" style="width:5em" hidden></div>
@@ -313,6 +313,9 @@
         <span class="hint" id="tbledits"></span></div>
       </div>
       <div data-tab="out">
+      <div class="stepbar">सभी outputs</div>
+      <div class="hint">हर output: बनाएँ / फिर बनाएँ, आख़िरी file, उसे खोलें या उसका folder - project के output folder से।</div>
+      <div id="outlist"></div>
       <div class="stepbar adv">DPR - rates</div>
       <!-- the rates of the DPR, changeable (rates.py, user decisions 15-Nov-2026) -->
       <div class="stepact adv"><button id="wrexp" title="DPR के rates की xlsx: SOR 2025-26 और UPJN rates (pipe supply HDPE / DI K-7, K-9, HDPE carting, NRV, PRV) - पीले = इस project की आख़िरी Design की DPR में उपयोग हो रहे। Excel में खुलती है; Rate column बदलकर 'Import rate xlsx…' से लें">Export rate xlsx</button>
@@ -320,7 +323,9 @@
         <input type="file" id="wrfile" accept=".xlsx" hidden>
         <button id="wrreset" title="Import किए rates हटाकर app के अपने (SOR 2025-26 / dpr_water.json) rates वापस">मूल rates वापस</button></div>
       <div class="hint adv" id="wrst"></div>
-      <div class="stepbar">Intze OHT drawings (नई टंकियाँ)</div>
+      </div>
+      <div data-tab="tank">
+      <div class="stepbar">Intze OHT (नई टंकियाँ) - design और drawings</div>
       <details id="izbox" style="margin:6px 0"><summary title="नई OHTs की Intze टंकी: design (working stress, IS 3370 Part 2 / IS 456 / IS 1893 Part 2 / IS 875 Part 3), GA, reinforcement और BBS की drawings - capacity और staging आख़िरी Design से">🏗 टंकियाँ और उनके inputs (खोलने के लिए यहाँ click करें)</summary>
       <div class="row"><label title="IS 1893 (Part 1):2016 Table 3; स्प्रिंगफ़ील्ड zone III">Seismic zone</label>
         <select id="izzone"><option>II</option><option selected>III</option><option>IV</option><option>V</option></select></div>
@@ -382,5 +387,7 @@
 <script src="js/outputs.js"></script>
 <script src="js/dxfnet.js"></script>
 <script src="js/start.js"></script>
+<script src="js/files.js"></script>
+<script src="js/outlist.js"></script>
 </body>
 </html>

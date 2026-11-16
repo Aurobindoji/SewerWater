@@ -269,3 +269,46 @@ def write_list(name, kind, items):
     os.makedirs(proj_dir(), exist_ok=True)
     with open(list_file(name, kind), "w", encoding="utf-8") as fh:
         json.dump(items or [], fh, ensure_ascii=False)
+
+
+# ---- the Outputs tab (user request 16-Nov-2026): the project's output files, each opened from the page
+OUTPUT_EXT = (".dxf", ".xlsx", ".kml", ".kmz", ".pdf", ".csv")
+
+
+def output_files(stem):
+    """The files of a project's output folder (and its sub-folders) a user opens - drawings, workbooks, KML, PDF, CSV -
+    newest first: {ok, folder, files: [{file (relative, /), size, mtime, time}]}."""
+    import time
+    folder = os.path.join(out_root(), stem)
+    files = []
+    if os.path.isdir(folder):
+        for root, _dirs, names in os.walk(folder):
+            for f in names:
+                if not f.lower().endswith(OUTPUT_EXT) or f.startswith("~$"):
+                    continue
+                p = os.path.join(root, f)
+                try:
+                    st = os.stat(p)
+                except OSError:
+                    continue
+                files.append({"file": os.path.relpath(p, folder).replace(os.sep, "/"), "size": st.st_size,
+                              "mtime": st.st_mtime, "time": time.strftime("%d-%m-%Y %H:%M", time.localtime(st.st_mtime))})
+    files.sort(key=lambda x: -x["mtime"])
+    return {"ok": True, "folder": folder, "files": files}
+
+
+def open_output(stem, rel="", folder=False):
+    """A file of the project's output folder opened in its own program (Excel, AutoCAD ...), or the folder in Explorer
+    with the file selected (folder=True; no file: the folder itself). Only within that folder."""
+    import subprocess
+    base = os.path.realpath(os.path.join(out_root(), stem))
+    p = os.path.realpath(os.path.join(base, rel or ""))
+    if os.path.commonpath([base, p]) != base or not os.path.exists(p):
+        raise ValueError("file नहीं मिली / file not found: " + (rel or stem))
+    if not hasattr(os, "startfile"):
+        raise ValueError("यहाँ file नहीं खुल सकती (Windows नहीं) / cannot open files here")
+    if folder and os.path.isfile(p):
+        subprocess.Popen(["explorer", "/select,", p])
+    else:
+        os.startfile(p)
+    return {"ok": True, "path": p}

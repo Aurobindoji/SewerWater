@@ -230,12 +230,17 @@
         <span class="hint">चुने option के ज़ोन / sub-zones (नक्शे जैसे नाम और रंग)</span></div>
       </div>
       <div data-tab="design">
-      <div class="stepbar">Design</div>
+      <div class="stepbar">Network Design</div>
       <div class="stepact"><button id="drun" class="primary" disabled title="पहले Zoning करें">Design</button></div>
       <div class="status" id="dstatus"></div>
       <div id="dbox"></div>
       <div class="stepact" id="tblrow" hidden><button id="tblbtn" title="Design के हर pipe / manhole की तालिका: manual की जाँच, बदलाव, CSV">☷ Pipe / manhole तालिका</button>
         <span class="hint" id="tbledits"></span></div>
+      </div>
+      <div data-tab="out">
+      <div class="stepbar">सभी outputs</div>
+      <div class="hint">हर output: बनाएँ / फिर बनाएँ, आख़िरी file, उसे खोलें या उसका folder - project के output folder से।</div>
+      <div id="outlist"></div>
       </div>
     </div>
   </div>
@@ -275,5 +280,7 @@
 <script src="js/tables.js"></script>
 <script src="js/dxfnet.js"></script>
 <script src="js/start.js"></script>
+<script src="js/files.js"></script>
+<script src="js/outlist.js"></script>
 </body>
 </html>

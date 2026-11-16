@@ -3,7 +3,8 @@
 // theme (dark: the map's tiles dimmed too). Mode and theme are kept by the start page's server (port 8764) for every
 // page; a module run alone keeps them in this browser. Runs first of the page's scripts (needs i18n.js's tr only).
 const UI_TABS = [["project", "Project", "Project"], ["network", "Network", "Network"], ["pop", "आबादी", "Population"],
-  ["zoning", "Zoning", "Zoning"], ["design", "Design", "Design"], ["out", "Outputs", "Outputs"]];
+  ["zoning", "Zoning", "Zoning"], ["design", "Network Design", "Network Design"], ["tank", "Tank Design", "Tank Design"],
+  ["out", "Outputs", "Outputs"]];
 const UI = { mode: "advanced", theme: "system", tab: "project" };
 const UI_LAUNCHER = "http://127.0.0.1:8764/api/ui";
 const UI_LS = "sw_ui";
@@ -68,6 +69,7 @@ function uiTab(key) {
   try { localStorage.setItem(uiTabKey, key); } catch (e) { }
   uiTabsState();
   document.getElementById("side").scrollTop = 0;
+  document.dispatchEvent(new CustomEvent("uitab", { detail: key }));       // the Outputs tab reads its list then
 }
 function uiBuild() {
   const side = document.getElementById("side");

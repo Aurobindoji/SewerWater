@@ -17,7 +17,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
 from .project import (NETS, converters_for, has_network, is_dxf, layout_result,  # noqa: F401
-                      list_file, list_projects, net_rev, net_state, network_current, out_root, paths,
+                      list_file, list_projects, net_rev, net_state, network_current, open_output, out_root,
+                      output_files, paths,
                       proj_dir, project_net, read_list, safe_name, save_project, stage_inputs, to_latlng,
                       write_list)
 
@@ -380,8 +381,11 @@ class Handler(BaseHTTPRequestHandler):
         with open(path, encoding="utf-8") as fh:
             return {"ok": True, "name": name, "kml": fh.read()}
 
+    def _get_outputs(self, u):                           # the Outputs tab: the project's files (16-Nov-2026)
+        return _answer(output_files, self._name(u))
+
     GET = {"/api/version": _get_version, "/api/ping": _get_ping, "/api/projects": _get_projects,
-           "/api/city_wards_list": _get_city_wards_list, "/api/city_wards": _get_city_wards,
+           "/api/outputs": _get_outputs, "/api/city_wards_list": _get_city_wards_list, "/api/city_wards": _get_city_wards,
            "/api/water_last": _get_water_last, "/api/layout_result": _get_layout_result,
            "/api/net": _get_net, "/api/net_texts": _get_net, "/api/project": _get_project}
 
@@ -535,9 +539,13 @@ class Handler(BaseHTTPRequestHandler):
         with LOCK:
             return _answer(run, plain=ValueError)
 
+    def _post_open_output(self, u, req):                 # a file of the Outputs tab opened / shown in its folder
+        return _answer(open_output, safe_name(req.get("name", "")), str(req.get("file") or ""), bool(req.get("folder")))
+
     POST = {"/api/save": _post_save, "/api/kmz": _post_kmz, "/api/layout": _post_layout,
             "/api/dxf_preview": _post_dxf_preview, "/api/dxf_layers": _post_dxf_layers,
             "/api/dxf_gl_options": _post_dxf_gl_options, "/api/dxf_import": _post_dxf_import,
+            "/api/open_output": _post_open_output,
             "/api/net_edit": _post_net, "/api/net_undo": _post_net, "/api/net_repair": _post_net,
             "/api/net_save": _post_net, "/api/net_place": _post_net, "/api/net_joints": _post_net, "/api/projection": _post_projection,
             "/api/ward_kml_table": _post_ward_kml_table, "/api/city_wards_xlsx": _post_city_wards_xlsx,

@@ -21,7 +21,7 @@ import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
-from .project import NETS, _ck, is_dxf, layout_result, list_projects, net_state, out_root, proj_dir, read_list, safe_name, save_project, write_list  # noqa: F401
+from .project import NETS, _ck, is_dxf, layout_result, list_projects, net_state, open_output, out_root, output_files, proj_dir, read_list, safe_name, save_project, write_list  # noqa: F401
 from .inputs import ZCACHE, catalogs, criteria_for  # noqa: F401
 from .results import last_results  # noqa: F401
 from .zoning_run import export_zoning, run_zoning  # noqa: F401
@@ -357,8 +357,11 @@ class Handler(BaseHTTPRequestHandler):
         with open(path, encoding="utf-8") as fh:
             return {"ok": True, "name": name, "kml": fh.read()}
 
+    def _get_outputs(self, u):                           # the Outputs tab: the project's files (16-Nov-2026)
+        return _answer(output_files, self._name(u))
+
     GET = {"/api/version": _get_version, "/api/ping": _get_ping, "/api/projects": _get_projects,
-           "/api/catalogs": _get_catalogs, "/api/last_results": _get_last_results,
+           "/api/outputs": _get_outputs, "/api/catalogs": _get_catalogs, "/api/last_results": _get_last_results,
            "/api/layout_result": _get_layout_result, "/api/net": _get_net, "/api/net_texts": _get_net,
            "/api/project": _get_project}
 
@@ -445,12 +448,15 @@ class Handler(BaseHTTPRequestHandler):
         with LOCK:
             return run_design(req.get("name"), req)
 
+    def _post_open_output(self, u, req):                 # a file of the Outputs tab opened / shown in its folder
+        return _answer(open_output, safe_name(req.get("name", "")), str(req.get("file") or ""), bool(req.get("folder")))
+
     POST = {"/api/save": _post_save, "/api/kmz": _post_kmz, "/api/layout": _post_layout,
             "/api/dxf_preview": _post_dxf_preview, "/api/dxf_layers": _post_dxf_layers,
             "/api/dxf_gl_options": _post_dxf_gl_options, "/api/dxf_import": _post_dxf_import,
             "/api/net_edit": _post_net, "/api/net_undo": _post_net, "/api/net_repair": _post_net,
             "/api/net_save": _post_net, "/api/net_place": _post_net, "/api/zoning_export": _post_zoning_export,
-            "/api/zoning": _post_zoning, "/api/design": _post_design}
+            "/api/zoning": _post_zoning, "/api/design": _post_design, "/api/open_output": _post_open_output}
 
 
 LOCK = threading.Lock()

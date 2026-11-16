@@ -362,3 +362,19 @@
   :root[data-theme="dark"] .leaflet-tooltip-top:before { border-top-color: var(--card); }
   :root[data-theme="dark"] .leaflet-tooltip-bottom:before { border-bottom-color: var(--card); }
   :root[data-theme="dark"] .leaflet-control-attribution a { color: #8ab4ff; }
+
+  body[data-tab="tank"] #side [data-tab]:not([data-tab="tank"]) { display: none !important; }
+  /* the Outputs tab's list (js/outlist.js) */
+  .ofolder code { font-size: 11px; word-break: break-all; }
+  .ofolder .txtbtn { margin: 4px 6px 0 0; }
+  .ocard { border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; margin: 6px 0; background: var(--card, #fff); }
+  .ocard > summary { cursor: pointer; }
+  .ohead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .ohead b { font-size: 12.5px; }
+  .ohead button { padding: 2px 9px; font-size: 12px; flex: none; }
+  .ofile { display: flex; align-items: center; gap: 6px; padding: 3px 0; border-top: 1px dashed var(--line); font-size: 12px; }
+  .ofile:first-of-type { border-top: none; }
+  .ofile .oname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ofile .otime { color: var(--muted); font-size: 11px; white-space: nowrap; }
+  .ofile button { padding: 1px 7px; font-size: 11.5px; flex: none; }
+  .ofile.old { opacity: .8; }

@@ -113,3 +113,18 @@ def test_power_line_and_road_centre_line_are_no_pipes(tmp_path):
     netedit._INV.clear()
     _, guess = netedit.dxf_layers(path, water=True)
     assert guess["pipe"] == ["WATER PIPE"]
+
+
+def test_the_chosen_prefix_on_the_drawing_names(tmp_path):
+    """User decision 16-Nov-2026: JN- chosen at the import - the drawing's MH-1-595 becomes JN-1-595 (numbers kept)."""
+    doc, msp = base()
+    names = ["MH-1-5", "MH-1-6", "MH-1-7", "MH-2-5", "MH-2-6", "MH-2-7", "MH-3-5", "O-9"]
+    for (x, y), nm in zip(PTS, names):
+        msp.add_text(nm, dxfattribs={"layer": "node", "insert": (x, y + 1.5), "height": 0.8})
+    path = str(tmp_path / "names.dxf")
+    doc.saveas(path)
+    ex = dxf_extract.extract(path, ["PIPE"], ["node"], [], node_prefix="JN-")
+    got = sorted(r["Label"] for r in ex["mh_rows"])
+    assert got == sorted(["JN-1-5", "JN-1-6", "JN-1-7", "JN-2-5", "JN-2-6", "JN-2-7", "JN-3-5", "JN-9"])
+    keep = dxf_extract.extract(path, ["PIPE"], ["node"], [])            # no prefix chosen: the drawing's names
+    assert sorted(r["Label"] for r in keep["mh_rows"]) == sorted(names)

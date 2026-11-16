@@ -376,8 +376,14 @@ function drawCond(c) {
   ln.bringToBack();
 }
 // the prefix most of a network's names have (user request 30-Oct-2026: rename them to another at once)
+// The letters before the first number (16-Nov-2026: of MH-3-441 it took "MH-3-", so only zone 3 was renamed and lost
+// its zone); a name with letters after them (J-G12) keeps them in its prefix.
 function mainPrefix(labels) {
-  const c = {}; for (const x of labels) { const m = /^(.*?)(\d+)$/.exec(String(x)); if (m && m[1]) c[m[1]] = (c[m[1]] || 0) + 1; }
+  const c = {};
+  for (const x of labels) {
+    const m = /^([A-Za-z]+[-_ /]?)\d/.exec(String(x)) || /^(.*?)(\d+)$/.exec(String(x));
+    if (m && m[1]) c[m[1]] = (c[m[1]] || 0) + 1;
+  }
   return Object.keys(c).sort((a, b) => c[b] - c[a])[0] || "";
 }
 function prefixFill() {

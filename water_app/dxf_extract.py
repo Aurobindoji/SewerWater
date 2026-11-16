@@ -36,6 +36,7 @@ import time
 import argparse
 import collections
 import math
+import re
 
 from . import dxf_inspect as di
 
@@ -328,6 +329,23 @@ def extract(path, pipe_layers, mh_layers=(), level_layers=(), tol=0.5, level_rad
             gen += 1
             lab = f"{npre}{gen}"                  # generated: no label, or a label shared by several nodes
         final[n["id"]] = lab
+    # the prefix chosen on the page on the drawing's names too (user decision 16-Nov-2026: "JN-" chosen, the drawing's
+    # MH-1-595 stayed MH-): the letters before the number replaced, the numbers kept - MH-1-595 -> JN-1-595 - so that
+    # the drawing is still found by its numbers. A new name another node already has: that one keeps its own.
+    renamed = 0
+    if node_prefix and node_prefix != "J-":
+        gen_re = re.compile(re.escape(npre) + r"\d+$")
+        taken = set(final.values())
+        for nid, lab in list(final.items()):
+            m = re.match(r"[A-Za-z]+[-_ /]?(?=\d)", lab)
+            if gen_re.match(lab) or not m or lab.startswith(node_prefix):
+                continue
+            new = node_prefix + lab[m.end():]
+            if new in taken:
+                continue
+            taken.add(new)
+            final[nid] = new
+            renamed += 1
 
     # ---- ground levels (a text that is the length of its pipe is no GL - length_texts)
     drop = length_texts(texts, edges)
@@ -433,6 +451,7 @@ def extract(path, pipe_layers, mh_layers=(), level_layers=(), tol=0.5, level_rad
     summ = [f"Pipe layers : {', '.join(pipe_layers)} - {len(co_rows)} conduits, {chk['length']:,.1f} m",
             f"Manholes    : {len(mh_rows)}; label from drawing {len(mh_rows) - gen}, generated {gen}"
             + (f" ({len(dup)} duplicate label(s))" if dup else "")
+            + (f"; {renamed} drawing name(s) given the chosen prefix {node_prefix}" if renamed else "")
             + (f"; {len(by_part)} label(s) repeated in different parts of the network (two numbering series?) "
                f"named <label>/<part>, e.g. {next(iter(by_part))}/{part_no[find(by_part[next(iter(by_part))][0])]}"
                if by_part else ""),

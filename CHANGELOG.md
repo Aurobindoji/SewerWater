@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.9.27 (beta) - 2026-11-16
+
+Water supply - a network from a badly made DXF (rules measured on real drawings):
+- Ground levels written **E-77.31 m** or **EL-77.87 m** are read, and two-part names such as **MH-3-441**.
+- A node layer that writes its levels with a tag (GL / EL / E) gives only those: the depths and lengths beside them
+  are no ground level.
+- No false ground levels: a layer whose numbers spread more than 50 m (pipe lengths), bare numbers written to one
+  decimal (26.8 m), a level 25 m away from all the others (a typing error such as 777.08 - listed under Problems),
+  and one Z at every line end (the elevation the lines were drawn at) are not used.
+- **Survey points** (POINT with a height) give the ground level where there is no GL text.
+- A line drawn twice on the pipe layers is kept once.
+- The guess of the pipe layers leaves out power lines (HT / LT, utility, cable), road centre lines and sewer layers.
+
 ## 0.9.26 (beta) - 2026-11-16
 
 - Both module pages: Help, Tour, CPHEEO, the language and the other app now sit close together on the title's line,

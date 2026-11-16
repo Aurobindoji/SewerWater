@@ -31,7 +31,8 @@ STATIC = os.path.join(HERE, "static")
 # module -> (its port, its page)
 MODULES = {"sewer": (8765, "/sewer"), "water": (8766, "/water")}
 ORIGINS = {f"http://{h}:{p}" for h in ("127.0.0.1", "localhost") for p in (PORT, 8765, 8766)}
-ICONS = {"/favicon.ico": "image/x-icon", "/icon.png": "image/png"}
+# the app icon, and the welcome video of the start page (16-Nov-2026: silent, 5 s, played once when the app opens)
+ICONS = {"/favicon.ico": "image/x-icon", "/icon.png": "image/png", "/intro.mp4": "video/mp4"}
 _LOCK = threading.Lock()
 _STARTED = {}                                   # module -> the version its server must answer with
 # the pages' look (mode, theme): kept beside the app's config.json, for every master folder

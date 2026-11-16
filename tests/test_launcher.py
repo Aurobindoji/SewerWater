@@ -39,6 +39,11 @@ def test_start_page_and_open(launcher, monkeypatch):
     page, _ = get(launcher + "/")
     assert "Choose language" in page and "/api/open?module=" in page
     assert '<h1 class="brand">PravaahForge</h1>' in page                # the app's name the title (16-Nov-2026)
+    # the welcome video (16-Nov-2026): served as video/mp4, silent (no audio stream: no 'soun' handler), small
+    assert 'id="intro"' in page and "/intro.mp4" in page
+    with urllib.request.urlopen(launcher + "/intro.mp4", timeout=10) as r:
+        data, kind = r.read(), r.headers.get("Content-Type")
+    assert kind == "video/mp4" and data[4:8] == b"ftyp" and b"soun" not in data and len(data) < 2_000_000
     with pytest.raises(urllib.error.HTTPError) as e:
         get(launcher + "/api/open?module=other")
     assert e.value.code == 400

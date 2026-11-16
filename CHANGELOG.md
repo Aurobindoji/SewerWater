@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.9.16 (beta) - 2026-11-16
+
+- Both map pages: the sidebar in **tabs** by the work's steps (Project, Network, Population, Zoning, Design, Outputs); a
+  **Simple / Advanced** switch (Simple: the essential fields, the rest at the CPHEEO / UPJN defaults when run); a
+  **light / dark / system theme** (dark dims the map too), on the start page as well, the same on every page.
+- Water supply: **how the population is put on the junctions** - by the pipe length (as before), by the nearest area
+  (Thiessen) or equal; **peak factor** 2.5 urban / 3.0 rural (CPHEEO Table 2.7 S.No.7) or a given value.
+- Water supply: **load cases** - the designed network at the average, at night (the lowest hour of the draw-off
+  pattern) and with a fire flow at each OZ's weakest junction (flow and head given on the page).
+- Water supply: a **24 h simulation** - hour by hour each OHT's water level (filled in its filling hours, drawn by its
+  outlet) and the network's pressures, with a table and charts; a check when a tank runs dry or over, a red warning
+  when it nearly empties. Compared with WaterGEMS 2024 (steady state and EPS): pressures within about 1 cm.
+- Water supply: **design constraints** on the page, each only when ticked: design for the busiest hour and the fire
+  flow too, a maximum pressure (at night), the pipe sizes (smallest, largest, HDPE up to), a head loss limit, the
+  largest staging of a new OHT, a margin on the OHT capacity.
+- Water supply DXF: a bent pipe's label along its longest straight part; pipe labels cross no pipe.
+
 ## 0.9.15 (beta) - 2026-11-16
 
 - Water supply DXF: a pipe's label gives its material and diameter, e.g. `P-9943 DI 350mm L=31.0`; the pipes of

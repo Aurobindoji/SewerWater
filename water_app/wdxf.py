@@ -17,7 +17,7 @@ a layout: UTM metres), its layers switched on / off in AutoCAD:
                          e.g. W_PIPE_HDPE_110, W_PIPE_DI_350; a legend of the sizes and their lengths under the network
         W_PIPE_CLOSED    the closed pipes (the boundary pipes), red whatever their size
         W_PIPE_TEXT      "P-17111 HDPE 110mm" above, "L=21.0" below - or one line, smaller, label only, or on a leader,
-                         as the sewer's plan drawing (pipe_text); kept off the junction texts and the other pipe
+                         as the sewer's plan drawing (pipe_text); a bent pipe's along its longest straight part; kept off the junction texts and the other pipe
                          labels: the other side of the pipe, slid along it, or a longer leader (Taken)
         W_FLOW_ARROW     the direction of the peak flow
         W_JUNCTION, W_JUNCTION_LOW (residual head below 17 m), W_JUNCTION_TEXT: name, GL, HGL, residual head
@@ -44,6 +44,9 @@ OZ_COLOURS = [1, 3, 5, 6, 30, 4, 2, 140, 200, 40, 90, 170, 230, 10, 110, 60, 250
 # (closed pipes), green (junctions) or cyan (the texts)
 SIZE_COLOURS = [150, 30, 6, 2, 200, 40, 5, 230, 110, 90, 190, 50, 210, 130]
 LEADER = 3.0                  # x the text height: leader line of a pipe label that does not fit on its pipe
+TEXT_HIT, PIPE_HIT = 4, 1      # a label over a text weighs as much as crossing 4 pipes, when nowhere is clear
+STRAIGHT_H = 0.5              # x the text height: a pipe whose bends stay this close to its chord is labelled along
+                              # the chord, else along its longest straight part
 RESIDUAL_HEAD_M = 17.0        # below this a junction is drawn on W_JUNCTION_LOW (CPHEEO Table 2.7 S.No.4)
 # the boundaries told apart at a glance (user request 14-Nov-2026): an OZ boundary thick and dash-dot, a DMA
 # boundary thin and dashed. Patterns in units of BOUNDARY_LT_SCALE x the text height (the drawing is in metres:
@@ -78,6 +81,12 @@ def pipe_text(label, size, length, chord, h, r):
             return [(label, 0)], h
         return [(label, 1)], max(cad.PIPE_TEXT_MIN * h, min(h, room / w))
     return [(top, 1), (bottom, -1)], max(cad.PIPE_TEXT_MIN * h, min(h, room / two))
+
+
+def bend(P, chord):
+    """How far the polyline's points lie off the straight line from its first to its last point."""
+    (ax, ay), (bx, by) = P[0], P[-1]
+    return max(abs((bx - ax) * (ay - y) - (ax - x) * (by - ay)) / chord for x, y in P)
 
 
 def text_quad(at, w, th, ang, ax, ay):
@@ -115,13 +124,14 @@ class Taken:
             for j in range(math.floor(min(ys) / self.cell), math.floor(max(ys) / self.cell) + 1):
                 yield i, j
 
-    def add(self, q):
+    def add(self, q, weight=TEXT_HIT):
         for k in self._cells(q):
-            self.grid.setdefault(k, []).append(q)
+            self.grid.setdefault(k, []).append((q, weight))
 
     def hits(self, q):
-        seen = {id(b): b for k in self._cells(q) for b in self.grid.get(k, ())}
-        return sum(not _apart(q, b) for b in seen.values())
+        """The weights of the boxes q meets: a text TEXT_HIT, a pipe line PIPE_HIT."""
+        seen = {id(b): (b, w) for k in self._cells(q) for b, w in self.grid.get(k, ())}
+        return sum(w for b, w in seen.values() if not _apart(q, b))
 
 
 def _kept(stem):
@@ -337,6 +347,13 @@ def export(stem, path=None, what="both"):
         w = max(cad.text_width(t, h) for t in jl)
         taken.add(text_quad((x + r * 1.3, y + r * 1.3), w, (len(jl) - 1) * h * 1.4 + h, 0.0, 0, 0))
         taken.add(text_quad((x, y), 2 * r, 2 * r, 0.0, 0.5, 0.5))
+    for c in net["conduits"]:                             # and the pipes: a label crosses none, its own bends too
+        P = pts_of(c)
+        for a, b in zip(P, P[1:]):
+            L_ = math.dist(a, b)
+            if L_ > 1e-9:
+                taken.add(text_quad(a, L_, 0.02 * h, math.degrees(math.atan2(b[1] - a[1], b[0] - a[0])), 0, 0.5),
+                          PIPE_HIT)
     for c in net["conduits"]:
         P = pts_of(c)
         if len(P) < 2:
@@ -349,9 +366,14 @@ def export(stem, path=None, what="both"):
         n["pipes"] += 1
         chord = math.dist(P[0], P[-1])
         (x1, y1), (x2, y2) = cad.longest_segment(P)
-        ta, tb = (P[0], P[-1]) if chord > 1e-6 else ((x1, y1), (x2, y2))
+        if chord > 1e-6 and bend(P, chord) <= STRAIGHT_H * h:     # (near) straight: along the whole pipe
+            ta, tb = P[0], P[-1]
+            tx, ty = cad.point_along(P, 0.5)
+        else:                                       # bent (user's screenshots 16-Nov-2026: the label crossed the
+            ta, tb = (x1, y1), (x2, y2)             # pipe): along its longest straight part, in its middle
+            chord = math.dist(ta, tb)
+            tx, ty = (x1 + x2) / 2, (y1 + y2) / 2
         ang = cad.readable_angle(tb[0] - ta[0], tb[1] - ta[1])
-        tx, ty = cad.point_along(P, 0.5)
         nx, ny = -math.sin(math.radians(ang)), math.cos(math.radians(ang))
         lines, th = pipe_text(c["label"], p.get("size"), c.get("length_m"), chord, h, r)
         lx, ly = (-nx, -ny) if nx + ny > 0 else (nx, ny)    # a leader: first away from the junction texts
@@ -394,7 +416,7 @@ def export(stem, path=None, what="both"):
                     break
             if best[0]:                                     # nowhere clear on the pipe: the text on a leader
                 lead = on_leader(" ".join(t for t, _ in lines), th)
-                if not lead[0]:
+                if lead[0] < best[0]:
                     best = lead
         for how, t, th_, a1, at, sx, q in best[1]:
             if how == "lead":

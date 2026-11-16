@@ -38,10 +38,14 @@ function wInputs() {
   drawn.eachLayer(l => { if (l.kind === "prv") { const ll = l.getLatLng(); prvs.push({ name: l.props.name, lat: ll.lat, lng: ll.lng, setting_m: l.props.setting_m ?? "" }); } });
   const tws = [];                       // new tube wells (water phase 2, user 31-Oct-2026)
   drawn.eachLayer(l => { if (l.kind === "tw") { const ll = l.getLatLng(); tws.push({ name: l.props.name, lat: ll.lat, lng: ll.lng, discharge_lpm: l.props.discharge_lpm ?? "" }); } });
-  return { name: $("pname").value, ohts, barriers, loops, crossings, wards, bulk, prvs, tws, projection: pjInputs(), pop_factor: $("wpopf").value, floating_pct: $("wfloat").value, load_by: $("wloadby").value, cons: consInputs(), simulate: $("wsim").checked ? "1" : "0", fire_lps: $("wfirelps").value, fire_min_m: $("wfiremin").value, peak: $("wpeak").value === "given" ? $("wpeakv").value : $("wpeak").value, persons_per_connection: $("wppc").value, use_prv: $("wprv").checked ? "1" : "",
+  return uiSimple({ name: $("pname").value, ohts, barriers, loops, crossings, wards, bulk, prvs, tws, projection: pjInputs(), pop_factor: $("wpopf").value, floating_pct: $("wfloat").value, load_by: $("wloadby").value, cons: consInputs(), simulate: $("wsim").checked ? "1" : "0", fire_lps: $("wfirelps").value, fire_min_m: $("wfiremin").value, peak: $("wpeak").value === "given" ? $("wpeakv").value : $("wpeak").value, persons_per_connection: $("wppc").value, use_prv: $("wprv").checked ? "1" : "",
            oht_inflow: $("winflow").value, near_m: $("wnearm").value, ward_table: wtInputs(), intze: izInputs(), tw_standby: sbInputs(), sug: SUG,
-           pop_total: $("poptot").hidden ? "" : $("poptot").value, edits: WEDITS, ...stageInputs() };
+           pop_total: $("poptot").hidden ? "" : $("poptot").value, edits: WEDITS, ...stageInputs() }, W_SIMPLE);
 }
+// Simple mode (ui.js, user request 16-Nov-2026): the fields it hides at the app's CPHEEO / UPJN defaults
+const W_SIMPLE = { projection: null, ward_table: null, base_year: "", pop_initial: "", pop_mid: "", floating_pct: "10",
+  load_by: "length", persons_per_connection: "6", oht_inflow: "5-12, 13-22", near_m: "50", tw_standby: { on: false },
+  peak: "urban", use_prv: "", simulate: "1", fire_lps: "", fire_min_m: "", cons: {} };
 // stage-wise check (CPHEEO sewer Table 2.1 p2-9, water Table 2.7 S.No.1 p168): base year and the populations of the
 // base year and +15 years; the design population is +30 years. Empty populations = no stage check.
 // the design's constraints of the page (user request 16-Nov-2026): a value only when its box is ticked

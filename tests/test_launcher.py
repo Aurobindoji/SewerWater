@@ -60,3 +60,16 @@ def test_a_port_held_by_older_code(monkeypatch):
     monkeypatch.setattr(L, "_version", lambda port: "old")
     ok, why = L.open_module("sewer", wait_s=0.5)
     assert not ok and "8765" in why
+
+
+def test_the_pages_look_is_shared(launcher, monkeypatch, tmp_path):
+    """Theme and mode (user request 16-Nov-2026): kept by the launcher for every page; unknown values ignored."""
+    monkeypatch.setattr(L, "UI_FILE", str(tmp_path / "ui.json"))
+    body, _ = get(launcher + "/api/ui")
+    assert json.loads(body) == {"ok": True, "mode": "advanced", "theme": "system"}
+    body, head = get(launcher + "/api/ui?theme=dark&mode=simple", origin="http://127.0.0.1:8766")
+    assert json.loads(body)["theme"] == "dark" and head.get("Access-Control-Allow-Origin") == "http://127.0.0.1:8766"
+    get(launcher + "/api/ui?theme=purple&mode=x")
+    body, _ = get(launcher + "/api/ui")
+    assert json.loads(body) == {"ok": True, "mode": "simple", "theme": "dark"}
+    assert json.load(open(tmp_path / "ui.json")) == {"mode": "simple", "theme": "dark"}

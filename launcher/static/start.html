@@ -23,6 +23,12 @@
   [hidden] { display: none !important; }
   .foot { position: fixed; bottom: 10px; left: 0; right: 0; text-align: center; font-size: 13px; color: var(--muted); }
   .foot a { color: var(--muted); }
+  /* the theme (user request 16-Nov-2026): kept by this server for every page (/api/ui) */
+  :root[data-theme="dark"] { --bg: #15171c; --card: #22262d; --text: #e3e5e8; --muted: #9ba1aa; --line: #343941; --accent: #4d8eff;
+    color-scheme: dark; }
+  :root[data-theme="dark"] button.big { background: #1b1e24; }
+  #theme { position: fixed; top: 10px; right: 12px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px;
+    background: var(--card); color: var(--text); font: 13px "Segoe UI", "Nirmala UI", sans-serif; }
 </style>
 </head>
 <body>
@@ -46,6 +52,8 @@
     <button class="back" id="back"></button>
   </div>
 </main>
+<select id="theme" title="रंग / Colours"><option value="system">🖥 System</option><option value="light">☀ Light</option>
+  <option value="dark">🌙 Dark</option></select>
 <div class="foot"><a href="#" id="about">About</a> <span id="ver"></span></div>
 <script>
 "use strict";
@@ -89,6 +97,16 @@ async function openModule(name) {
     alert((lang === "en" ? "Could not start: " : "शुरू नहीं हुआ: ") + e.message);
   }
 }
+// the theme, shared with the module pages (launcher/server.py /api/ui)
+let theme = "system";
+function applyTheme() {
+  const dark = theme === "dark" || (theme === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
+  document.documentElement.dataset.theme = dark ? "dark" : "light";
+  document.getElementById("theme").value = theme;
+}
+fetch("/api/ui").then(r => r.json()).then(r => { theme = r.theme || "system"; applyTheme(); }).catch(() => applyTheme());
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);
+document.getElementById("theme").onchange = e => { theme = e.target.value; applyTheme(); fetch("/api/ui?theme=" + theme).catch(() => { }); };
 // About (10-Nov-2026): the desktop app's own window, else this page's tab
 fetch("/api/version").then(r => r.json()).then(r => { document.getElementById("ver").textContent = "· v" + r.app_version; }).catch(() => { });
 document.getElementById("about").onclick = e => {

@@ -237,3 +237,81 @@
   table.ft td.bad { color: var(--danger); }
   table.ft td input, table.ft td select { width: 84px; padding: 0 3px; font-size: 12px; height: 20px; }
   @media (max-width: 760px) { #app { flex-direction: column; } #side { width: auto !important; height: 45%; } #splitter { display: none; } }
+
+  /* ---- the page's look (user request 16-Nov-2026, js/ui.js): tabs, Simple / Advanced, the dark theme ---- */
+  #uibar { position: sticky; top: -12px; z-index: 20; margin: 6px -14px 8px; padding: 6px 12px 0; background: var(--panel);
+    border-bottom: 1px solid var(--line); }
+  #uibar .uirow { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
+  #uibar .seg { margin: 0; }
+  #uibar .seg button { padding: 3px 12px; font-weight: 600; }
+  #uitheme { flex: 0 0 auto; padding: 3px 6px; font-size: 12.5px; }
+  #uitabs { display: flex; flex-wrap: wrap; gap: 0; margin-top: 6px; }
+  #uitabs button { border: none; border-bottom: 3px solid transparent; border-radius: 0; background: none; padding: 6px 8px 5px;
+    font-weight: 600; font-size: 13px; color: var(--muted); position: relative; }
+  #uitabs button i { font-style: normal; display: inline-block; min-width: 17px; height: 17px; line-height: 17px; margin-right: 4px;
+    border-radius: 50%; background: var(--line); color: var(--text); font-size: 11px; text-align: center; }
+  #uitabs button.on { color: var(--accent); border-bottom-color: var(--accent); outline: none; }
+  #uitabs button:focus:not(:focus-visible) { outline: none; }   /* only the line under the active tab */
+  #uitabs button.on i { background: var(--accent); color: #fff; }
+  #uitabs button.dim { opacity: .45; }
+  #uitabs button.new::after { content: ""; position: absolute; top: 4px; right: 2px; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--danger); }
+  .uisimple { display: none; margin: 4px 0 0; font-size: 11.5px; }
+  body.simple .uisimple { display: block; }
+  body.simple #side .adv { display: none !important; }
+  /* the parts of the other tabs hidden; within a tab its steps' bars carry no number (the tab has it) */
+  body[data-tab="project"] #side [data-tab]:not([data-tab="project"]),
+  body[data-tab="network"] #side [data-tab]:not([data-tab="network"]),
+  body[data-tab="pop"] #side [data-tab]:not([data-tab="pop"]),
+  body[data-tab="zoning"] #side [data-tab]:not([data-tab="zoning"]),
+  body[data-tab="design"] #side [data-tab]:not([data-tab="design"]),
+  body[data-tab="out"] #side [data-tab]:not([data-tab="out"]) { display: none !important; }
+  body[data-tab] .stepbar::before { display: none; }
+  body[data-tab] .stepbar { margin-top: 8px; }
+
+  /* ---- dark: the colours as variables, and the parts the page writes white / light ---- */
+  :root[data-theme="dark"] {
+    --bg: #15171c; --panel: #1b1e24; --text: #e3e5e8; --muted: #9ba1aa; --line: #343941;
+    --accent: #4d8eff; --danger: #ff6b6b; --ok: #4cc38a; --card: #22262d; --chip: #2a2f37; color-scheme: dark;
+  }
+  :root[data-theme="dark"] input[type=text], :root[data-theme="dark"] input[type=number], :root[data-theme="dark"] select,
+  :root[data-theme="dark"] textarea, :root[data-theme="dark"] button, :root[data-theme="dark"] #props,
+  :root[data-theme="dark"] pre#log, :root[data-theme="dark"] .box, :root[data-theme="dark"] .grp,
+  :root[data-theme="dark"] .ilist, :root[data-theme="dark"] .findbox, :root[data-theme="dark"] .cpop,
+  :root[data-theme="dark"] .satbox, :root[data-theme="dark"] #guide .gbox, :root[data-theme="dark"] #modal .box,
+  :root[data-theme="dark"] #urlmodal .box, :root[data-theme="dark"] #mapwrap #viewseg {
+    background: var(--card); color: var(--text); border-color: var(--line); }
+  :root[data-theme="dark"] button.primary, :root[data-theme="dark"] .seg button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+  :root[data-theme="dark"] #uitabs button { background: none; }
+  :root[data-theme="dark"] button:hover { border-color: #5a616c; }
+  :root[data-theme="dark"] .stepbar { background: #1f2a3d; border-color: #2e3d58; color: #a9c6ff; }
+  :root[data-theme="dark"] #mapwrap #legend { background: rgba(27, 30, 36, .94); color: var(--text); }
+  :root[data-theme="dark"] .grp.open, :root[data-theme="dark"] .ilist div:hover, :root[data-theme="dark"] table.opts tr.opt:hover,
+  :root[data-theme="dark"] table.ft tr.trow:hover td { background: #24324a; }
+  :root[data-theme="dark"] table.opts tr.cur { background: #2b3f63; }
+  :root[data-theme="dark"] .ilist div { border-bottom-color: #2a2e35; }
+  :root[data-theme="dark"] table.ft th { background: #262a31; }
+  :root[data-theme="dark"] table.ft td { border-bottom-color: #2a2e35; }
+  :root[data-theme="dark"] table.ft tr.sel td { background: #4a4320; }
+  :root[data-theme="dark"] table.ft td.chg { background: #5a4d10; }
+  :root[data-theme="dark"] #findres div.on, :root[data-theme="dark"] #findres div:hover { background: #4a4320; }
+  :root[data-theme="dark"] .wflag.alert { background: #3b1518; color: #ff5c5c; border-left-color: #ff5c5c; }
+  :root[data-theme="dark"] .wflag.warn, :root[data-theme="dark"] #modal h3.warn { color: #ffb74d; }
+  :root[data-theme="dark"] .satbox.satred { background: #4a1c1f; color: #ff8a80; }
+  :root[data-theme="dark"] #guide .ghead h2, :root[data-theme="dark"] #guide li b, :root[data-theme="dark"] #guide li.gsec { color: #a9c6ff; }
+  :root[data-theme="dark"] #guide li.gsec { border-bottom-color: #a9c6ff; }
+  :root[data-theme="dark"] #guide li { border-bottom-color: #2a2e35; }
+  :root[data-theme="dark"] #loading { background: rgba(0, 0, 0, .5); }
+  :root[data-theme="dark"] .why-line, :root[data-theme="dark"] .hovcard .hc-k { color: var(--muted); }
+  :root[data-theme="dark"] a { color: #8ab4ff; }
+  :root[data-theme="dark"] #izbox > summary { background: var(--chip); }
+  /* the map: its tiles dimmed, Leaflet's own controls and popups dark */
+  :root[data-theme="dark"] .leaflet-container { background: #0f1114; }
+  :root[data-theme="dark"] .leaflet-tile-pane { filter: brightness(.62) contrast(1.08) saturate(.85); }
+  :root[data-theme="dark"] .leaflet-bar a, :root[data-theme="dark"] .leaflet-control-layers,
+  :root[data-theme="dark"] .leaflet-popup-content-wrapper, :root[data-theme="dark"] .leaflet-popup-tip,
+  :root[data-theme="dark"] .leaflet-tooltip, :root[data-theme="dark"] .leaflet-control-attribution,
+  :root[data-theme="dark"] .leaflet-draw-toolbar a { background-color: var(--card); color: var(--text); border-color: var(--line); }
+  :root[data-theme="dark"] .leaflet-tooltip-top:before { border-top-color: var(--card); }
+  :root[data-theme="dark"] .leaflet-tooltip-bottom:before { border-bottom-color: var(--card); }
+  :root[data-theme="dark"] .leaflet-control-attribution a { color: #8ab4ff; }

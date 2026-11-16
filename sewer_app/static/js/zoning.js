@@ -109,7 +109,7 @@ function legend(v) {
 async function loadCatalogs() {
   try {
     const r = await api("/api/catalogs");
-    if (r.max_depth) $("maxdepth").value = r.max_depth;          // the project decision of design_criteria.json
+    if (r.max_depth) { $("maxdepth").value = r.max_depth; SEWER_MAXD = String(r.max_depth); }          // the project decision of design_criteria.json
     $("catalog").innerHTML = r.catalogs.map(c => `<option title="${esc(c.source)}">${esc(c.name)}</option>`).join("");
     const setJ = () => { const c = r.catalogs.find(x => x.name === $("catalog").value);
       $("joint").innerHTML = (c && c.joints.length ? c.joints : ["ss"]).map(j => `<option${j === "ss" ? " selected" : ""}>${j}</option>`).join(""); };
@@ -210,11 +210,16 @@ function gapNote(r) {
 }
 function zdInputs() {
   stpFromMap();
-  return { name: $("pname").value, catalog: $("catalog").value, joint: $("joint").value, sewage_lpcd: $("lpcd").value,
+  return uiSimple({ name: $("pname").value, catalog: $("catalog").value, joint: $("joint").value, sewage_lpcd: $("lpcd").value,
     start_depth: $("sdepth").value, stp: $("stp").value.trim(), max_zones: $("maxz").value, pop_total: $("poptot").value, mode: $("zmode").value,
     max_depth: $("maxdepth").value, bend_drop: $("bdrop").checked, mh_spacing: $("mhsp").value, bend_angle: $("bangle").value, edits: SEDITS,
-    barriers: barrierInputs(), loops: loopInputs(), crossings: crossingInputs(), ...stageInputs() };
+    barriers: barrierInputs(), loops: loopInputs(), crossings: crossingInputs(), ...stageInputs() },
+    Object.assign({}, S_SIMPLE, { max_depth: SEWER_MAXD }));
 }
+// Simple mode (ui.js, user request 16-Nov-2026): the fields it hides at the app's CPHEEO / project defaults
+var SEWER_MAXD = "10";                // the project's maximum depth (design_criteria.json, from /api/catalogs)
+const S_SIMPLE = { sewage_lpcd: "108", start_depth: "0.7", mode: "auto", bend_drop: true, mh_spacing: "30", bend_angle: "20",
+  max_zones: "8", base_year: "", pop_initial: "", census: "", pop_method: "geometrical", floating_pct: "10" };
 function layoutReady(r) {
   layoutData = r;
   zoningData = null; designData = null; tblAfterDesign(null); curOption = null;

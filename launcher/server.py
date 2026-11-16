@@ -5,6 +5,8 @@ module chosen alone is started; the other only from its button in a module's pag
     GET /api/open?module=...   starts that module's server (once) and answers {ok, url} when it answers with its own
                                version; {ok: false, log} when its port is held by older code or another program
     GET /api/version           this server's version (the desktop app's check)
+    GET /api/ui[?mode=&theme=] the pages' look, shared by the start page and both modules (user request 16-Nov-2026):
+                               mode simple / advanced, theme light / dark / system; with a value it is kept
 
 Each module is imported only when it is first opened, so starting one never loads the other. Local use only; the
 module pages (ports 8765 / 8766) may call /api/open (CORS), for their button of the other module.
@@ -31,6 +33,31 @@ ORIGINS = {f"http://{h}:{p}" for h in ("127.0.0.1", "localhost") for p in (PORT,
 ICONS = {"/favicon.ico": "image/x-icon", "/icon.png": "image/png"}
 _LOCK = threading.Lock()
 _STARTED = {}                                   # module -> the version its server must answer with
+# the pages' look (mode, theme): kept beside the app's config.json, for every master folder
+UI_FILE = os.environ.get("APP_UI_PREFS") or os.path.join(os.environ.get("APPDATA") or os.path.expanduser("~"),
+                                                         "SewerWater", "ui.json")
+UI_DEFAULT = {"mode": "advanced", "theme": "system"}
+UI_VALUES = {"mode": ("simple", "advanced"), "theme": ("light", "dark", "system")}
+
+
+def ui_prefs(change=None):
+    """The pages' look {mode, theme}; change {key: value} (known values only) is kept first."""
+    cur = dict(UI_DEFAULT)
+    try:
+        with open(UI_FILE, encoding="utf-8") as fh:
+            cur.update({k: v for k, v in json.load(fh).items() if k in UI_VALUES and v in UI_VALUES[k]})
+    except (OSError, ValueError):
+        pass
+    new = {k: v for k, v in (change or {}).items() if k in UI_VALUES and v in UI_VALUES[k]}
+    if new and any(cur[k] != v for k, v in new.items()):
+        cur.update(new)
+        try:
+            os.makedirs(os.path.dirname(UI_FILE), exist_ok=True)
+            with open(UI_FILE, "w", encoding="utf-8") as fh:
+                json.dump(cur, fh)
+        except OSError:
+            pass
+    return cur
 
 
 def _code_version():
@@ -116,6 +143,9 @@ class Handler(BaseHTTPRequestHandler):
         if u.path == "/api/version":
             from . import about
             return self._send(200, {"ok": True, "version": VERSION, "app_version": about.APP_VERSION, "pid": os.getpid()})
+        if u.path == "/api/ui":
+            q = {k: v[0] for k, v in parse_qs(u.query).items()}
+            return self._send(200, dict(ui_prefs(q), ok=True))
         if u.path == "/api/open":
             name = (parse_qs(u.query).get("module") or [""])[0]
             if name not in MODULES:

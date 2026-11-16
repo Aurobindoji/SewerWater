@@ -46,6 +46,7 @@
       &nbsp; <a href="#" class="hint" id="otherapp"></a></span></div>
     <div class="sub">सड़कें, boundary, वार्ड (population), spot levels और OHT / ESR खींचें; फिर "Layout बनाएँ", Zoning (OZ / DMA) और Design। हर layout PFR है।</div>
 
+    <div data-tab="project">
     <div class="stepbar">Project</div>
     <div class="row"><label>नाम</label><input type="text" id="pname" value="new_project"></div>
     <div class="row">
@@ -61,7 +62,9 @@
       <input type="file" id="kmlfile" accept=".kml,.kmz" hidden>
     </div>
 
-    <div id="dxfpanel" hidden>
+    </div>
+
+    <div id="dxfpanel" data-tab="network" hidden>
       <h2>DXF से network</h2>
       <div class="row"><label>DXF file</label><input type="text" id="dxfpath" placeholder="D:\...\drawing.dxf">
         <button id="dxfpick" title="Explorer से DXF file चुनें">📂 चुनें…</button><input type="file" id="dxffile" accept=".dxf" hidden></div>
@@ -87,7 +90,7 @@
       <div class="status" id="dxfstatus"></div>
     </div>
 
-    <div id="netsec" hidden>
+    <div id="netsec" data-tab="network" hidden>
       <div class="stepbar">DXF network - जाँच और सुधार</div>
       <table class="sum" id="netsum"></table>
       <div class="row" id="prefrow"><label title="इस network के junction / pipe के नाम एक साथ नए prefix में (संख्या वही): जैसे N-00468 → J-00468; एक Undo से वापस">नाम prefix</label>
@@ -139,7 +142,7 @@
       <div id="groups"></div>
     </div>
 
-    <div id="kmlsec">
+    <div id="kmlsec" data-tab="network">
     <div class="stepbar">नक्शे पर खींचें</div>
     <div class="tools">
       <button data-kind="road"><span class="sw" style="background:var(--road)"></span>सड़क (centreline)</button>
@@ -199,15 +202,16 @@
     <div class="status" id="status"></div>
     <div id="files"></div>
     </div>
-    <pre id="log" hidden></pre>
+    <pre id="log" data-tab="network" hidden></pre>
 
     <div id="zd" hidden>
+      <div data-tab="pop">
       <div class="stepbar">आबादी - वार्ड और projection</div>
       <div class="row" id="poprow"><label>Population</label><span id="popinfo" class="hint"></span></div>
       <div class="row"><input type="number" id="poptot" min="0" step="1" placeholder="कुल design population (अंतिम वर्ष), जैसे 657166" hidden></div>
       <!-- the wards of the project (user decision 7-Nov-2026): their number, then each ward's no., name, population of a
            year and the share covered; with the census below: the five methods from that year -->
-      <div class="box" id="wtbox" hidden><b>वार्ड-वार आबादी</b>
+      <div class="box adv" id="wtbox" hidden><b>वार्ड-वार आबादी</b>
         <div class="row"><label title="project में आने वाले (पूरे या आंशिक) वार्डों की संख्या - भरते ही हर वार्ड की पंक्ति खुलती है">वार्डों की संख्या</label>
           <input type="number" id="wtn" min="0" max="300" step="1" style="width:70px">
           <label style="min-width:0" title="वार्डों की आबादी किस वर्ष की है (नगर निगम का आँकड़ा, जैसे 2025) - वहाँ से चुनी विधि से आधार / +15 / +30 वर्ष">आबादी का वर्ष</label>
@@ -223,56 +227,60 @@
         <div class="hint" id="cwst"></div><datalist id="cwl"></datalist>
         <div id="wttable"></div>
         <div id="wtgrowth"></div></div>
-      <div class="row"><label title="CPHEEO Table 2.7 S.No.1 (p168): pipes और टंकियाँ आधार वर्ष + 30 वर्ष के लिए, pumps + 15 वर्ष के लिए">Stage: आधार वर्ष</label>
+      <div class="row adv"><label title="CPHEEO Table 2.7 S.No.1 (p168): pipes और टंकियाँ आधार वर्ष + 30 वर्ष के लिए, pumps + 15 वर्ष के लिए">Stage: आधार वर्ष</label>
         <input type="number" id="byear" value="2027" min="1900" max="2200" step="1"></div>
-      <div class="row"><label title="पूरे project की कुल आबादी; हर junction की आबादी इसी अनुपात में घटती है। नीचे census भरें तो यही projection का आधार (P0)">आधार वर्ष की आबादी</label>
+      <div class="row adv"><label title="पूरे project की कुल आबादी; हर junction की आबादी इसी अनुपात में घटती है। नीचे census भरें तो यही projection का आधार (P0)">आधार वर्ष की आबादी</label>
         <input type="number" id="popb" min="0" step="1" placeholder="खाली = stage की जाँच नहीं"></div>
       <!-- population projection (user request 30-Oct-2026, as the Elmwood 'T'): census -> five methods -> the adopted one -->
-      <div class="row"><label title="शहर की census आबादी (वर्ष और आबादी के जोड़े) - इनसे वृद्धि (प्रति दशक, incremental, दर) निकलती है; आधार वर्ष की आबादी पर पाँच विधियों से +15 और +30 वर्ष। खाली = projection नहीं (नीचे के खाने हाथ से)">Census (projection)</label>
+      <div class="row adv"><label title="शहर की census आबादी (वर्ष और आबादी के जोड़े) - इनसे वृद्धि (प्रति दशक, incremental, दर) निकलती है; आधार वर्ष की आबादी पर पाँच विधियों से +15 और +30 वर्ष। खाली = projection नहीं (नीचे के खाने हाथ से)">Census (projection)</label>
         <span class="hint">पूरे शहर (ULB) की census: हर दशक का वर्ष और पूरे शहर की आबादी (वार्ड की नहीं)</span>
         <textarea id="pjcensus" hidden></textarea></div>
-      <div id="pjcen"></div>
-      <div class="row"><button id="pjrun" title="आधार वर्ष, उसकी आबादी और census से पाँचों विधियों का projection">Projection निकालें</button><span class="hint" id="pjstatus"></span></div>
-      <div id="pjout"></div>
-      <div class="row"><label title="pumping machinery और STP इसी stage के लिए (Table 2.1, p2-9)">+15 वर्ष की आबादी</label>
+      <div id="pjcen" class="adv"></div>
+      <div class="row adv"><button id="pjrun" title="आधार वर्ष, उसकी आबादी और census से पाँचों विधियों का projection">Projection निकालें</button><span class="hint" id="pjstatus"></span></div>
+      <div id="pjout" class="adv"></div>
+      <div class="row adv"><label title="pumping machinery और STP इसी stage के लिए (Table 2.1, p2-9)">+15 वर्ष की आबादी</label>
         <input type="number" id="popm" min="0" step="1" placeholder="खाली = stage की जाँच नहीं"></div>
-      <div class="hint">Design की आबादी = +30 वर्ष। भरने पर design के बाद हर stage पर velocity / दबाव और outfall / OHT का flow दिखता है।</div>
+      <div class="hint adv">Design की आबादी = +30 वर्ष। भरने पर design के बाद हर stage पर velocity / दबाव और outfall / OHT का flow दिखता है।</div>
       <div class="row"><label title="वार्डों की population x यह = design (अंतिम वर्ष) की population; जैसे वर्तमान से 30 वर्ष बाद की वृद्धि">आबादी गुणक (अंतिम वर्ष)</label>
         <input type="number" id="wpopf" value="1" min="0.1" max="10" step="0.01"></div>
-      <div class="row"><label title="Floating और institutional आबादी, आबादी के % में (हर stage पर), 45 LPCD पर (CPHEEO Table 2.7 S.No.5)। Default 10 % (reference DPR); CPHEEO Annexure 2.8: आँकड़े न हों तो 1-3 %">Floating आबादी (%)</label>
+      <div class="row adv"><label title="Floating और institutional आबादी, आबादी के % में (हर stage पर), 45 LPCD पर (CPHEEO Table 2.7 S.No.5)। Default 10 % (reference DPR); CPHEEO Annexure 2.8: आँकड़े न हों तो 1-3 %">Floating आबादी (%)</label>
         <input type="number" id="wfloat" value="10" min="0" max="50" step="0.5"></div>
-      <div class="row"><label title="वार्ड (या कुल आबादी) की आबादी उसके अंदर के junctions पर कैसे बँटे: pipe की लंबाई के अनुपात में (हर pipe का आधा उसके दोनों छोरों को), हर junction के सबसे पास वाले क्षेत्रफल (Thiessen) के अनुपात में, या हर junction पर बराबर। Layout (KML) वाले project में आबादी layout से आती है">आबादी junctions पर</label>
+      <div class="row adv"><label title="वार्ड (या कुल आबादी) की आबादी उसके अंदर के junctions पर कैसे बँटे: pipe की लंबाई के अनुपात में (हर pipe का आधा उसके दोनों छोरों को), हर junction के सबसे पास वाले क्षेत्रफल (Thiessen) के अनुपात में, या हर junction पर बराबर। Layout (KML) वाले project में आबादी layout से आती है">आबादी junctions पर</label>
         <select id="wloadby"><option value="length">pipe की लंबाई से</option><option value="area">क्षेत्रफल से (Thiessen)</option><option value="equal">बराबर</option></select></div>
+      </div>
+      <div data-tab="zoning">
       <div class="stepbar">Zoning (OZ / DMA)</div>
       <div class="hint">माँग: 150 LPCD + 10% हानि, floating (ऊपर का %) @ 45 LPCD, fire 100√P; peak factor Design में चुना (2.5 शहरी); residual head ≥ 17 m (CPHEEO Table 2.7)।</div>
-      <div class="row"><label title="एक घर = एक कनेक्शन; Elmwood DPR में आबादी / घर = 6.08">व्यक्ति / कनेक्शन</label>
+      <div class="row adv"><label title="एक घर = एक कनेक्शन; Elmwood DPR में आबादी / घर = 6.08">व्यक्ति / कनेक्शन</label>
         <input type="number" id="wppc" value="6" min="1" max="15" step="0.1"></div>
-      <div class="row"><label title="OHT में पानी किन घंटों में भरता है (tube well / pump चलने का समय); CPHEEO Table 2.7 S.No.12 (p175): क्षमता = mass balance या 33 %, जो अधिक हो (न्यूनतम 33 %) + fire demand का 1/3 (S.No.13)">OHT भरने के घंटे</label>
+      <div class="row adv"><label title="OHT में पानी किन घंटों में भरता है (tube well / pump चलने का समय); CPHEEO Table 2.7 S.No.12 (p175): क्षमता = mass balance या 33 %, जो अधिक हो (न्यूनतम 33 %) + fire demand का 1/3 (S.No.13)">OHT भरने के घंटे</label>
         <input type="text" id="winflow" value="5-12, 13-22" placeholder="5-12, 13-22" style="width:9em"></div>
-      <div class="row"><label style="min-width:0" title="चालू न हो तो CPHEEO 5.7.5 की table: 1-2 working पर 1, 3-5 पर 2, 6-10 पर 3 standby tube well (हर standby एक पूरा tube well)। सिर्फ़ नए tube wells पर; booster / CWR pumps पर हमेशा CPHEEO की table।">
+      <div class="row adv"><label style="min-width:0" title="चालू न हो तो CPHEEO 5.7.5 की table: 1-2 working पर 1, 3-5 पर 2, 6-10 पर 3 standby tube well (हर standby एक पूरा tube well)। सिर्फ़ नए tube wells पर; booster / CWR pumps पर हमेशा CPHEEO की table।">
         <input type="checkbox" id="wsbon"> Standby tube wells अपने हिसाब से</label>
         <button type="button" id="wsbinfo" title="CPHEEO का नियम">ⓘ CPHEEO</button></div>
-      <div id="wsbtab" class="sbtab off"></div>
+      <div id="wsbtab" class="sbtab off adv"></div>
       <div id="wsug" class="sbtab"></div>
-      <div class="row"><label title="drawing के दो अलग टुकड़े (कोई pipe नहीं जोड़ता) इतनी दूरी या कम पर हों तो Zoning चेतावनी देती है (नक्शे पर लाल बिंदीदार रेखा) - शायद drawing में छूटा जोड़">Gap की चेतावनी (m तक)</label>
+      <div class="row adv"><label title="drawing के दो अलग टुकड़े (कोई pipe नहीं जोड़ता) इतनी दूरी या कम पर हों तो Zoning चेतावनी देती है (नक्शे पर लाल बिंदीदार रेखा) - शायद drawing में छूटा जोड़">Gap की चेतावनी (m तक)</label>
         <input type="number" id="wnearm" value="50" min="1" max="1000" step="1"></div>
       <div class="stepact"><button id="wzrun" class="primary">Zoning (OZ / DMA)</button>
         <button id="wexportz" title="Zoning की DXF - AutoCAD के लिए">Export DXF</button></div>
       <div class="status" id="wstatus"></div>
       <div id="wzbox"></div>
+      </div>
+      <div data-tab="design">
       <div class="stepbar">Design</div>
-      <div class="row"><label title="Network का peak factor (औसत माँग x यह = design की माँग): CPHEEO Table 2.7 S.No.7(b) p172 शहरी 2.5, S.No.7(c) ग्रामीण 3 (आबादी कोई भी हो); या अपना">Peak factor</label>
+      <div class="row adv"><label title="Network का peak factor (औसत माँग x यह = design की माँग): CPHEEO Table 2.7 S.No.7(b) p172 शहरी 2.5, S.No.7(c) ग्रामीण 3 (आबादी कोई भी हो); या अपना">Peak factor</label>
         <select id="wpeak"><option value="urban">2.5 शहरी (CPHEEO)</option><option value="rural">3.0 ग्रामीण (CPHEEO)</option><option value="given">अपना</option></select>
         <input type="number" id="wpeakv" value="2.5" min="1" max="5" step="0.1" style="width:5em" hidden></div>
-      <div class="row"><label style="min-width:0" title="दबाव घटाने वाले valve (PRV): चालू हो तो design नक्शे के PRV लगाता है और 31 m से ऊपर के दबाव पर PRV सुझाता है, DPR (D2) में उनका ख़र्च; U.P. जल निगम की DPRs में आम नहीं, इसलिए default बंद">
+      <div class="row adv"><label style="min-width:0" title="दबाव घटाने वाले valve (PRV): चालू हो तो design नक्शे के PRV लगाता है और 31 m से ऊपर के दबाव पर PRV सुझाता है, DPR (D2) में उनका ख़र्च; U.P. जल निगम की DPRs में आम नहीं, इसलिए default बंद">
         <input type="checkbox" id="wprv"> PRV का विकल्प (दबाव घटाने वाले valve)</label></div>
-      <div class="row"><label style="min-width:0" title="Design के बाद वही network: औसत माँग, रात का सबसे कम घंटा (draw-off pattern), fire flow; और 24 घंटे घंटा-दर-घंटा - हर OHT का पानी का स्तर (भरने के घंटों में भरती, outlet से खाली) और network का दबाव">
+      <div class="row adv"><label style="min-width:0" title="Design के बाद वही network: औसत माँग, रात का सबसे कम घंटा (draw-off pattern), fire flow; और 24 घंटे घंटा-दर-घंटा - हर OHT का पानी का स्तर (भरने के घंटों में भरती, outlet से खाली) और network का दबाव">
         <input type="checkbox" id="wsim" checked> Load cases और 24 घंटे की simulation</label></div>
-      <div class="row"><label title="Fire flow (L/s): हर OZ के सबसे कमज़ोर junction (peak पर सबसे कम दबाव) पर, औसत माँग के साथ। खाली = fire case नहीं। CPHEEO p138 hydrant का flow या दबाव नहीं देता (fire engine दबाव बढ़ाते हैं)">Fire flow (L/s)</label>
+      <div class="row adv"><label title="Fire flow (L/s): हर OZ के सबसे कमज़ोर junction (peak पर सबसे कम दबाव) पर, औसत माँग के साथ। खाली = fire case नहीं। CPHEEO p138 hydrant का flow या दबाव नहीं देता (fire engine दबाव बढ़ाते हैं)">Fire flow (L/s)</label>
         <input type="number" id="wfirelps" min="0" max="500" step="1" placeholder="खाली = नहीं" style="width:6em">
         <label title="Fire flow के समय उस junction पर न्यूनतम दबाव (m) - खाली = सिर्फ़ दिखाएँ, जाँच नहीं" style="min-width:0">न्यूनतम m</label>
         <input type="number" id="wfiremin" min="0" max="60" step="0.5" placeholder="खाली" style="width:5em"></div>
-      <details id="wcons"><summary class="hint" style="cursor:pointer;font-weight:600">Design की सीमाएँ (constraints) - बंद = अभी जैसा</summary>
+      <details id="wcons" class="adv"><summary class="hint" style="cursor:pointer;font-weight:600">Design की सीमाएँ (constraints) - बंद = अभी जैसा</summary>
       <div class="row"><label style="min-width:0;flex:1" title="24 घंटे का सबसे व्यस्त घंटा (draw-off pattern, peak factor से अधिक हो तो) और ऊपर दिया fire flow (L/s + न्यूनतम m, दोनों भरे हों) भी design की शर्त बनें - fail हो तो उसी रास्ते के pipes बड़े; design का समय लगभग दुगना">
         <input type="checkbox" id="wcon_cases"> Load cases पर भी design</label></div>
       <div class="row"><label style="min-width:0;flex:1" title="रात (सबसे कम माँग) में किसी junction पर इससे अधिक दबाव न हो - जाँच fail; रात का दबाव लगभग static है, छोटे pipes से नहीं घटता: PRV (विकल्प चालू हो तो इसी सीमा से ऊपर सुझाता है), कम staging या दूसरी zoning। CPHEEO Table 2.7 S.No.10: 17-21 m; pipe का pressure class भी देखें">
@@ -300,15 +308,18 @@
       <div class="stepact"><button id="wdrun" class="primary">Design</button>
         <button id="wexport" title="Design की DXF, मौजूदा zoning पर - AutoCAD के लिए">Export DXF</button>
         <button id="wexportdpr" title="आख़िरी Design की DPR (Excel) - इसी बटन से बनती है (Design के साथ नहीं) और Excel में खुलती है">Export DPR (xlsx)</button></div>
-      <!-- the rates of the DPR, changeable (rates.py, user decisions 15-Nov-2026) -->
-      <div class="stepact"><button id="wrexp" title="DPR के rates की xlsx: SOR 2025-26 और UPJN rates (pipe supply HDPE / DI K-7, K-9, HDPE carting, NRV, PRV) - पीले = इस project की आख़िरी Design की DPR में उपयोग हो रहे। Excel में खुलती है; Rate column बदलकर 'Import rate xlsx…' से लें">Export rate xlsx</button>
-        <button id="wrimp" title="बदली हुई rate xlsx: उसके rates सब projects की DPR में लगेंगे (master folder में रखे जाते हैं, app update के बाद भी)। अगली Export DPR / Design से लागू">Import rate xlsx…</button>
-        <input type="file" id="wrfile" accept=".xlsx" hidden>
-        <button id="wrreset" title="Import किए rates हटाकर app के अपने (SOR 2025-26 / dpr_water.json) rates वापस">मूल rates वापस</button></div>
-      <div class="hint" id="wrst"></div>
       <div id="wdbox"></div>
       <div class="stepact" id="tblrow" hidden><button id="tblbtn" title="Design के हर pipe / junction की तालिका: manual की जाँच, बदलाव, CSV">☷ Pipe / junction तालिका</button>
         <span class="hint" id="tbledits"></span></div>
+      </div>
+      <div data-tab="out">
+      <div class="stepbar adv">DPR - rates</div>
+      <!-- the rates of the DPR, changeable (rates.py, user decisions 15-Nov-2026) -->
+      <div class="stepact adv"><button id="wrexp" title="DPR के rates की xlsx: SOR 2025-26 और UPJN rates (pipe supply HDPE / DI K-7, K-9, HDPE carting, NRV, PRV) - पीले = इस project की आख़िरी Design की DPR में उपयोग हो रहे। Excel में खुलती है; Rate column बदलकर 'Import rate xlsx…' से लें">Export rate xlsx</button>
+        <button id="wrimp" title="बदली हुई rate xlsx: उसके rates सब projects की DPR में लगेंगे (master folder में रखे जाते हैं, app update के बाद भी)। अगली Export DPR / Design से लागू">Import rate xlsx…</button>
+        <input type="file" id="wrfile" accept=".xlsx" hidden>
+        <button id="wrreset" title="Import किए rates हटाकर app के अपने (SOR 2025-26 / dpr_water.json) rates वापस">मूल rates वापस</button></div>
+      <div class="hint adv" id="wrst"></div>
       <div class="stepbar">Intze OHT drawings (नई टंकियाँ)</div>
       <details id="izbox" style="margin:6px 0"><summary title="नई OHTs की Intze टंकी: design (working stress, IS 3370 Part 2 / IS 456 / IS 1893 Part 2 / IS 875 Part 3), GA, reinforcement और BBS की drawings - capacity और staging आख़िरी Design से">🏗 टंकियाँ और उनके inputs (खोलने के लिए यहाँ click करें)</summary>
       <div class="row"><label title="IS 1893 (Part 1):2016 Table 3; स्प्रिंगफ़ील्ड zone III">Seismic zone</label>
@@ -330,6 +341,7 @@
       <div class="hint">Zone 14 (Brookfield) जैसी: wall पर पानी = CPHEEO max SWD, नीचे cone, balcony, annular raft, RCC सीढ़ी; हर नई OHT की staging-foundation, container, सीढ़ी और BBS की A1 sheets (DXF + PDF) और design xlsx (output\&lt;project&gt;\intze)। एक बार में एक टंकी: उसकी पंक्ति का "Design" दबाएँ। <b>निर्माण से पहले structural engineer की जाँच ज़रूरी।</b></div>
       <div id="izlist"></div>
       </details>
+      </div>
     </div>
   </div>
   <div id="splitter" title="खींचकर panel चौड़ा / पतला करें (double-click = पहले जैसा)"></div>
@@ -358,6 +370,7 @@
   </div>
 </div>
 
+<script src="js/ui.js"></script>
 <script src="js/core.js"></script>
 <script src="js/map.js"></script>
 <script src="js/draw.js"></script>

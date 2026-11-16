@@ -352,6 +352,7 @@
   :root[data-theme="dark"] .why-line, :root[data-theme="dark"] .hovcard .hc-k { color: var(--muted); }
   :root[data-theme="dark"] a { color: #8ab4ff; }
   :root[data-theme="dark"] #izbox > summary { background: var(--chip); }
+  :root[data-theme="dark"] input.locked { background: var(--chip); color: var(--muted); }
   /* the map: its tiles dimmed, Leaflet's own controls and popups dark */
   :root[data-theme="dark"] .leaflet-container { background: #0f1114; }
   :root[data-theme="dark"] .leaflet-tile-pane { filter: brightness(.62) contrast(1.08) saturate(.85); }
@@ -365,6 +366,7 @@
 
   body[data-tab="tank"] #side [data-tab]:not([data-tab="tank"]) { display: none !important; }
   /* the Outputs tab's list (js/outlist.js) */
+  input.locked { background: #f1f1f1; }    /* filled from the projection (wards.js pjLock) */
   .ofolder code { font-size: 11px; word-break: break-all; }
   .ofolder .txtbtn { margin: 4px 6px 0 0; }
   .ocard { border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; margin: 6px 0; background: var(--card, #fff); }

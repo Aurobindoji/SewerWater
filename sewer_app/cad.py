@@ -12,6 +12,11 @@ PIPE_TEXT_MIN (oakdale 21-Oct-2026: 646 of 13,776, 1-5 m between manhole centres
 or another bend, 124 short pipes of the drawing itself) gets the label at full size off the pipe, at the end of a
 leader line LEADER x the text height long from the middle of the pipe, square to it and away from the manhole texts.
 
+Kept clear (user request 16-Nov-2026, as the water drawing): a bent pipe's text goes along its longest straight part
+(not across its own bends), and no pipe text lies over a manhole's texts, another pipe text or another pipe - it moves
+to the other side of the pipe, slides along it, or goes on a (longer) leader (Taken); where nowhere is clear, the place
+that meets the least (a text weighs TEXT_HIT pipes).
+
 From the original scripts design_to_dxf.py: write_dxf, snap_ends, source_text_height, readable_angle, longest_segment, fmt
 are unchanged. design_elements replaces read_model: the drawing is made from a pipeline.run result on the
 SPLIT network (the new manholes for the 30 m spacing are drawn, as in the designed SewerGEMS model).
@@ -39,6 +44,9 @@ LAYERS = {                      # name: AutoCAD colour index
 PIPE_TEXT_MIN = 0.5             # a pipe text is made at most this much smaller to fit between its manholes
 MH_CLEAR = 1.6                  # x the manhole symbol's radius: kept free of pipe text at both ends
 LEADER = 3.0                    # x the text height: leader line of a label that does not fit on its pipe
+TEXT_HIT, PIPE_HIT = 4, 1       # a label over a text weighs as much as crossing 4 pipes, when nowhere is clear
+STRAIGHT_H = 0.5                # x the text height: a pipe whose bends stay this close to its chord is labelled along
+                                # the chord, else along its longest straight part
 
 
 @functools.lru_cache(maxsize=1)
@@ -133,6 +141,126 @@ def fmt(v, nd=3):
     return "-" if v is None else f"{v:.{nd}f}"
 
 
+def bend(P, chord):
+    """How far the polyline's points lie off the straight line from its first to its last point."""
+    (ax, ay), (bx, by) = P[0], P[-1]
+    return max(abs((bx - ax) * (ay - y) - (ax - x) * (by - ay)) / chord for x, y in P)
+
+
+def text_quad(at, w, th, ang, ax, ay):
+    """Corners of a text's box: anchor at, width w, height th, rotation ang (degrees); ax 0 / 0.5 / 1 = the anchor at
+    the box's left / centre / right, ay 0 / 0.5 / 1 = at its bottom / middle / top."""
+    ux, uy = math.cos(math.radians(ang)), math.sin(math.radians(ang))
+    vx, vy = -uy, ux
+    x0, y0 = at[0] - ax * w * ux - ay * th * vx, at[1] - ax * w * uy - ay * th * vy
+    return [(x0, y0), (x0 + w * ux, y0 + w * uy), (x0 + w * ux + th * vx, y0 + w * uy + th * vy),
+            (x0 + th * vx, y0 + th * vy)]
+
+
+def _apart(a, b):
+    """True when the convex quads a and b do not overlap (separating axes)."""
+    for q in (a, b):
+        for i in range(4):
+            ex, ey = q[(i + 1) % 4][0] - q[i][0], q[(i + 1) % 4][1] - q[i][1]
+            pa = [ey * x - ex * y for x, y in a]
+            pb = [ey * x - ex * y for x, y in b]
+            if max(pa) <= min(pb) or max(pb) <= min(pa):
+                return True
+    return False
+
+
+class Taken:
+    """The boxes already on the drawing (manhole texts and symbols, pipe lines, pipe texts), on a grid: a pipe text is
+    put where it meets none of them."""
+
+    def __init__(self, cell):
+        self.cell, self.grid = cell, {}
+
+    def _cells(self, q):
+        xs, ys = [p[0] for p in q], [p[1] for p in q]
+        for i in range(math.floor(min(xs) / self.cell), math.floor(max(xs) / self.cell) + 1):
+            for j in range(math.floor(min(ys) / self.cell), math.floor(max(ys) / self.cell) + 1):
+                yield i, j
+
+    def add(self, q, weight=TEXT_HIT):
+        for k in self._cells(q):
+            self.grid.setdefault(k, []).append((q, weight))
+
+    def hits(self, q):
+        """The weights of the boxes q meets: a text TEXT_HIT, a pipe line PIPE_HIT."""
+        seen = {id(b): (b, w) for k in self._cells(q) for b, w in self.grid.get(k, ())}
+        return sum(w for b, w in seen.values() if not _apart(q, b))
+
+
+def place_pipe_text(taken, P, lines, th, h, r):
+    """Where the pipe text goes: (best, tx, ty, ang). P the pipe's points, lines / th from pipe_text, made for the
+    length the text runs along (pipe_text_run). best = (weight met, [(how, text, height, side or leader end, anchor,
+    leader direction, box)]) - how "on" (along the pipe, side +1 / -1) or "lead" (level, at the end of a leader from
+    (tx, ty)). The boxes are not added to taken."""
+    chord = math.dist(P[0], P[-1])
+    (x1, y1), (x2, y2) = longest_segment(P)
+    if chord > 1e-6 and bend(P, chord) <= STRAIGHT_H * h:     # (near) straight: along the whole pipe
+        ta, tb = P[0], P[-1]
+        tx, ty = point_along(P, 0.5)
+    else:                                                     # bent: along its longest straight part, in its middle
+        ta, tb = (x1, y1), (x2, y2)
+        chord = math.dist(ta, tb)
+        tx, ty = (x1 + x2) / 2, (y1 + y2) / 2
+    ang = readable_angle(tb[0] - ta[0], tb[1] - ta[1])
+    nx, ny = -math.sin(math.radians(ang)), math.cos(math.radians(ang))
+    lx, ly = (-nx, -ny) if nx + ny > 0 else (nx, ny)          # a leader: first away from the manhole texts
+                                                              # (up-right of their manhole)
+
+    def on_leader(t):
+        w, best = text_width(t, th), None
+        for k, (sx, sy) in enumerate([(lx, ly), (-lx, -ly)] * 3):
+            ex, ey = tx + sx * LEADER * h * (1 + k // 2), ty + sy * LEADER * h * (1 + k // 2)
+            at = (ex + (0.3 if sx >= 0 else -0.3) * h, ey)
+            q = text_quad(at, w, th, 0.0, 0 if sx >= 0 else 1, 0.5)
+            hit = taken.hits(q)
+            if best is None or hit < best[0]:
+                best = (hit, [("lead", t, th, (ex, ey), at, sx, q)])
+            if not hit:
+                break
+        return best
+
+    if lines[0][1] == 0:                                      # off the pipe on a leader
+        return on_leader(lines[0][0]), tx, ty, ang
+    ux, uy = math.cos(math.radians(ang)), math.sin(math.radians(ang))
+    widths = [text_width(t, th) for t, _ in lines]
+    slack = max(0.0, (chord - max(widths)) / 2 - MH_CLEAR * r)     # not over the manhole symbols
+    best = None
+    for s in (0.0, 0.5, -0.5, 1.0, -1.0):                     # the middle, else the other side, else slid along it
+        for flip in (1, -1):
+            ox, oy = tx + ux * s * slack, ty + uy * s * slack
+            put = []
+            for (t, side), w in zip(lines, widths):
+                side *= flip
+                at = (ox + nx * side * h * 0.6, oy + ny * side * h * 0.6)    # clear of the flow arrow (0.45 h)
+                put.append(("on", t, th, side, at, None, text_quad(at, w, th, ang, 0.5, 0 if side > 0 else 1)))
+            hit = sum(taken.hits(e[-1]) for e in put)
+            if best is None or hit < best[0]:
+                best = (hit, put)
+            if not hit:
+                break
+        if not best[0]:
+            break
+    if best[0]:                                               # nowhere clear on the pipe: the text on a leader
+        lead = on_leader("/".join(t for t, _ in lines))
+        if lead[0] < best[0]:
+            best = lead
+    return best, tx, ty, ang
+
+
+def pipe_text_run(P, h):
+    """The length a pipe's text runs along: the chord of a (near) straight pipe, else its longest straight part."""
+    chord = math.dist(P[0], P[-1])
+    if chord > 1e-6 and bend(P, chord) <= STRAIGHT_H * h:
+        return chord
+    a, b = longest_segment(P)
+    return math.dist(a, b)
+
+
 def write_dxf(out, nodes, conds, h, deep_m=None, extra=None):
     """nodes = {label: {"xy": (x, y), "gl": .., "il": .., "outfall": bool}};
     conds = [{"label", "pts": [(x, y), ...], "D": mm, "slope": m/m, "length": m}]. Returns counts.
@@ -148,6 +276,7 @@ def write_dxf(out, nodes, conds, h, deep_m=None, extra=None):
     msp = doc.modelspace()
     r_mh = 0.6 * h                                   # manhole symbol radius, in proportion to the text
     n_deep, n_grp, n_arrow, n_lead, used = 0, 0, 0, 0, set()
+    taken = Taken(10 * h)
 
     def group(prefix, lab, ents):
         """Symbol + its texts as one named DXF GROUP: picking one selects all (AutoCAD PICKSTYLE 1)."""
@@ -178,34 +307,37 @@ def write_dxf(out, nodes, conds, h, deep_m=None, extra=None):
                 (x + r_mh * 1.3, y + r_mh * 1.3 + (len(lines) - 1 - i) * h * 1.4),
                 align=TextEntityAlignment.BOTTOM_LEFT))
         group("OF" if n.get("outfall") else "MH", lab, ents)
+        w = max(text_width(t, h) for t in lines)  # the pipe texts keep off these texts and the symbol
+        taken.add(text_quad((x + r_mh * 1.3, y + r_mh * 1.3), w, (len(lines) - 1) * h * 1.4 + h, 0.0, 0, 0))
+        R = r_mh * (1.6 if n.get("outfall") else 1.0)
+        taken.add(text_quad((x, y), 2 * R, 2 * R, 0.0, 0.5, 0.5))
+    for c in conds:                             # and off the pipes: a text crosses none, its own bends too
+        pts = c["pts"]
+        for a, b in zip(pts or [], (pts or [])[1:]):
+            L_ = math.dist(a, b)
+            if L_ > 1e-9:
+                taken.add(text_quad(a, L_, 0.02 * h, math.degrees(math.atan2(b[1] - a[1], b[0] - a[0])), 0, 0.5),
+                          PIPE_HIT)
     for c in conds:
         pts = c["pts"]
         if not pts or len(pts) < 2:
             continue
         ents = [msp.add_lwpolyline(pts, dxfattribs={"layer": "SEW_PIPE"})]
         (x1, y1), (x2, y2) = longest_segment(pts)
-        # the text: at the middle of the pipe, along the line between its manholes (pipe_text)
-        chord = math.dist(pts[0], pts[-1])
-        ta, tb = (pts[0], pts[-1]) if chord > 1e-6 else ((x1, y1), (x2, y2))
-        ang = readable_angle(tb[0] - ta[0], tb[1] - ta[1])
-        tx, ty = point_along(pts, 0.5)
-        nx, ny = -math.sin(math.radians(ang)), math.cos(math.radians(ang))     # left normal of the text
-        lines, th = pipe_text(c["label"], c.get("D"), c.get("slope"), c.get("length"), chord, h, r_mh)
-        for txt, side in lines:
-            if side == 0:                               # off the pipe: leader to the side away from the manhole texts
-                if nx + ny > 0:                         # (they are up-right of every manhole)
-                    nx, ny = -nx, -ny
-                ex, ey = tx + nx * LEADER * h, ty + ny * LEADER * h
-                ents.append(msp.add_line((tx, ty), (ex, ey), dxfattribs={"layer": "SEW_PIPE_TEXT"}))
-                ents.append(msp.add_text(txt, height=th, dxfattribs={"layer": "SEW_PIPE_TEXT"}).set_placement(
-                    (ex + (0.3 if nx >= 0 else -0.3) * h, ey),
-                    align=TextEntityAlignment.MIDDLE_LEFT if nx >= 0 else TextEntityAlignment.MIDDLE_RIGHT))
+        # the text: in the middle of the pipe (of its longest straight part when bent), clear of the other texts
+        lines, th = pipe_text(c["label"], c.get("D"), c.get("slope"), c.get("length"), pipe_text_run(pts, h), h, r_mh)
+        best, tx, ty, ang = place_pipe_text(taken, pts, lines, th, h, r_mh)
+        for how, txt, th_, a1, at, sx, q in best[1]:
+            if how == "lead":                           # off the pipe, level, at the end of a leader
+                ents.append(msp.add_line((tx, ty), a1, dxfattribs={"layer": "SEW_PIPE_TEXT"}))
+                ents.append(msp.add_text(txt, height=th_, dxfattribs={"layer": "SEW_PIPE_TEXT"}).set_placement(
+                    at, align=TextEntityAlignment.MIDDLE_LEFT if sx >= 0 else TextEntityAlignment.MIDDLE_RIGHT))
                 n_lead += 1
-                continue
-            off = side * h * 0.6                        # clear of the flow arrow (half width 0.45 h) at any size
-            ents.append(msp.add_text(txt, height=th, rotation=ang, dxfattribs={"layer": "SEW_PIPE_TEXT"}).set_placement(
-                (tx + nx * off, ty + ny * off),
-                align=TextEntityAlignment.BOTTOM_CENTER if side > 0 else TextEntityAlignment.TOP_CENTER))
+            else:                                       # along the pipe, above (+1) or below (-1)
+                ents.append(msp.add_text(txt, height=th_, rotation=ang,
+                                         dxfattribs={"layer": "SEW_PIPE_TEXT"}).set_placement(
+                    at, align=TextEntityAlignment.BOTTOM_CENTER if a1 > 0 else TextEntityAlignment.TOP_CENTER))
+            taken.add(q)
         mx, my = (x1 + x2) / 2, (y1 + y2) / 2
         if c.get("dir"):                         # flow arrow on the pipe, middle of its longest segment
             L_ = math.dist((x1, y1), (x2, y2))

@@ -29,8 +29,8 @@ function pjInputs() {
   return $("pjcensus").value.trim() && ($("popb").value || wtTotal() > 0) ? { base_pop: $("popb").value, census: $("pjcensus").value, method: PJ_METHOD } : null;
 }
 function pjLock(on) {                     // the fields the projection fills
-  for (const id of ["popm", "wpopf"].concat(wtTotal() > 0 ? ["popb"] : [])) { $(id).readOnly = on; $(id).style.background = on ? "#f1f1f1" : ""; }
-  if (!(wtTotal() > 0)) { $("popb").readOnly = false; $("popb").style.background = ""; }
+  for (const id of ["popm", "wpopf"].concat(wtTotal() > 0 ? ["popb"] : [])) { $(id).readOnly = on; $(id).classList.toggle("locked", on); }
+  if (!(wtTotal() > 0)) { $("popb").readOnly = false; $("popb").classList.remove("locked"); }
   $("wpopf").title = on ? tr("projection से: +30 वर्ष / आधार वर्ष", "from the projection: +30 years / base year") : "";
   popUi();
 }
@@ -102,18 +102,18 @@ function pjChart() {
   const y1 = Math.max(...all) * 1.05, X = v => L + (v - x0) / (x1 - x0) * (W - L - R), Y = v => T + (1 - v / y1) * (H - T - Bt);
   const k = v => v >= 1e6 ? (v / 1e6).toFixed(1) + "M" : v >= 1e3 ? Math.round(v / 1e3) + "k" : Math.round(v);
   let s = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W + 40}px;font:10px sans-serif;margin-top:4px" role="img" aria-label="${tr("आबादी projection", "population projection")}">`;
-  for (const t of [0, .25, .5, .75, 1]) s += `<line x1="${L}" x2="${W - R}" y1="${Y(y1 * t)}" y2="${Y(y1 * t)}" stroke="#e0e0e0"/><text x="${L - 4}" y="${Y(y1 * t) + 3}" text-anchor="end" fill="#666">${k(y1 * t)}</text>`;
-  for (const yr of [x0, f.years.init, x1]) s += `<text x="${X(yr)}" y="${H - 6}" text-anchor="${yr === x1 ? "end" : "middle"}" fill="#666">${yr}</text>`;
-  s += `<polyline points="${f.census.map(c => `${X(c[0])},${Y(c[1])}`).join(" ")}" fill="none" stroke="#9e9e9e" stroke-width="1.5" stroke-dasharray="3 3"/>`;
-  for (const c of f.census) s += `<circle cx="${X(c[0])}" cy="${Y(c[1])}" r="3" fill="#757575"><title>census ${c[0]}: ${fmt(c[1])}</title></circle>`;
+  for (const t of [0, .25, .5, .75, 1]) s += `<line x1="${L}" x2="${W - R}" y1="${Y(y1 * t)}" y2="${Y(y1 * t)}" style="stroke:var(--line)"/><text x="${L - 4}" y="${Y(y1 * t) + 3}" text-anchor="end" style="fill:var(--muted)">${k(y1 * t)}</text>`;
+  for (const yr of [x0, f.years.init, x1]) s += `<text x="${X(yr)}" y="${H - 6}" text-anchor="${yr === x1 ? "end" : "middle"}" style="fill:var(--muted)">${yr}</text>`;
+  s += `<polyline points="${f.census.map(c => `${X(c[0])},${Y(c[1])}`).join(" ")}" fill="none" style="stroke:var(--muted)" stroke-width="1.5" stroke-dasharray="3 3"/>`;
+  for (const c of f.census) s += `<circle cx="${X(c[0])}" cy="${Y(c[1])}" r="3" style="fill:var(--muted)"><title>census ${c[0]}: ${fmt(c[1])}</title></circle>`;
   const ends = Object.entries(f.town).map(([m, v]) => [m, Y(v.ult)]).sort((a, b) => a[1] - b[1]);
   for (let i = 1; i < ends.length; i++) if (ends[i][1] - ends[i - 1][1] < 11) ends[i][1] = ends[i - 1][1] + 11;   // labels apart
   const ly = Object.fromEntries(ends);
   for (const [m, v] of Object.entries(f.town)) {
     const pts = [last, [f.years.init, v.init], [f.years.mid, v.mid], [f.years.ult, v.ult]];
     s += `<polyline points="${pts.map(p => `${X(p[0])},${Y(p[1])}`).join(" ")}" fill="none" stroke="${PJ_COL[m]}" stroke-width="${m === f.adopted ? 3 : 1.5}"/>`;
-    for (const p of pts.slice(1)) s += `<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="4" fill="${PJ_COL[m]}" stroke="#fff" stroke-width="1.5"><title>${esc(f.names[m][0])} ${p[0]}: ${fmt(p[1])}</title></circle>`;
-    s += `<text x="${X(f.years.ult) + 6}" y="${ly[m] + 3}" fill="#333"${m === f.adopted ? ' font-weight="bold"' : ""}>${PJ_SHORT[m]} ${k(v.ult)}</text>`;
+    for (const p of pts.slice(1)) s += `<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="4" fill="${PJ_COL[m]}" style="stroke:var(--panel)" stroke-width="1.5"><title>${esc(f.names[m][0])} ${p[0]}: ${fmt(p[1])}</title></circle>`;
+    s += `<text x="${X(f.years.ult) + 6}" y="${ly[m] + 3}" style="fill:var(--text)"${m === f.adopted ? ' font-weight="bold"' : ""}>${PJ_SHORT[m]} ${k(v.ult)}</text>`;
   }
   return s + "</svg>";
 }

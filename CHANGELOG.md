@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.9.15 (beta) - 2026-11-16
+
+- Water supply DXF: a pipe's label gives its material and diameter, e.g. `P-9943 DI 350mm L=31.0`; the pipes of
+  each size are on a layer and in a colour of their own (`W_PIPE_HDPE_110`, `W_PIPE_DI_350` ...), with a legend of
+  the sizes and their lengths under the network.
+- Water supply DXF: a junction's residual head is written `RH 21.95` (was `P 21.95`).
+- Water supply DXF: pipe labels no longer lie over a junction's name / GL / HGL / RH. A label goes to the first
+  clear place: the middle of the pipe as before, the other side, slid along the pipe, or on a leader.
+- Both map pages: no "Don't wait" button on the loading cover; it stays until the work is done.
+
 ## 0.9.14 (beta) - 2026-11-15
 
 - Inside only: the code of both modules arranged anew, in stages, nothing the app makes changed. Each module is in

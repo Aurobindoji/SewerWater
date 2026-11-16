@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.9.18 (beta) - 2026-11-16
+
+- Water supply: **Make a map (KML / KMZ)** on the Project tab - the project's whole map for Google Earth, the parts
+  ticked: pipes (a colour and folder per size after a design, closed pipes red), junctions, tanks, new tube wells and
+  their rising mains, bulk consumers, PRVs, OZ / DMA boundaries, boundary valves, wards, barrier lines; each part a
+  folder, details on a click. For DXF projects too. The file also stays in the Outputs tab.
+- An active drawing / network tool now shows itself: a cross cursor, and a note at the mouse saying which tool is on,
+  what to do next and how to turn it off (both modules).
+- Opening a DXF under the name of a project already there asks first (it would replace that project's network and
+  its corrections); Cancel suggests a free name.
+- Fixes: "DXF network…" on the Project tab opens its panel (on the Network tab); disabled buttons look disabled and
+  say why; in the dark theme the inputs filled by the projection and the projection chart's labels are readable;
+  Bulk consumer / new tube well / PRV buttons once each.
+- Sewer plan DXF: pipe labels kept off the manhole texts, the other labels and the pipes (as the water drawing) - a
+  bent pipe's along its longest straight part, else the other side, slid along, or on a leader.
+
 ## 0.9.17 (beta) - 2026-11-16
 
 - **A full guide in the app** (❓ Help on the tab bar, both modules): per step the data needed, the order of work and

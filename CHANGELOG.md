@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.20 (beta) - 2026-11-16
+
+- The start page has **PravaahForge** as its title; the choice of language is a small line under it. Under Sewer and
+  Water supply the same kind of line, in the language chosen.
+- The tray menu, the menu **App** of the windows, the tray's note and **About** are in the language chosen last
+  (Hindi or English, no longer both), and **dark** when the pages are dark (the dark theme, or System with Windows
+  in dark mode).
+
 ## 0.9.19 (beta) - 2026-11-16
 
 - The app is now called **PravaahForge** (Sewer & Water network design): the window, the start page, About, the

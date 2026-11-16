@@ -38,7 +38,7 @@ function wInputs() {
   drawn.eachLayer(l => { if (l.kind === "prv") { const ll = l.getLatLng(); prvs.push({ name: l.props.name, lat: ll.lat, lng: ll.lng, setting_m: l.props.setting_m ?? "" }); } });
   const tws = [];                       // new tube wells (water phase 2, user 31-Oct-2026)
   drawn.eachLayer(l => { if (l.kind === "tw") { const ll = l.getLatLng(); tws.push({ name: l.props.name, lat: ll.lat, lng: ll.lng, discharge_lpm: l.props.discharge_lpm ?? "" }); } });
-  return { name: $("pname").value, ohts, barriers, loops, crossings, wards, bulk, prvs, tws, projection: pjInputs(), pop_factor: $("wpopf").value, floating_pct: $("wfloat").value, persons_per_connection: $("wppc").value, use_prv: $("wprv").checked ? "1" : "",
+  return { name: $("pname").value, ohts, barriers, loops, crossings, wards, bulk, prvs, tws, projection: pjInputs(), pop_factor: $("wpopf").value, floating_pct: $("wfloat").value, load_by: $("wloadby").value, simulate: $("wsim").checked ? "1" : "0", fire_lps: $("wfirelps").value, fire_min_m: $("wfiremin").value, peak: $("wpeak").value === "given" ? $("wpeakv").value : $("wpeak").value, persons_per_connection: $("wppc").value, use_prv: $("wprv").checked ? "1" : "",
            oht_inflow: $("winflow").value, near_m: $("wnearm").value, ward_table: wtInputs(), intze: izInputs(), tw_standby: sbInputs(), sug: SUG,
            pop_total: $("poptot").hidden ? "" : $("poptot").value, edits: WEDITS, ...stageInputs() };
 }
@@ -65,6 +65,7 @@ function sbRender() {
   if ($("wsbdef")) $("wsbdef").onclick = () => { SB = SB_DEF.map(r => r.slice()); sbRender(); changed(); };
 }
 $("wsbon").onchange = () => { sbRender(); changed(); };
+$("wpeak").onchange = () => { $("wpeakv").hidden = $("wpeak").value !== "given"; };
 $("wsbinfo").onclick = ev => {
   document.querySelectorAll(".cpop").forEach(e => e.remove());
   const d = document.createElement("div"); d.className = "cpop";

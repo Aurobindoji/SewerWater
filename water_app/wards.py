@@ -41,13 +41,128 @@ def _has_conn(c):
     return not (c.get("no_conn") or c.get("crossing"))
 
 
-def _ward_pop(net, wards):
-    """Population per junction from the wards (layout.population_by_polygons: by half the pipe length at each
-    junction inside a ward); a junction in no ward gets none (user decision 30-Oct-2026: 0 and a warning, the total
-    given on the page not used). -> (pop, note for the flags)."""
+# how a population is put on the junctions (user request 16-Nov-2026, "water load विकल्प"): by the pipe length at each
+# (half of every pipe to each end - as before), by the area nearest to each (Thiessen), or the same on each
+LOAD_BY = {"length": ("by the pipe length at each", "हर junction पर pipe की लंबाई के अनुपात में"),
+           "area": ("by the area nearest to each (Thiessen)", "हर junction के निकटतम क्षेत्रफल (Thiessen) के अनुपात में"),
+           "equal": ("the same on each", "हर junction पर बराबर")}
+AREA_REACH_M = 100.0       # area mode with a total population (no wards): the land within this of a junction counts
+AREA_SAMPLES = 3000000     # area mode: at most this many sample points per polygon (their spacing from the area)
+
+
+def load_by(req):
+    """The page's choice of how the population is spread: "length" (default), "area" or "equal"."""
+    v = str((req or {}).get("load_by") or "length").strip().lower()
+    if v not in LOAD_BY:
+        raise ValueError(f"आबादी बाँटने का तरीका '{v}' नहीं - length / area / equal")
+    return v
+
+
+def _served(net):
+    """The junctions with service connections (a pipe with connections meets them) and their half pipe lengths."""
+    half = collections.defaultdict(float)
+    for c in net["conduits"]:
+        if _has_conn(c):
+            half[c["start_node"]] += (c["length_m"] or 0.0) / 2
+            half[c["stop_node"]] += (c["length_m"] or 0.0) / 2
+    return {n: w for n, w in half.items() if (net["nodes"].get(n) or {}).get("xy")}
+
+
+def _inside_np(X, Y, poly):
+    """Point-in-polygon for arrays of points (ray casting, as layout.inside)."""
+    import numpy as np
+    c = np.zeros(X.shape, dtype=bool)
+    n = len(poly)
+    for i in range(n):
+        (x1, y1), (x2, y2) = poly[i], poly[(i + 1) % n]
+        if y1 == y2:
+            continue
+        m = (Y < y1) != (Y < y2)
+        c ^= m & (X < (x2 - x1) * (Y - y1) / (y2 - y1) + x1)
+    return c
+
+
+def _grid(xs, ys, area):
+    """A square grid over the box, its spacing such that about AREA_SAMPLES points fall in the given area."""
+    import numpy as np
+    s = max(2.0, math.sqrt(max(area, 1.0) / AREA_SAMPLES))
+    gx = np.arange(min(xs) + s / 2, max(xs), s)
+    gy = np.arange(min(ys) + s / 2, max(ys), s)
+    X, Y = np.meshgrid(gx, gy)
+    return X.ravel(), Y.ravel(), s * s
+
+
+def _area_shares(pts, X, Y):
+    """{junction: number of the sample points nearest to it} - pts {junction: (x, y)}."""
+    import numpy as np
+    from scipy.spatial import cKDTree
+    names = list(pts)
+    if not names or not len(X):
+        return {}
+    _, k = cKDTree(np.array([pts[n] for n in names])).query(np.column_stack([X, Y]))
+    cnt = np.bincount(k, minlength=len(names))
+    return {names[i]: float(cnt[i]) for i in range(len(names)) if cnt[i]}
+
+
+def _ring_area(poly):
+    return abs(sum(x1 * y2 - x2 * y1 for (x1, y1), (x2, y2) in zip(poly, poly[1:] + poly[:1]))) / 2
+
+
+def spread_total(net, total, by="length"):
+    """A total population on the served junctions: by length / area (the land within AREA_REACH_M of a junction,
+    nearest junction) / equal."""
+    w = _served(net)
+    if by == "equal":
+        w = {n: 1.0 for n in w}
+    elif by == "area" and w:
+        import numpy as np
+        pts = {n: tuple(net["nodes"][n]["xy"]) for n in w}
+        xs, ys = [p[0] for p in pts.values()], [p[1] for p in pts.values()]
+        R = AREA_REACH_M
+        X, Y, _ = _grid([min(xs) - R, max(xs) + R], [min(ys) - R, max(ys) + R],
+                        len(pts) * math.pi * R * R)
+        from scipy.spatial import cKDTree
+        d, _ = cKDTree(np.array(list(pts.values()))).query(np.column_stack([X, Y]), distance_upper_bound=R)
+        keep = np.isfinite(d)
+        w = _area_shares(pts, X[keep], Y[keep])
+    L = sum(w.values()) or 1.0
+    return {n: total * v / L for n, v in w.items()}
+
+
+def population_in_polygons(net, polygons, by="length"):
+    """{junction: population} from polygons [([(x, y)], population)]: each polygon's population on the served junctions
+    inside it - by length (layout.population_by_polygons), area (its land to the nearest of them) or equal. A
+    polygon with no junction inside: listed (rows), its population on none. -> (pop, rows)."""
     from . import layout as wl
     served = dict(net, conduits=[c for c in net["conduits"] if _has_conn(c)])
-    pop, rows = wl.population_by_polygons(served, [(w["xy"], w["population"]) for w in wards])
+    if by == "length":
+        return wl.population_by_polygons(served, polygons)
+    w = _served(net)
+    pop, rows = {}, []
+    for i, (poly, p) in enumerate(polygons, 1):
+        ins = [n for n in w if wl.inside(net["nodes"][n]["xy"], poly)]
+        if by == "equal" or not ins:
+            share = {n: 1.0 for n in ins}
+        else:
+            xs, ys = [q[0] for q in poly], [q[1] for q in poly]
+            X, Y, _ = _grid(xs, ys, _ring_area(list(poly)))
+            m = _inside_np(X, Y, list(poly))
+            share = _area_shares({n: tuple(net["nodes"][n]["xy"]) for n in ins}, X[m], Y[m]) or {n: 1.0 for n in ins}
+        tw = sum(share.values())
+        for n, v in share.items():
+            pop[n] = pop.get(n, 0.0) + p * v / tw
+        rows.append({"polygon": i, "population": p, "manholes inside": len(ins),
+                     "sewer length inside (m)": round(sum(w[n] for n in ins) * 2, 1)})
+    return pop, rows
+
+
+def _ward_pop(net, wards, by="length"):
+    """Population per junction from the wards (population_in_polygons: the junctions inside a ward, by the page's
+    choice - pipe length / area / equal); a junction in no ward gets none (user decision 30-Oct-2026: 0 and a
+    warning, the total given on the page not used). -> (pop, note for the flags)."""
+    from . import layout as wl
+    served = dict(net, conduits=[c for c in net["conduits"] if _has_conn(c)])
+    pop, rows = population_in_polygons(net, [(w["xy"], w["population"]) for w in wards], by)
     half = collections.defaultdict(float)
     for c in served["conduits"]:
         half[c["start_node"]] += (c["length_m"] or 0.0) / 2
@@ -58,7 +173,7 @@ def _ward_pop(net, wards):
         for n in pop:
             if n not in of and wl.inside(net["nodes"][n]["xy"], w["xy"]):
                 of[n] = i
-    note = {"wards": len(wards), "population": round(sum(pop.values())), "junctions": len(pop), "ward_of": of,
+    note = {"wards": len(wards), "population": round(sum(pop.values())), "junctions": len(pop), "ward_of": of, "by": by,
             "list": [{"name": w["name"], "population": w["population"], "character": w["character"],
                       "table": w.get("table")} for w in wards],
             "outside": out, "outside_m": round(sum(half[n] for n in out)),
@@ -74,9 +189,9 @@ def _ward_flags(note, ll, xy):
     L = lambda a: ", ".join(a[:8]) + (" ..." if len(a) > 8 else "")
     f = [{"zone": None, "level": "info",
           "text": f"population from {note['wards']} ward(s) drawn on the map: {note['population']:,} on "
-                  f"{note['junctions']:,} junctions (by the pipe length at each)",
+                  f"{note['junctions']:,} junctions ({LOAD_BY[note.get('by', 'length')][0]})",
           "hi": f"आबादी नक्शे पर खींचे {note['wards']} वार्डों से: {note['population']:,}, {note['junctions']:,} junctions पर "
-                f"(हर junction पर pipe की लंबाई के अनुपात में)"}]
+                f"({LOAD_BY[note.get('by', 'length')][1]})"}]
     if note["outside"]:
         f.append({"zone": None, "level": "warn",
                   "text": f"{len(note['outside']):,} junctions ({note['outside_m']:,} m of pipe) lie in no ward - no population "

@@ -14,8 +14,8 @@ PACKAGE = {"HOME", "DATA_DIR", "DesignError"}           # the package's own __in
 
 LAYERS = {
     "water_app": {
-        "core": "barriers demand design geo hindi hydraulics intze intze_calc network population prv rising spacing "
-                "zone_geom zoning",
+        "core": "barriers demand design geo hindi hydraulics intze intze_calc network population prv rising simulate "
+                "spacing zone_geom zoning",
         "net": "cad dxf_extract dxf_inspect layout netedit repair",
         "project": "city_wards project rates wards",
         "output": "dpr intze_dwg",

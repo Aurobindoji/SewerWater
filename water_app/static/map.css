@@ -250,7 +250,9 @@
   table.wz { width: 100%; border-collapse: collapse; font-size: 11.5px; margin-top: 6px; }
   table.wz th, table.wz td { padding: 2px 3px; border-bottom: 1px solid var(--line); text-align: right; }
   table.wz th:first-child, table.wz td:first-child { text-align: left; }
+  details > summary.hint { margin: 6px 0 0; }
   .wflag { font-size: 12px; margin: 2px 0; } .wflag.error { color: var(--danger); } .wflag.warn { color: #b26a00; }
+  .wflag.alert { color: #d50000; font-weight: 700; background: #ffebee; border-left: 4px solid #d50000; padding: 4px 6px; border-radius: 3px; margin: 4px 0; }
   /* the saturation's value of a ward character: a box, red past the limit (9-Nov-2026) */
   .satbox { display: inline-block; min-width: 54px; padding: 3px 6px; border: 1px solid #b0bec5; border-radius: 4px; text-align: right; background: #fff; }
   .satbox.satred { background: #ffcdd2; border-color: #c62828; color: #b71c1c; font-weight: bold; }

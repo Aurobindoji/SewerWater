@@ -11,6 +11,7 @@ from .dpr import rising_main as wdpr_rm
 from . import hydraulics as hy
 from . import prv as wprv
 from . import rising as wrising
+from . import simulate as wsim
 from .zone_lines import _mid_along
 from .wards import _with_projection
 from .results import _dpr_info, _excel, _keep, _keep_dpr, edits_of
@@ -70,6 +71,8 @@ def run_design(name, req):
                               "detail": f["text"].split(":", 1)[1].strip(),
                               "check_hi": f["hi"].split(":")[0], "detail_hi": f["hi"].split(":", 1)[1].strip()})
     res["stages"] = _stages(req, out["hnet"], zz[2], ohts, z, crit, res, out["prvs"])
+    if sim_on(req):                          # load cases and the 24 h run (user request 16-Nov-2026)
+        _simulate(req, out, zz[2], z, crit, res)
     res["rising"] = _rising(stem, req, zz[2], z, ohts, res, crit)
     fire = sum(dm.daily_kl(v["pop"], crit, out["res"]["summary"]["population"])["fire"] for v in zz[2]["nodes"].values())
     res["checks"].append({"check": "fire demand", "ok": True, "note": True,
@@ -105,6 +108,110 @@ def run_design(name, req):
 
 
 STAGE_YEARS = {"init": 0, "mid": 15, "ult": 30}
+
+
+def sim_on(req):
+    """Load cases and the 24 h simulation with the design: on unless switched off on the page."""
+    return str((req or {}).get("simulate", "1")).strip().lower() not in ("", "0", "false", "off")
+
+
+def _fire_inputs(req):
+    """The page's fire flow (L/s; empty / 0 = no fire case) and the head to check at it (m; empty = shown only)."""
+    def num(k, lo, hi, what):
+        v = (req or {}).get(k)
+        if v in (None, ""):
+            return None
+        try:
+            x = float(v)
+        except (TypeError, ValueError):
+            raise ValueError(f"{what}: '{v}' अंक नहीं") from None
+        if not lo <= x <= hi:
+            raise ValueError(f"{what}: {x:g} ठीक नहीं - {lo:g} से {hi:g} तक")
+        return x
+    return num("fire_lps", 0, 500, "fire flow (L/s)"), num("fire_min_m", 0, 60, "fire के समय न्यूनतम दबाव (m)")
+
+
+def _simulate(req, out, wnet, z, crit, res):
+    """The designed network under the load cases and through a day (simulate.py): res["load_cases"], res["fires"],
+    res["day"] and their checks."""
+    hnet, prvs = out["hnet"], out["prvs"]
+    fire_lps, fire_min = _fire_inputs(req)
+    peak_p = out["res_h"]["pressure"]
+    res["load_cases"], res["fires"] = wsim.cases(hnet, crit, prvs, peak_p, z["oz"], fire_lps, fire_min)
+    night = next(c for c in res["load_cases"] if c["case"] == "night")
+    res["checks"].append({"check": "night (lowest hour)", "ok": True, "note": True, "ref": crit["draw_off_pattern"]["ref"],
+                          "detail": f"x {night['factor']:g} of the average: residual head up to {night['max_p']:g} m "
+                                    f"at {night['max_at']}",
+                          "check_hi": "रात (सबसे कम घंटा)",
+                          "detail_hi": f"औसत का x {night['factor']:g}: दबाव {night['max_p']:g} m तक ({night['max_at']} पर)"})
+    if res["fires"]:
+        bad = [f for f in res["fires"] if f["ok"] is False]
+        txt = "; ".join(f"{f['oz']} {f['node']} {f['p']:g} m" for f in res["fires"][:8])
+        res["checks"].append({"check": f"fire flow {fire_lps:g} L/s", "ok": not bad, "note": fire_min is None,
+                              "ref": wsim.FIRE_REF,
+                              "detail": (f"at each OZ's weakest junction with the average demand: {txt}" +
+                                         (f" - {len(bad)} below {fire_min:g} m" if bad else
+                                          f" - all {fire_min:g} m or more" if fire_min is not None else "")),
+                              "check_hi": f"fire flow {fire_lps:g} L/s",
+                              "detail_hi": (f"हर OZ के सबसे कमज़ोर junction पर, औसत माँग के साथ: {txt}" +
+                                            (f" - {len(bad)} में {fire_min:g} m से कम" if bad else
+                                             f" - सब {fire_min:g} m या अधिक" if fire_min is not None else ""))})
+    S = wdpr.settings()
+    swd = lambda kl: next(d for c, d in S["swd"] if c is None or (kl or 0) <= c)
+    city = sum(v["pop"] for v in wnet["nodes"].values())
+    tanks = []
+    for o in res["outlets"]:
+        kl = o.get("capacity_kl") or o.get("required_kl")
+        if not kl:
+            continue
+        mem = [n for n, k in z["oz"].items() if k == o["name"] and n in wnet["nodes"]]
+        fire = sum(dm.daily_kl(wnet["nodes"][n]["pop"], crit, city)["fire"] for n in mem)
+        daily = sum(hnet["nodes"][n].get("avg", 0.0) or 0.0 for n in mem if n in hnet["nodes"]) * 86.4
+        tanks.append({"name": o["name"], "kl": float(kl), "swd_m": swd(kl), "fire_kl": fire / 3.0, "daily_kl": daily})
+    if not tanks:
+        return
+    res["day"] = wsim.day(hnet, crit, tanks, prvs, crit["oht_inflow_hours"]["value"])
+    rh = crit["residual_head_m"]["value"]
+    dry = {k: t for k, t in res["day"]["tanks"].items() if t["empty_h"]}
+    spill = {k: t for k, t in res["day"]["tanks"].items() if t["full_h"] and k not in dry}
+    low_h = [r["h"] for r in res["day"]["hours"] if r["low_n"]]
+    txt = "; ".join(f"{k} {', '.join(f'{h}-{h + 1} h' for h in t['empty_h'][:4])} ({t['short_kl']:g} KL short)"
+                    for k, t in dry.items())
+    sp = "; ".join(f"{k} {', '.join(f'{h}-{h + 1} h' for h in t['full_h'][:4])} ({t['spill_kl']:g} KL)"
+                   for k, t in spill.items())
+    lowest = ", ".join(f"{k} {t['min_pct']:g} %" for k, t in res["day"]["tanks"].items())
+    res["checks"].append({"check": "24 h: OHT levels", "ok": not dry and not spill, "ref": crit["esr_capacity_share"]["ref"],
+                          "detail": "; ".join(x for x in ((f"runs dry: {txt}" if dry else ""),
+                                                          (f"full, the inflow not held (the next day short): {sp}"
+                                                           if spill else "")) if x)
+                                    or f"no OHT runs dry or over - lowest {lowest}",
+                          "check_hi": "24 घंटे: OHT का स्तर",
+                          "detail_hi": "; ".join(x for x in ((f"खाली होती है: {txt}" if dry else ""),
+                                                             (f"भर जाती है, आया पानी नहीं समाता (अगले दिन कमी): {sp}"
+                                                              if spill else "")) if x)
+                                       or f"कोई OHT न खाली होती न छलकती - सबसे कम {lowest}"})
+    thin = {k: t for k, t in res["day"]["tanks"].items() if k not in dry and t["min_pct"] < wsim.MARGIN_PCT}
+    if thin:
+        at = {k: min(range(24), key=lambda h: res["day"]["hours"][h]["tanks"][k]["full_pct"]) for k in thin}
+        t_ = "; ".join(f"{k} {t['min_pct']:g} % at {at[k]:02d}:00" for k, t in thin.items())
+        th_ = "; ".join(f"{k} {t['min_pct']:g} %, {at[k]:02d}:00 बजे" for k, t in thin.items())
+        res["checks"].append({
+            "check": "24 h: OHT margin", "ok": True, "warn": True, "ref": crit["esr_capacity_share"]["ref"],
+            "detail": f"nearly empty in the day (below {wsim.MARGIN_PCT:g} % of the usable water): {t_} - the capacity is "
+                      f"just the mass balance, with no margin; a little more draw-off or a late pump and it runs dry "
+                      f"(WaterGEMS closes such a tank for that moment) - a larger capacity, longer filling hours or "
+                      f"filling in the gap gives a margin",
+            "check_hi": "24 घंटे: OHT में गुंजाइश",
+            "detail_hi": f"दिन में लगभग खाली ({wsim.MARGIN_PCT:g} % उपयोग योग्य पानी से कम): {th_} - क्षमता ठीक mass "
+                         f"balance जितनी, कोई गुंजाइश नहीं; थोड़ी अधिक खपत या pump देर से चले तो खाली हो जाएगी (WaterGEMS "
+                         f"ऐसी टंकी को उस पल बंद कर देता है) - अधिक क्षमता, भरने के लंबे घंटे या बीच के अंतराल में भराई से "
+                         f"गुंजाइश मिलती है"})
+    res["checks"].append({"check": f"24 h: residual head {rh:g} m", "ok": not low_h, "ref": crit["residual_head_m"]["ref"],
+                          "detail": (f"below in hours {', '.join(f'{h}-{h + 1}' for h in low_h[:8])}" if low_h else
+                                     f"every hour - lowest {min(r['min_p'] for r in res['day']['hours']):g} m"),
+                          "check_hi": f"24 घंटे: residual head {rh:g} m",
+                          "detail_hi": (f"इन घंटों में कम: {', '.join(f'{h}-{h + 1}' for h in low_h[:8])}" if low_h else
+                                        f"हर घंटे - सबसे कम {min(r['min_p'] for r in res['day']['hours']):g} m")})
 
 
 def _stages(req, hnet, wnet, ohts, z, crit, res, prvs=()):

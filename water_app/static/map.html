@@ -241,8 +241,10 @@
         <input type="number" id="wpopf" value="1" min="0.1" max="10" step="0.01"></div>
       <div class="row"><label title="Floating और institutional आबादी, आबादी के % में (हर stage पर), 45 LPCD पर (CPHEEO Table 2.7 S.No.5)। Default 10 % (reference DPR); CPHEEO Annexure 2.8: आँकड़े न हों तो 1-3 %">Floating आबादी (%)</label>
         <input type="number" id="wfloat" value="10" min="0" max="50" step="0.5"></div>
+      <div class="row"><label title="वार्ड (या कुल आबादी) की आबादी उसके अंदर के junctions पर कैसे बँटे: pipe की लंबाई के अनुपात में (हर pipe का आधा उसके दोनों छोरों को), हर junction के सबसे पास वाले क्षेत्रफल (Thiessen) के अनुपात में, या हर junction पर बराबर। Layout (KML) वाले project में आबादी layout से आती है">आबादी junctions पर</label>
+        <select id="wloadby"><option value="length">pipe की लंबाई से</option><option value="area">क्षेत्रफल से (Thiessen)</option><option value="equal">बराबर</option></select></div>
       <div class="stepbar">Zoning (OZ / DMA)</div>
-      <div class="hint">माँग: 150 LPCD + 10% हानि, floating (ऊपर का %) @ 45 LPCD, fire 100√P; peak factor 2.5; residual head ≥ 17 m (CPHEEO Table 2.7)।</div>
+      <div class="hint">माँग: 150 LPCD + 10% हानि, floating (ऊपर का %) @ 45 LPCD, fire 100√P; peak factor Design में चुना (2.5 शहरी); residual head ≥ 17 m (CPHEEO Table 2.7)।</div>
       <div class="row"><label title="एक घर = एक कनेक्शन; Elmwood DPR में आबादी / घर = 6.08">व्यक्ति / कनेक्शन</label>
         <input type="number" id="wppc" value="6" min="1" max="15" step="0.1"></div>
       <div class="row"><label title="OHT में पानी किन घंटों में भरता है (tube well / pump चलने का समय); CPHEEO Table 2.7 S.No.12 (p175): क्षमता = mass balance या 33 %, जो अधिक हो (न्यूनतम 33 %) + fire demand का 1/3 (S.No.13)">OHT भरने के घंटे</label>
@@ -259,8 +261,17 @@
       <div class="status" id="wstatus"></div>
       <div id="wzbox"></div>
       <div class="stepbar">Design</div>
+      <div class="row"><label title="Network का peak factor (औसत माँग x यह = design की माँग): CPHEEO Table 2.7 S.No.7(b) p172 शहरी 2.5, S.No.7(c) ग्रामीण 3 (आबादी कोई भी हो); या अपना">Peak factor</label>
+        <select id="wpeak"><option value="urban">2.5 शहरी (CPHEEO)</option><option value="rural">3.0 ग्रामीण (CPHEEO)</option><option value="given">अपना</option></select>
+        <input type="number" id="wpeakv" value="2.5" min="1" max="5" step="0.1" style="width:5em" hidden></div>
       <div class="row"><label style="min-width:0" title="दबाव घटाने वाले valve (PRV): चालू हो तो design नक्शे के PRV लगाता है और 31 m से ऊपर के दबाव पर PRV सुझाता है, DPR (D2) में उनका ख़र्च; U.P. जल निगम की DPRs में आम नहीं, इसलिए default बंद">
         <input type="checkbox" id="wprv"> PRV का विकल्प (दबाव घटाने वाले valve)</label></div>
+      <div class="row"><label style="min-width:0" title="Design के बाद वही network: औसत माँग, रात का सबसे कम घंटा (draw-off pattern), fire flow; और 24 घंटे घंटा-दर-घंटा - हर OHT का पानी का स्तर (भरने के घंटों में भरती, outlet से खाली) और network का दबाव">
+        <input type="checkbox" id="wsim" checked> Load cases और 24 घंटे की simulation</label></div>
+      <div class="row"><label title="Fire flow (L/s): हर OZ के सबसे कमज़ोर junction (peak पर सबसे कम दबाव) पर, औसत माँग के साथ। खाली = fire case नहीं। CPHEEO p138 hydrant का flow या दबाव नहीं देता (fire engine दबाव बढ़ाते हैं)">Fire flow (L/s)</label>
+        <input type="number" id="wfirelps" min="0" max="500" step="1" placeholder="खाली = नहीं" style="width:6em">
+        <label title="Fire flow के समय उस junction पर न्यूनतम दबाव (m) - खाली = सिर्फ़ दिखाएँ, जाँच नहीं" style="min-width:0">न्यूनतम m</label>
+        <input type="number" id="wfiremin" min="0" max="60" step="0.5" placeholder="खाली" style="width:5em"></div>
       <div class="stepact"><button id="wdrun" class="primary">Design</button>
         <button id="wexport" title="Design की DXF, मौजूदा zoning पर - AutoCAD के लिए">Export DXF</button>
         <button id="wexportdpr" title="आख़िरी Design की DPR (Excel) - इसी बटन से बनती है (Design के साथ नहीं) और Excel में खुलती है">Export DPR (xlsx)</button></div>

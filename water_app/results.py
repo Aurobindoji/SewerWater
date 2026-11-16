@@ -17,7 +17,8 @@ def _keep(stem, kind, res, req):
     os.makedirs(folder, exist_ok=True)
     keep = dict(res, req={k: req.get(k) for k in ("ohts", "pop_factor", "persons_per_connection", "floating_pct", "oht_inflow", "near_m", "tw_standby", "sug",
                                                   "pop_total", "edits", "barriers", "loops", "crossings", "wards", "bulk",
-                                                  "projection", "ward_table")
+                                                  "projection", "ward_table", "load_by", "peak", "simulate", "fire_lps",
+                                                  "fire_min_m")
                           + ui.STAGE_KEYS},
                 time=time.strftime("%d-%m-%Y %H:%M"), net_rev=ui.net_rev(stem))
     with open(os.path.join(folder, f"{stem}_w{kind}_ui.json"), "w", encoding="utf-8") as fh:

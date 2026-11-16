@@ -14,7 +14,7 @@ from . import design as wd
 from . import population as wpop
 from . import zoning as wz
 from .zone_lines import STRAIGHT_M, _mid_along, _zone_tri
-from .wards import _factor, _has_conn, _proj_flags, _ward_flags, _ward_growth, _ward_pop, _ward_rest, _wards, _with_projection, ward_growth_of
+from .wards import LOAD_BY, load_by, spread_total, _factor, _has_conn, _proj_flags, _ward_flags, _ward_growth, _ward_pop, _ward_rest, _wards, _with_projection, ward_growth_of
 from .results import _keep, edits_of
 
 
@@ -72,6 +72,23 @@ def _node_lps(v, crit, city, sc=1.0):
     d = dm.daily_kl(v["pop"] * sc, crit, city * sc)
     pop = dm.lps(d["domestic"] + d["floating"])
     return pop + dm.lps(v.get("bulk_peak_kl", 0.0)) / crit["peak_factor"]["value"], pop + dm.lps(v.get("bulk_kl", 0.0))
+
+
+def _load_flags(note):
+    """How the total population was put on the junctions (user request 16-Nov-2026), or that a layout's own
+    population per junction was kept (the choice applies to the wards drawn on a DXF network and to a total)."""
+    if not note:
+        return []
+    if note.get("layout"):
+        a = LOAD_BY[note["asked"]]
+        return [{"zone": None, "level": "info",
+                 "text": f"population per junction as the layout gave it (by the pipe length) - '{a[0]}' applies to the "
+                         f"wards drawn on a DXF network and to a total population",
+                 "hi": f"हर junction की आबादी layout जैसी (pipe की लंबाई से) - '{a[1]}' DXF network के वार्डों और कुल "
+                       f"आबादी पर लागू होता है"}]
+    a = LOAD_BY[note["by"]]
+    return [{"zone": None, "level": "info", "text": f"total population {note['total']:,.0f} on the junctions {a[0]}",
+             "hi": f"कुल आबादी {note['total']:,.0f} junctions पर {a[1]}"}]
 
 
 def _bulk_flags(rows, ll, xy):
@@ -135,18 +152,17 @@ def _load(stem, req=None):
     spread = sum(pop.values()) <= 0           # spread here (wards / total), not given per junction by the layout
     if spread:
         net["noconn_note"] = _noconn_note(net)
+    by = load_by(req)
     if wards:
-        pop, net["ward_note"] = _ward_pop(net, wards)
+        pop, net["ward_note"] = _ward_pop(net, wards, by)
         _ward_rest(net, pop, wards, req)
         return folder, net, pop
     tot = float((req or {}).get("pop_total") or 0)
     if spread and tot > 0:
-        share = collections.defaultdict(float)
-        for c in filter(_has_conn, net["conduits"]):
-            share[c["start_node"]] += c["length_m"] / 2
-            share[c["stop_node"]] += c["length_m"] / 2
-        L = sum(share.values()) or 1.0
-        pop = {n: tot * v / L for n, v in share.items()}
+        pop = spread_total(net, tot, by)
+        net["load_note"] = {"by": by, "total": tot}
+    elif not spread and by != "length":                  # the layout's own population per junction: as it is
+        net["load_note"] = {"by": "length", "asked": by, "layout": True}
     return folder, net, pop
 
 
@@ -439,6 +455,18 @@ def _crit(req):
             crit["floating_share"] = {"value": v / 100.0,
                                       "ref": "given on the page (default 10 %: " + crit["floating_share"]["ref"]
                                              + "; CPHEEO Annexure 2.8: 1-3 % without figures)"}
+    pk = str(req.get("peak") or "urban").strip().lower()      # the network's peak factor (user request 16-Nov-2026)
+    if pk == "rural":
+        crit["peak_factor"] = {"value": 3.0, "ref": "CPHEEO Table 2.7 S.No.7(c) p172 and 16.16(a) p1002: rural areas 3 "
+                                                    "irrespective of population (chosen on the page)"}
+    elif pk not in ("", "urban"):
+        try:
+            v = float(pk)
+        except ValueError:
+            raise ValueError(f"peak factor: '{pk}' अंक नहीं - urban / rural / जैसे 2.5") from None
+        if not 1.0 <= v <= 5.0:
+            raise ValueError(f"peak factor: {v:g} ठीक नहीं - 1 से 5 तक दें")
+        crit["peak_factor"] = {"value": v, "ref": f"given on the page ({crit['peak_factor']['ref']})"}
     sb = req.get("tw_standby") or {}             # the tube wells' standby table of the page (user decision 15-Nov-2026)
     if sb.get("on"):
         tab = standby_table(sb.get("rows"))
@@ -823,7 +851,7 @@ def _zoning_res(stem, folder, net, wnet, ohts, crit, z):
     # the wards of a DXF network: the population they gave, the junctions in none of them (user 30-Oct-2026)
     wf, res["ward_out_pts"] = _ward_flags(net.get("ward_note"), ll, xy)
     bf, res["bulk_pts"] = _bulk_flags(wnet.get("bulk"), ll, xy)
-    res["flags"] = wf + _noconn_flags(net.get("noconn_note")) + bf + res["flags"]
+    res["flags"] = wf + _load_flags(net.get("load_note")) + _noconn_flags(net.get("noconn_note")) + bf + res["flags"]
     # separate pieces of the drawing close to each other, joined by no pipe: a gap to join (user 30-Oct-2026)
     near = (crit.get("near_gap_m") or {}).get("value", wb.NEAR_M)
     gaps = wb.near_parts(net, net.get("barriers"), max_m=near, skip=wb.cut_ends(net.get("barrier_cuts")))

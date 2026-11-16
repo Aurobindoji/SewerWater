@@ -25,6 +25,58 @@ function waterStageBox(stages) {
     `<div class="hint">${tr("बने हुए pipe sizes और OHT staging के साथ हर stage की माँग पर network फिर से हल किया गया। कम माँग पर head loss कम, इसलिए दबाव बढ़ता है और velocity घटती है (0.3 m/s से कम = ठहराव, CPHEEO 6.6(i) p400)। Pipes और ESR +30 वर्ष के लिए, pumps +15 वर्ष के लिए (Table 2.7 S.No.1, p168)। 21 m से ऊपर = Table 2.7 S.No.10 (p173) की 17-21 m सीमा से अधिक; pressure management देखें।",
       "The network as designed (pipe sizes, OHT stagings) solved again at each stage's demand. Less demand: less head loss, so the head rises and the velocity falls (below 0.3 m/s = stagnation, CPHEEO 6.6(i) p400). Pipes and ESRs for +30 years, pumps for +15 years (Table 2.7 S.No.1, p168). Above 21 m = over the 17-21 m of Table 2.7 S.No.10 (p173); see pressure management.")}</div></div>`;
 }
+// ---- load cases and the 24 h simulation (user request 16-Nov-2026; simulate.py)
+const CASE_NAME = { peak: () => tr("Peak (design)", "peak (design)"), average: () => tr("औसत", "average"),
+  night: () => tr("रात (सबसे कम घंटा)", "night (lowest hour)"), fire: () => tr("Fire flow + औसत", "fire flow + average") };
+function loadCaseBox(r) {
+  const cs = r.load_cases;
+  if (!cs || !cs.length) return "";
+  const t = `<table class="wz"><tr><th>${tr("Load", "load")}</th><th>x ${tr("औसत", "avg")}</th><th>L/s</th><th>${tr("दबाव", "head")} m</th><th>&lt; 17 m</th><th>v max</th></tr>` +
+    cs.map(c => `<tr><td>${esc(CASE_NAME[c.case] ? CASE_NAME[c.case]() : c.case)}</td><td>${fmt(c.factor, 2)}</td><td>${fmt(c.demand_lps, 1)}</td>` +
+      `<td title="${esc(c.min_at || "")} - ${esc(c.max_at || "")}">${fmt(c.min_p, 1)} - ${fmt(c.max_p, 1)}</td>` +
+      `<td>${c.low_n ? `<b style="color:var(--danger)">${c.low_n}</b>` : "0"}</td><td>${fmt(c.v_max, 2)}</td></tr>`).join("") + `</table>`;
+  const f = (r.fires || []).length ? `<table class="wz"><tr><th>OZ</th><th>junction</th><th>fire L/s</th><th>${tr("दबाव", "head")} m</th><th>peak m</th></tr>` +
+    r.fires.map(x => `<tr><td>${esc(x.oz)}</td><td>${esc(x.node)}</td><td>${fmt(x.fire_lps)}</td>` +
+      `<td>${x.ok === false ? `<b style="color:var(--danger)">${fmt(x.p, 2)}</b>` : fmt(x.p, 2)}</td><td>${fmt(x.p_peak, 2)}</td></tr>`).join("") + `</table>` : "";
+  return `<div class="box"><b>${tr("Load cases", "Load cases")}</b>` + t + f +
+    `<div class="hint">${tr("बने हुए pipe sizes और OHT staging के साथ network हर load पर फिर से हल किया गया (OHT पर design का head - सबसे निचला जल स्तर)। रात = draw-off pattern का सबसे कम घंटा; fire = हर OZ के सबसे कमज़ोर junction पर दिया fire flow, औसत माँग के साथ।",
+      "The network as designed solved again at each load (the OHTs at the design head - their lowest water level). Night = the lowest hour of the draw-off pattern; fire = the given fire flow at each OZ's weakest junction, with the average demand.")}</div></div>`;
+}
+// a small line chart of 24 hours: series [{name, color, values[24]}], y from lo to hi
+function dayChart(series, lo, hi, unit, guide) {
+  const W = 320, H = 120, L = 30, B = 16, T = 6, R = 6;
+  const x = h => L + (W - L - R) * h / 23, y = v => T + (H - T - B) * (1 - (v - lo) / ((hi - lo) || 1));
+  let g = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" style="display:block">`;
+  for (const v of [lo, (lo + hi) / 2, hi]) g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${L - 3}" y="${y(v) + 3}" font-size="9" text-anchor="end" fill="var(--muted)">${fmt(v)}</text>`;
+  for (const h of [0, 6, 12, 18, 23]) g += `<text x="${x(h)}" y="${H - 3}" font-size="9" text-anchor="middle" fill="var(--muted)">${h}</text>`;
+  if (guide !== undefined) g += `<line x1="${L}" x2="${W - R}" y1="${y(guide)}" y2="${y(guide)}" stroke="var(--danger)" stroke-dasharray="3 3"/>`;
+  for (const s of series) g += `<polyline fill="none" stroke="${s.color}" stroke-width="1.6" points="${s.values.map((v, h) => `${x(h).toFixed(1)},${y(v).toFixed(1)}`).join(" ")}"><title>${esc(s.name)}</title></polyline>`;
+  return g + `<text x="${L}" y="${T + 7}" font-size="9" fill="var(--muted)" dx="3">${esc(unit)}</text></svg>`;
+}
+const DAY_COLORS = ["#1f6feb", "#2e7d32", "#e65100", "#6a1b9a", "#00838f", "#ad1457", "#5d4037", "#827717"];
+function dayBox(d) {
+  if (!d || !d.hours || !d.hours.length) return "";
+  const names = Object.keys(d.tanks);
+  const lvl = names.map((n, i) => ({ name: n, color: DAY_COLORS[i % DAY_COLORS.length], values: d.hours.map(r => r.tanks[n].full_pct) }));
+  const pmin = d.hours.map(r => r.min_p), pmax = d.hours.map(r => r.max_p);
+  const lo = Math.min(17, ...pmin), hi = Math.max(...pmax);
+  const t1 = `<table class="wz"><tr><th>OHT</th><th>KL</th><th>${tr("दैनिक", "daily")} KL</th><th>0 h %</th><th>${tr("न्यूनतम", "lowest")} %</th><th>24 h %</th><th>${tr("खाली", "dry")}</th></tr>` +
+    names.map((n, i) => { const t = d.tanks[n];
+      return `<tr><td><span class="k" style="background:${DAY_COLORS[i % DAY_COLORS.length]};display:inline-block;width:10px;height:3px;vertical-align:middle"></span> ${esc(n)}</td><td>${fmt(t.kl)}</td><td>${fmt(t.daily_kl)}</td><td>${fmt(t.start_pct)}</td>` +
+        `<td>${fmt(t.min_pct)}</td><td>${fmt(t.end_pct)}</td><td>${t.empty_h.length ? `<b style="color:var(--danger)">${t.empty_h.map(h => h + "-" + (h + 1)).join(", ")}</b>` : "-"}</td></tr>`; }).join("") + `</table>`;
+  const hrs = `<details><summary class="hint" style="cursor:pointer">${tr("घंटे-दर-घंटे तालिका", "hour by hour")}</summary><table class="wz"><tr><th>h</th><th>x</th><th>L/s</th><th>${tr("दबाव", "head")} m</th>` +
+    names.map(n => `<th>${esc(n)} %</th>`).join("") + `</tr>` +
+    d.hours.map(r => `<tr><td>${r.h}-${r.h + 1}</td><td>${fmt(r.factor, 2)}</td><td>${fmt(r.demand_lps, 1)}</td>` +
+      `<td>${r.low_n ? `<b style="color:var(--danger)">${fmt(r.min_p, 1)}</b>` : fmt(r.min_p, 1)} - ${fmt(r.max_p, 1)}</td>` +
+      names.map(n => { const x = r.tanks[n]; return `<td title="in ${fmt(x.in_kl)} / out ${fmt(x.out_kl)} KL">${fmt(x.full_pct)}</td>`; }).join("") + `</tr>`).join("") +
+    `</table></details>`;
+  return `<div class="box"><b>${tr("24 घंटे की simulation", "24 h simulation")}</b>` + t1 +
+    `<div class="hint" style="margin-bottom:0">${tr("OHT में पानी (उपयोग योग्य का %)", "water in the OHTs (% of the usable)")}</div>` + dayChart(lvl, 0, 100, "%") +
+    `<div class="hint" style="margin-bottom:0">${tr("Network का सबसे कम / सबसे अधिक दबाव (m); लाल = 17 m", "the network's lowest / highest head (m); red = 17 m")}</div>` +
+    dayChart([{ name: tr("सबसे कम", "lowest"), color: "#c62828", values: pmin }, { name: tr("सबसे अधिक", "highest"), color: "#1565c0", values: pmax }], Math.floor(lo), Math.ceil(hi), "m", 17) +
+    hrs + `<div class="hint">${tr(`हर घंटे की माँग = औसत x draw-off pattern; OHT भरने के घंटों (${d.windows.map(w => w[0] + "-" + w[1]).join(", ")}) में OZ की दैनिक माँग से भरती है, outlet के बहाव से खाली। उपयोग योग्य = क्षमता - fire का 1/3 (CPHEEO p138: outlet उसके ठीक ऊपर); 0 बजे mass balance की सबसे बड़ी कमी जितना पानी (औसत घंटे का x ${fmt(d.start_share, 2)}); टंकी side water depth का बेलन मानी गई।`,
+      `Each hour's demand = average x the draw-off pattern; an OHT fills in its filling hours (${d.windows.map(w => w[0] + "-" + w[1]).join(", ")}) at its OZ's daily demand and empties by its outlet's flow. Usable = capacity - one third of the fire demand (CPHEEO p138: the outlet just above it); at 0 h the mass balance's largest deficit (x ${fmt(d.start_share, 2)} of an average hour); the tank as a cylinder of its side water depth.`)}</div></div>`;
+}
 const fmt = (x, d = 0) => x === null || x === undefined ? "-" : Number(x).toLocaleString("en-IN", { maximumFractionDigits: d, minimumFractionDigits: d });
 // the pipes cut at barrier lines: their parts (not in the layout the page has) and a mark where each was cut
 function withCuts(r, geo) { for (const c of r.cut_parts || []) geo[c.label] = c; return geo; }
@@ -426,10 +478,10 @@ function renderWDesign(r, note) {
   $("wdbox").innerHTML = otab + `<div class="box"><b>${tr("Design (PFR)", "Design (PFR)")}</b>: ${tr("आबादी", "population")} ${fmt(s.population)}, ` +
     `${tr("औसत माँग (fire के बिना)", "average demand (without fire)")} ${fmt(s.demand_avg_lps, 1)} L/s × ${s.peak_factor}; residual head ${fmt(s.min_pressure, 2)} - ${fmt(s.max_pressure, 2)} m` +
     (s.missing_head_m ? `<div class="warn">${tr(`OHT की ऊँचाई कम: सबसे कमज़ोर node को ${s.missing_head_m} m और चाहिए (staging बढ़ाएँ या booster)`, `OHT too low: the weakest node needs ${s.missing_head_m} m more (higher staging or a booster)`)}</div>` : "") +
-    r.checks.map(c => `<div class="wflag ${c.ok ? "" : "error"}" title="${esc(c.ref)}">${c.ok ? (c.note ? "ℹ" : "✔") : "✖"} ${esc(checkText(c))}</div>`).join("") +
+    r.checks.map(c => `<div class="wflag ${c.ok ? (c.warn ? "alert" : "") : "error"}" title="${esc(c.ref)}">${c.ok ? (c.warn ? "⚠" : c.note ? "ℹ" : "✔") : "✖"} ${esc(checkText(c))}</div>`).join("") +
     (r.files && r.files.excel ? `<div class="hint">Excel: ${esc(r.files.excel.split(/[\\/]/).pop())}</div>` : "") +
     (r.files && r.files.dpr ? `<div class="hint">DPR Excel: ${esc(r.files.dpr.split(/[\\/]/).pop())}</div>` : "") + `</div>` +
-    prvBox(r) + rmBox(r) + waterStageBox(r.stages);
+    prvBox(r) + rmBox(r) + waterStageBox(r.stages) + loadCaseBox(r) + dayBox(r.day);
   drawPrvs(r);
   drawRising(r);
   if ($("wtwplace")) $("wtwplace").onclick = () => {     // the suggested sites become tube wells of the drawing
@@ -469,7 +521,15 @@ async function restoreWater(name) {
   if (!r.ok || !r.network_saved) return;
   const q = (r.zoning || r.design || {}).req || {};
   if (q.pop_factor) $("wpopf").value = q.pop_factor;
-  $("wfloat").value = q.floating_pct ?? 10;             // a run from before 11-Nov-2026: the 10 % it was made with
+  $("wfloat").value = q.floating_pct ?? 10;
+  $("wloadby").value = q.load_by || "length";            // a run from before 16-Nov-2026: by the pipe length
+  const qd = (r.design && r.design.req) || q;             // the design's own: the load cases and the 24 h run
+  $("wsim").checked = qd.simulate === undefined ? true : qd.simulate === "1";
+  $("wfirelps").value = qd.fire_lps ?? ""; $("wfiremin").value = qd.fire_min_m ?? "";
+  const pk = String(qd.peak || "urban");                  // the peak factor: urban / rural / a number
+  $("wpeak").value = pk === "urban" || pk === "rural" ? pk : "given";
+  if ($("wpeak").value === "given") $("wpeakv").value = pk;
+  $("wpeakv").hidden = $("wpeak").value !== "given";             // a run from before 11-Nov-2026: the 10 % it was made with
   if (q.persons_per_connection) $("wppc").value = q.persons_per_connection;
   if (q.oht_inflow) $("winflow").value = q.oht_inflow;
   const qs = q.tw_standby || (r.design && r.design.req && r.design.req.tw_standby) || {};   // a zoning from before it: the design's

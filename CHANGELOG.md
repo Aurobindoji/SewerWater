@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.9.17 (beta) - 2026-11-16
+
+- **A full guide in the app** (❓ Help on the tab bar, both modules): per step the data needed, the order of work and
+  every field - what to give, why, where it comes from, its default and its CPHEEO / UPJN reference; reading the
+  results, common mistakes; Hindi / English, search, print / PDF. It opens at the chapter of the tab you are on.
+- **A tour** on the first start: the page dimmed, one part lit at a time with a few lines (Back / Next / Skip);
+  **▶ Tour** shows it again.
+- Tabs **Network Design** and, in the water app, **Tank Design** (the Intze tanks); an **Outputs** tab in both: every
+  output in one list - make it, open it in its program, show it in its folder - with the project's output folder.
+- README / README.hi brought up to date with the new page.
+
 ## 0.9.16 (beta) - 2026-11-16
 
 - Both map pages: the sidebar in **tabs** by the work's steps (Project, Network, Population, Zoning, Design, Outputs); a

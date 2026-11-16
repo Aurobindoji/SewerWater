@@ -95,8 +95,9 @@ const isErr = id => /err/.test($(id).className);
     : ["Layout बन गया", $("status").textContent, "ok"]);
   const dxf0 = $("dxfimport").onclick;
   // no GL layer ticked: the layers the GL could come from first, the user ticks one and confirms (glOptions)
-  $("dxfimport").onclick = () => document.querySelector('#laybox input[data-k="gl"]:checked')
-    ? (GL_NONE = false, Z_MODE = "auto", dxfRun()) : glOptions(dxfRun);
+  $("dxfimport").onclick = async () => { if (!(await dxfNameOk())) return;      // a project of that name: asked first
+    return document.querySelector('#laybox input[data-k="gl"]:checked')
+      ? (GL_NONE = false, Z_MODE = "auto", dxfRun()) : glOptions(dxfRun); };
   const dxfRun = () => longTask("DXF से network निकाल रहे हैं", dxf0, () => (isErr("dxfstatus") || !NET)
     ? ["Network नहीं निकला", $("dxfstatus").textContent + "\n" + ($("log").textContent || "").slice(-600), "err"]
     : ["Network निकल आया", `${NET.summary.manholes} junctions, ${NET.summary.conduits} pipes, ${(NET.summary.length / 1000).toFixed(2)} km\n` +

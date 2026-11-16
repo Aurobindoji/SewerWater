@@ -232,6 +232,27 @@ async function glOptions(run) {
     run();
   };
 }
+// a project of this name already there (user request 16-Nov-2026): the import would replace it without a word -
+// asked first; Cancel suggests a free name. Called before the GL box (start.js).
+async function dxfNameOk() {
+    const stem = s => (s || "").trim().replace(/[^\p{L}\p{N}\p{M}_-]+/gu, " ").trim().replace(/\s+/g, "_").slice(0, 80) || "project";
+    let have = null;
+    try { const p = await api("/api/projects"); have = (p.projects || []).find(x => x.name === stem($("dxfname").value)); } catch (e) { }
+    if (have && !confirm(have.kind === "dxf"
+        ? tr(`"${have.name}" नाम का project पहले से है। यह DXF उसी पर खुलेगा: उसके network के सारे सुधार (junction मिलाना, pipe जोड़ना, GL ...) हट जाएँगे और zoning / design दोबारा करनी होगी (टंकियाँ, वार्ड जैसी रखी चीज़ें बची रहेंगी)।\n\nOK = उसी पर खोलें, Cancel = रुकें और नया नाम दें`,
+             `A project "${have.name}" is already there. This DXF would open over it: all the corrections of its network (merged junctions, joined pipes, GL ...) go and the zoning / design must be made again (the tanks, wards and other placed items stay).\n\nOK = open over it, Cancel = stop and give a new name`)
+        : tr(`"${have.name}" नाम का नक्शे वाला (KML) project पहले से है। इसी नाम से DXF project बनाने पर दोनों एक-दूसरे में उलझेंगे।\n\nOK = फिर भी आगे बढ़ें, Cancel = रुकें और नया नाम दें`,
+             `A map (KML) project "${have.name}" is already there. A DXF project of the same name would get mixed up with it.\n\nOK = go on anyway, Cancel = stop and give a new name`))) {
+      let k = 2; const base = stem($("dxfname").value);
+      const names = new Set(((await api("/api/projects").catch(() => ({}))).projects || []).map(x => x.name));
+      while (names.has(`${base}_${k}`)) k++;
+      $("dxfname").value = `${base}_${k}`; $("dxfname").focus(); $("dxfname").select();
+      $("dxfstatus").className = "status err";
+      $("dxfstatus").textContent = tr(`नया नाम सुझाया: ${base}_${k} - बदलें या "Network निकालें" फिर दबाएँ`, `A new name suggested: ${base}_${k} - change it or press the button again`);
+      return false;
+    }
+    return true;
+}
 $("dxfimport").onclick = async () => {
   const sel = k => Array.from(document.querySelectorAll(`#laybox input[data-k="${k}"]:checked`)).map(i => i.value);
   if (!sel("pipe").length) { $("dxfstatus").className = "status err"; $("dxfstatus").textContent = "कम से कम एक Pipe layer चुनें।"; return; }

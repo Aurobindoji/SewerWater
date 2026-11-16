@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.26 (beta) - 2026-11-16
+
+- Both module pages: Help, Tour, CPHEEO, the language and the other app now sit close together on the title's line,
+  at its right, with the ☀ / 🌙 theme icon at the far right (a narrow sidebar puts them under the title, still on the
+  right). Simple / Advanced has its own line.
+
 ## 0.9.25 (beta) - 2026-11-16
 
 - Both module pages: **Help, Tour, CPHEEO, the language and the other app in one line** at the top of the sidebar,

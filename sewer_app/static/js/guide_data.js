@@ -140,7 +140,7 @@ var TOUR_STEPS = [
   { sel: "#title", hi: ["सीवर network design", "नक्शे या DXF से sewer network, zoning options, हर sewer का design, drawings और DPR - CPHEEO के अनुसार। \"छोड़ें\" से कभी भी बंद।"],
     en: ["Sewer network design", "From a map or DXF to the sewer network, zoning options, every sewer's design, drawings and the DPR - to CPHEEO. \"Skip\" closes it any time."] },
   { sel: "#uimode", hi: ["Simple / Advanced", "Simple: सिर्फ़ ज़रूरी खाने, बाकी default पर। Advanced: सब विकल्प।"], en: ["Simple / Advanced", "Simple: the essential fields, the rest at the defaults. Advanced: every option."] },
-  { sel: "#uitheme", hi: ["रंग", "हल्का, गहरा या Windows जैसा।"], en: ["Colours", "Light, dark or as Windows."] },
+  { sel: "#uitheme", hi: ["रंग", "☀ / 🌙: हल्का या गहरा - click से बदलें, सब pages पर।"], en: ["Colours", "☀ / 🌙: light or dark - click to switch, on every page."] },
   { sel: "#uitabs", hi: ["काम के चरण", "Project → Network → आबादी → Zoning → Network Design → Outputs।"], en: ["The steps of the work", "Project → Network → Population → Zoning → Network Design → Outputs."] },
   { sel: "#pname", tab: "project", hi: ["Project", "नाम, सहेजें / खोलें, KML / DXF लाएँ।"], en: ["Project", "Name, save / open, bring a KML / DXF."] },
   { sel: "#kmlsec .tools", tab: "network", hi: ["नक्शे पर खींचें", "सड़कें, boundary, वार्ड, spot levels, STP; फिर \"Layout बनाएँ\"।"], en: ["Draw on the map", "Roads, boundary, wards, spot levels, STP; then \"Make layout\"."] },

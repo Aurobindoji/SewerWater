@@ -20,7 +20,12 @@ function uiApply() {
   document.body.classList.toggle("simple", UI.mode === "simple");
   for (const b of document.querySelectorAll("#uimode button")) b.classList.toggle("on", b.dataset.m === UI.mode);
   const th = document.getElementById("uitheme");
-  if (th) th.value = UI.theme;
+  if (th) {                                   // the icon of the look now; a click gives the other one
+    const dark = document.documentElement.dataset.theme === "dark";
+    th.textContent = dark ? "🌙" : "☀";
+    th.title = dark ? tr("गहरा रंग - हल्के के लिए click", "Dark - click for light")
+                    : tr("हल्का रंग - गहरे के लिए click", "Light - click for dark");
+  }
   uiTabsState();
 }
 async function uiLoad() {
@@ -80,18 +85,23 @@ function uiBuild() {
   const bar = document.createElement("div");
   bar.id = "uibar";
   bar.innerHTML =
+    `<div class="uirow" id="uitools"><span id="uihelp"><button type="button" id="uiguide" title="${tr("इस चरण की पूरी मार्गदर्शिका: हर खाना, क्यों, कहाँ से, CPHEEO / UPJN ref", "This step's full guide: every field, why, from where, CPHEEO / UPJN ref")}">❓ ${tr("मदद", "Help")}</button>` +
+    `<button type="button" id="uitour" title="${tr("Page का tour फिर से", "The page's tour again")}">▶ Tour</button></span>` +
+    `<span id="uilinks"></span><button type="button" id="uitheme"></button></div>` +
     `<div class="uirow"><span class="seg" id="uimode">` +
     `<button type="button" data-m="simple" title="${tr("ज़रूरी खाने; बाकी CPHEEO / UPJN के default पर", "The essential fields; the rest at the CPHEEO / UPJN defaults")}">Simple</button>` +
     `<button type="button" data-m="advanced" title="${tr("सब खाने और विकल्प", "Every field and option")}">Advanced</button></span>` +
-    `<select id="uitheme" title="${tr("रंग: हल्का / गहरा / Windows जैसा", "Colours: light / dark / as Windows")}">` +
-    `<option value="system">🖥 ${tr("Windows जैसा", "System")}</option><option value="light">☀ ${tr("हल्का", "Light")}</option>` +
-    `<option value="dark">🌙 ${tr("गहरा", "Dark")}</option></select>` +
-    `<span id="uihelp"><button type="button" id="uiguide" title="${tr("इस चरण की पूरी मार्गदर्शिका: हर खाना, क्यों, कहाँ से, CPHEEO / UPJN ref", "This step's full guide: every field, why, from where, CPHEEO / UPJN ref")}">❓ ${tr("मदद", "Help")}</button>` +
-    `<button type="button" id="uitour" title="${tr("Page का tour फिर से", "The page's tour again")}">▶ Tour</button></span></div>` +
+    `</div>` +
     `<div class="hint uisimple">${tr("Simple: छिपे खाने CPHEEO / UPJN के default पर चलते हैं - बदलने के लिए Advanced।",
                                     "Simple: the hidden fields run at the CPHEEO / UPJN defaults - Advanced to change them.")}</div>` +
     `<div id="uitabs">` + keys.map((t, i) => `<button type="button" data-t="${t[0]}"><i>${i + 1}</i>${tr(t[1], t[2])}</button>`).join("") + `</div>`;
   if (sub) sub.after(bar); else side.prepend(bar);
+  // user request 16-Nov-2026: help, tour, CPHEEO, the language and the other app in one line, the theme an icon
+  const links = bar.querySelector("#uilinks");
+  for (const id of ["gopen", "langsw", "otherapp"]) {
+    const a = document.getElementById(id);
+    if (a) { const old = a.parentElement; links.append(a); if (old && !old.querySelector("a")) old.remove(); }
+  }
   const empty = document.createElement("div");
   empty.id = "uiempty"; empty.className = "hint"; empty.hidden = true;
   empty.textContent = tr("इस चरण के खाने अभी नहीं - पहले Network / Layout बनाएँ (या project खोलें)।",
@@ -101,7 +111,9 @@ function uiBuild() {
     const m = e.target.closest("button"); if (!m) return;
     UI.mode = m.dataset.m; uiApply(); uiSave();
   };
-  bar.querySelector("#uitheme").onchange = e => { UI.theme = e.target.value; uiApply(); uiSave(); };
+  bar.querySelector("#uitheme").onclick = () => {
+    UI.theme = document.documentElement.dataset.theme === "dark" ? "light" : "dark"; uiApply(); uiSave();
+  };
   bar.querySelector("#uitabs").onclick = e => { const b = e.target.closest("button"); if (b) uiTab(b.dataset.t); };
   // the guide (guide.html, its chapter of the tab shown) in a window of its own; the tour (tour.js)
   bar.querySelector("#uiguide").onclick = () => window.open(`/guide?lang=${LANG}#${UI.tab}`, "sw_guide");

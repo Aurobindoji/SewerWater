@@ -287,7 +287,7 @@ var TOUR_STEPS = [
   { sel: "#title", hi: ["पेयजल network design", "नक्शे या DXF से network, OZ / DMA, pipe design, टंकियाँ और DPR - CPHEEO के अनुसार। यह tour 1 मिनट का है; \"छोड़ें\" से कभी भी बंद।"],
     en: ["Water network design", "From a map or DXF to the network, OZs / DMAs, pipe design, tanks and the DPR - to CPHEEO. This tour takes a minute; \"Skip\" closes it any time."] },
   { sel: "#uimode", hi: ["Simple / Advanced", "Simple: सिर्फ़ ज़रूरी खाने, बाकी CPHEEO / UPJN के default पर। Advanced: सब विकल्प।"], en: ["Simple / Advanced", "Simple: the essential fields, the rest at the CPHEEO / UPJN defaults. Advanced: every option."] },
-  { sel: "#uitheme", hi: ["रंग", "हल्का, गहरा या Windows जैसा - सब pages पर।"], en: ["Colours", "Light, dark or as Windows - on every page."] },
+  { sel: "#uitheme", hi: ["रंग", "☀ / 🌙: हल्का या गहरा - click से बदलें, सब pages पर।"], en: ["Colours", "☀ / 🌙: light or dark - click to switch, on every page."] },
   { sel: "#uitabs", hi: ["काम के चरण", "बाएँ से दाएँ: Project → Network → आबादी → Zoning → Network Design → Tank Design → Outputs। धुँधला tab = उससे पहले का चरण बाकी।"],
     en: ["The steps of the work", "Left to right: Project → Network → Population → Zoning → Network Design → Tank Design → Outputs. A dimmed tab = a step before it is left."] },
   { sel: "#pname", tab: "project", hi: ["Project", "नाम लिखें, सहेजें; या सहेजा project खोलें, KML / DXF लाएँ।"], en: ["Project", "Type a name, save; or open a saved project, bring a KML / DXF."] },

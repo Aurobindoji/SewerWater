@@ -106,6 +106,121 @@ def own_taskbar_name():
         pass
 
 
+# ---- the menus in one language and the pages' theme (user request 16-Nov-2026: Hindi or English, not both; dark when
+# the pages are). The language is the one chosen last (the start page / a module page, launcher /api/ui); the menus
+# take it, and the theme, each time they open.
+MENU_TXT = {
+    "hi": {"show": "खोलें", "open_master": "Master folder खोलें", "change_master": "Master folder बदलें…",
+           "update": "Update देखें…", "about": "परिचय (About)", "quit": "बंद करें",
+           "note": "App tray में चल रहा है - खोलने के लिए icon पर double-click, बंद करने के लिए right-click → बंद करें।"},
+    "en": {"show": "Show", "open_master": "Open the master folder", "change_master": "Change the master folder…",
+           "update": "Check for updates…", "about": "About", "quit": "Quit",
+           "note": "The app keeps running in the tray: double-click its icon to open it; right-click → Quit to close it."},
+}
+APP_MENU = ("open_master", "change_master", "update", "about", "quit")     # the items of the menu "App", in order
+
+
+def menu_look():
+    """(lang, dark) of the pages now."""
+    try:
+        from launcher import about
+        return about.look()
+    except Exception:
+        return "hi", False
+
+
+class MenuLook:
+    """Dark / light colours of a ToolStrip (menu bar, drop-down, the tray's menu) through its renderer's events - a
+    renderer of pythonnet's own class does not load here. One per app; its handlers kept with it."""
+    BG, HI, FG, LINE = (43, 45, 49), (70, 76, 86), (230, 232, 235), (70, 74, 80)
+
+    def __init__(self):
+        import System.Windows.Forms as WF
+        from System.Drawing import Color, Pen, Point, Rectangle, SolidBrush
+        c = lambda t: Color.FromArgb(*t)                     # noqa: E731
+        bg, hi, fg, line = c(self.BG), c(self.HI), c(self.FG), c(self.LINE)
+        self.light = WF.ToolStripProfessionalRenderer()
+        r = self.dark = WF.ToolStripProfessionalRenderer()
+
+        def back(s, e):
+            e.Graphics.FillRectangle(SolidBrush(bg), e.AffectedBounds)
+
+        def item(s, e):
+            sel = (e.Item.Selected or e.Item.Pressed) and e.Item.Enabled
+            e.Graphics.FillRectangle(SolidBrush(hi if sel else bg), Rectangle(Point(0, 0), e.Item.Size))
+
+        def text(s, e):
+            e.TextColor = fg
+
+        def sep(s, e):
+            y = e.Item.Height // 2
+            e.Graphics.FillRectangle(SolidBrush(bg), Rectangle(Point(0, 0), e.Item.Size))
+            e.Graphics.DrawLine(Pen(line), 4, y, e.Item.Width - 4, y)
+
+        def border(s, e):
+            if isinstance(e.ToolStrip, WF.ToolStripDropDown):
+                e.Graphics.DrawRectangle(Pen(line), Rectangle(0, 0, e.ToolStrip.Width - 1, e.ToolStrip.Height - 1))
+
+        def arrow(s, e):
+            e.ArrowColor = fg
+        self._keep = (back, item, text, sep, border, arrow)
+        r.RenderToolStripBackground += back
+        r.RenderImageMargin += back
+        r.RenderMenuItemBackground += item
+        r.RenderItemText += text
+        r.RenderSeparator += sep
+        r.RenderToolStripBorder += border
+        r.RenderArrow += arrow
+
+    def apply(self, strip, dark):
+        rend = self.dark if dark else self.light
+        if strip.Renderer is not rend:
+            strip.Renderer = rend
+
+
+_LOOK = []
+
+
+def menu_renderers():
+    """The one MenuLook (made on the windows' thread when first needed)."""
+    if not _LOOK:
+        _LOOK.append(MenuLook())
+    return _LOOK[0]
+
+
+def style_window_menu(window):
+    """The menu "App" of a window (pywebview's MenuStrip): its labels in the language now and its colours in the theme
+    now - set when the window is shown, again whenever it is activated or the menu opened."""
+    if os.name != "nt":
+        return
+    try:
+        from System import Action
+        import System.Windows.Forms as WF
+
+        def find():
+            form = window.native
+            strip = next((c for c in form.Controls if isinstance(c, WF.MenuStrip)), None)
+            if strip is None or strip.Items.Count == 0:
+                return
+            top = strip.Items[0]
+
+            def restyle(*_):
+                lang, dark = menu_look()
+                t, look = MENU_TXT[lang], menu_renderers()
+                for k, it in zip(APP_MENU, list(top.DropDownItems)):
+                    it.Text = t[k]
+                look.apply(strip, dark)
+                look.apply(top.DropDown, dark)
+            restyle()
+            strip.MenuActivate += restyle
+            top.DropDownOpening += restyle
+            form.Activated += restyle
+            window._menu_restyle = restyle                    # kept with the window
+        window.native.Invoke(Action(find))
+    except Exception as e:                                    # the menu as pywebview made it
+        print(f"menu look not set: {type(e).__name__}: {e}")
+
+
 class Tray:
     """The app's icon in the notification area (user request 14-Nov-2026) while the app runs: a double click brings
     its windows forward; the menu: show, the master folder, updates, About, quit. Made with Windows Forms' own
@@ -152,9 +267,7 @@ class Tray:
         sender.Hide()
         if not self._told:
             self._told = True
-            self.ni.ShowBalloonTip(4000, TITLE, "App tray में चल रहा है - खोलने के लिए icon पर double-click, बंद करने "
-                                   "के लिए right-click → बंद करें।\nThe app keeps running in the tray: double-click "
-                                   "its icon to open it; right-click → Quit to close it.", WF.ToolTipIcon.Info)
+            self.ni.ShowBalloonTip(4000, TITLE, MENU_TXT[menu_look()[0]]["note"], WF.ToolTipIcon.Info)
 
     def _make(self):
         import System.Windows.Forms as WF
@@ -163,17 +276,24 @@ class Tray:
         ni.Icon = Icon(self.icon)
         ni.Text = TITLE
         menu = WF.ContextMenuStrip()
-        for label, fn in (("खोलें / Show", self.show),
-                          ("Master folder खोलें / Open the master folder", self.api.open_master),
-                          ("Update देखें… / Check for updates…", self.api.show_update),
-                          ("About", self.api.show_about),
-                          (None, None),
-                          ("बंद करें / Quit", self.quit)):
-            if label is None:
+        items = []
+        for key, fn in (("show", self.show), ("open_master", self.api.open_master), ("update", self.api.show_update),
+                        ("about", self.api.show_about), (None, None), ("quit", self.quit)):
+            if key is None:
                 menu.Items.Add(WF.ToolStripSeparator())
                 continue
-            item = menu.Items.Add(label)
+            item = menu.Items.Add(key)
             item.Click += self._handler(fn)
+            items.append((key, item))
+
+        def restyle(*_):                                     # the language and theme now, each time it opens
+            lang, dark = menu_look()
+            for k, it in items:
+                it.Text = MENU_TXT[lang][k]
+            menu_renderers().apply(menu, dark)
+        restyle()
+        menu.Opening += restyle
+        self._restyle = restyle                              # kept while the app runs
         ni.ContextMenuStrip = menu
         ni.DoubleClick += self._handler(self.show)
         ni.Visible = True
@@ -299,6 +419,7 @@ class Api:
         title = "Water supply network design" if "/water" in url else "Sewer network design" if "/sewer" in url else TITLE
         w = webview.create_window(title, url, js_api=self, min_size=(900, 600), **WINDOW)
         w.events.loaded += lambda: w.evaluate_js(OPEN_JS)
+        w.events.shown += lambda: style_window_menu(w)
         if self._tray is not None:
             w.events.shown += lambda: self._tray.keep(w)
         if name:
@@ -372,10 +493,13 @@ class Api:
     def _one_window(self, key, title, **kw):
         w = self._windows.get(key)
         if w is not None and w in webview.windows:
+            if kw.get("html"):                                # its page again: the language / theme now
+                w.load_html(kw["html"])
             w.restore()
             w.show()
             return w
         w = webview.create_window(title, js_api=self, width=680, height=620, min_size=(520, 420), **kw)
+        w.events.shown += lambda: style_window_menu(w)
         self._windows[key] = w
         return w
 
@@ -521,11 +645,11 @@ def main():
     api._main.events.shown += lambda: tray.attach(api._main)
     if not bad:                                                  # the problem page closes: nothing runs to keep
         api._main.events.shown += lambda: tray.keep(api._main)
-    menu = [Menu("App", [MenuAction("Master folder खोलें / Open the master folder", api.open_master),
-                         MenuAction("Master folder बदलें… / Change the master folder…", api.change_master),
-                         MenuAction("Update देखें… / Check for updates…", api.show_update),
-                         MenuAction("About", api.show_about),
-                         MenuAction("बंद करें / Quit", api.quit)])]
+    api._main.events.shown += lambda: style_window_menu(api._main)
+    t = MENU_TXT[menu_look()[0]]                               # relabelled when opened (style_window_menu)
+    fns = {"open_master": api.open_master, "change_master": api.change_master, "update": api.show_update,
+           "about": api.show_about, "quit": api.quit}
+    menu = [Menu("App", [MenuAction(t[k], fns[k]) for k in APP_MENU])]
     try:                                                       # localStorage kept (in <master>\App); the windows'
         webview.start(private_mode=False, storage_path=storage, menu=menu, icon=icon)   # icon: the file, every size
     finally:

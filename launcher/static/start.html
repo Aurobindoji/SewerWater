@@ -13,6 +13,9 @@
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 32px 28px; width: min(520px, 100%);
     box-shadow: 0 6px 24px rgba(0,0,0,.06); text-align: center; }
   h1 { font-size: 22px; margin: 0 0 6px; }
+  h1.brand { font-size: 32px; letter-spacing: .3px; margin-bottom: 2px; }
+  .tag { color: var(--muted); font-size: 14px; margin-bottom: 22px; }
+  .pick { color: var(--muted); font-size: 13px; margin-bottom: 10px; }
   .sub { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
   .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   button.big { padding: 22px 12px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--text);
@@ -35,8 +38,9 @@
 <main>
   <div class="card" id="step1">
     <img src="/icon.png" alt="" width="84" height="84" style="margin-bottom:10px">
-    <h1>भाषा चुनें / Choose Language</h1>
-    <div class="sub"><b>PravaahForge</b> - Sewer &amp; Water network design</div>
+    <h1 class="brand">PravaahForge</h1>
+    <div class="tag">Sewer &amp; Water network design</div>
+    <div class="pick">भाषा चुनें / Choose language</div>
     <div class="choices">
       <button class="big" data-lang="hi">हिन्दी</button>
       <button class="big" data-lang="en">English</button>
@@ -60,15 +64,16 @@
 // the launcher's start page (user decision 10-Nov-2026): only the module chosen is started (launcher/server.py
 // /api/open), in this same window; the other starts only from its button in a module's page
 const TXT = {
-  hi: { t2: "क्या डिज़ाइन करना है?", s2: "विषय चुनें", sewer: "सीवर<small>sewer network, zoning, design</small>",
-        water: "पेयजल<small>water supply</small>", back: "← भाषा बदलें" },
-  en: { t2: "What would you like to design?", s2: "Choose the module", sewer: "Sewer<small>sewer network, zoning, design</small>",
-        water: "Water<small>water supply</small>", back: "← Change language" },
+  hi: { t2: "क्या डिज़ाइन करना है?", s2: "विषय चुनें", sewer: "सीवर<small>सीवर network - zoning, design, DPR</small>",
+        water: "पेयजल<small>पेयजल network - zoning, design, DPR</small>", back: "← भाषा बदलें", about: "परिचय (About)" },
+  en: { t2: "What would you like to design?", s2: "Choose the module", sewer: "Sewer<small>Sewer network - zoning, design, DPR</small>",
+        water: "Water supply<small>Water network - zoning, design, DPR</small>", back: "← Change language", about: "About" },
 };
 let lang = "hi";
 function step2(l) {
   lang = l;
   try { localStorage.setItem("sewer_app_lang", l); } catch (e) { }
+  fetch("/api/ui?lang=" + l).catch(() => { });          // the desktop app's tray, menu and About in this language
   document.documentElement.lang = l;
   const t = TXT[l];
   document.getElementById("t2").textContent = t.t2;
@@ -76,6 +81,7 @@ function step2(l) {
   document.getElementById("sewer").innerHTML = t.sewer;
   document.getElementById("water").innerHTML = t.water;
   document.getElementById("back").textContent = t.back;
+  document.getElementById("about").textContent = t.about;
   document.getElementById("step1").hidden = true;
   document.getElementById("step2").hidden = false;
   document.getElementById("sewer").focus();
@@ -112,7 +118,7 @@ fetch("/api/version").then(r => r.json()).then(r => { document.getElementById("v
 document.getElementById("about").onclick = e => {
   e.preventDefault();
   if (window.pywebview && window.pywebview.api && window.pywebview.api.show_about) window.pywebview.api.show_about();
-  else location.href = "/about";
+  else location.href = "/about?lang=" + lang;
 };
 document.getElementById("sewer").onclick = () => openModule("sewer");
 document.getElementById("water").onclick = () => openModule("water");

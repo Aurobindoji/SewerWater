@@ -5,8 +5,9 @@ module chosen alone is started; the other only from its button in a module's pag
     GET /api/open?module=...   starts that module's server (once) and answers {ok, url} when it answers with its own
                                version; {ok: false, log} when its port is held by older code or another program
     GET /api/version           this server's version (the desktop app's check)
-    GET /api/ui[?mode=&theme=] the pages' look, shared by the start page and both modules (user request 16-Nov-2026):
-                               mode simple / advanced, theme light / dark / system; with a value it is kept
+    GET /api/ui[?mode=&theme=&lang=] the pages' look, shared by the start page and both modules (user request
+                               16-Nov-2026): mode simple / advanced, theme light / dark / system, lang hi / en (the
+                               desktop app's tray, menu and About follow it); with a value it is kept
 
 Each module is imported only when it is first opened, so starting one never loads the other. Local use only; the
 module pages (ports 8765 / 8766) may call /api/open (CORS), for their button of the other module.
@@ -36,12 +37,13 @@ _STARTED = {}                                   # module -> the version its serv
 # the pages' look (mode, theme): kept beside the app's config.json, for every master folder
 UI_FILE = os.environ.get("APP_UI_PREFS") or os.path.join(os.environ.get("APPDATA") or os.path.expanduser("~"),
                                                          "SewerWater", "ui.json")
-UI_DEFAULT = {"mode": "advanced", "theme": "system"}
-UI_VALUES = {"mode": ("simple", "advanced"), "theme": ("light", "dark", "system")}
+# lang: the language chosen last (the start page, a module page) - the desktop app's tray, menu and About use it
+UI_DEFAULT = {"mode": "advanced", "theme": "system", "lang": "hi"}
+UI_VALUES = {"mode": ("simple", "advanced"), "theme": ("light", "dark", "system"), "lang": ("hi", "en")}
 
 
 def ui_prefs(change=None):
-    """The pages' look {mode, theme}; change {key: value} (known values only) is kept first."""
+    """The pages' look {mode, theme, lang}; change {key: value} (known values only) is kept first."""
     cur = dict(UI_DEFAULT)
     try:
         with open(UI_FILE, encoding="utf-8") as fh:
@@ -139,7 +141,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, fh.read(), ICONS[u.path])
         if u.path == "/about":                           # the About page (10-Nov-2026)
             from . import about
-            return self._send(200, about.about_html().encode("utf-8"), "text/html; charset=utf-8")
+            q = {k: v[0] for k, v in parse_qs(u.query).items()}
+            return self._send(200, about.about_html(lang=q.get("lang")).encode("utf-8"), "text/html; charset=utf-8")
         if u.path == "/api/version":
             from . import about
             return self._send(200, {"ok": True, "version": VERSION, "app_version": about.APP_VERSION, "pid": os.getpid()})

@@ -26,7 +26,8 @@ function uiApply() {
 async function uiLoad() {
   let p = null;
   try {
-    const r = await fetch(UI_LAUNCHER, { signal: AbortSignal.timeout(1500) });
+    const lang = typeof LANG === "string" ? `?lang=${LANG}` : "";        // the desktop app's tray / menu follow it
+    const r = await fetch(UI_LAUNCHER + lang, { signal: AbortSignal.timeout(1500) });
     if (r.ok) p = await r.json();
   } catch (e) { /* the module alone: this browser's own */ }
   if (!p || !p.ok) { try { p = JSON.parse(localStorage.getItem(UI_LS) || "null"); } catch (e) { p = null; } }

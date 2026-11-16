@@ -37,7 +37,8 @@ def test_loading_the_launcher_loads_no_module():
 
 def test_start_page_and_open(launcher, monkeypatch):
     page, _ = get(launcher + "/")
-    assert "Choose Language" in page and "/api/open?module=" in page
+    assert "Choose language" in page and "/api/open?module=" in page
+    assert '<h1 class="brand">PravaahForge</h1>' in page                # the app's name the title (16-Nov-2026)
     with pytest.raises(urllib.error.HTTPError) as e:
         get(launcher + "/api/open?module=other")
     assert e.value.code == 400
@@ -63,13 +64,21 @@ def test_a_port_held_by_older_code(monkeypatch):
 
 
 def test_the_pages_look_is_shared(launcher, monkeypatch, tmp_path):
-    """Theme and mode (user request 16-Nov-2026): kept by the launcher for every page; unknown values ignored."""
+    """Theme, mode and language (user request 16-Nov-2026): kept by the launcher for every page; unknown values
+    ignored."""
     monkeypatch.setattr(L, "UI_FILE", str(tmp_path / "ui.json"))
     body, _ = get(launcher + "/api/ui")
-    assert json.loads(body) == {"ok": True, "mode": "advanced", "theme": "system"}
+    assert json.loads(body) == {"ok": True, "mode": "advanced", "theme": "system", "lang": "hi"}
     body, head = get(launcher + "/api/ui?theme=dark&mode=simple", origin="http://127.0.0.1:8766")
     assert json.loads(body)["theme"] == "dark" and head.get("Access-Control-Allow-Origin") == "http://127.0.0.1:8766"
-    get(launcher + "/api/ui?theme=purple&mode=x")
+    get(launcher + "/api/ui?theme=purple&mode=x&lang=fr")
+    get(launcher + "/api/ui?lang=en")
     body, _ = get(launcher + "/api/ui")
-    assert json.loads(body) == {"ok": True, "mode": "simple", "theme": "dark"}
-    assert json.load(open(tmp_path / "ui.json")) == {"mode": "simple", "theme": "dark"}
+    assert json.loads(body) == {"ok": True, "mode": "simple", "theme": "dark", "lang": "en"}
+    assert json.load(open(tmp_path / "ui.json")) == {"mode": "simple", "theme": "dark", "lang": "en"}
+    # About in that one language and theme (the desktop app's About too); ?lang= for the browser's
+    from launcher import about
+    page = about.about_html()
+    assert 'data-theme="dark"' in page and "Credits" in page and "श्रेय" not in page
+    body, _ = get(launcher + "/about?lang=hi")
+    assert "श्रेय" in body and "Credits" not in body

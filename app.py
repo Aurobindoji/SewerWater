@@ -28,7 +28,7 @@ import urllib.request
 import webview
 from webview.menu import Menu, MenuAction
 
-TITLE = "Sewer & Water network design"
+TITLE = "PravaahForge"                           # the app's name (user request 16-Nov-2026; was "Sewer & Water network design")
 APP_ID = "Aurobindoji.SewerWater"                 # the app's name for the taskbar (the setup's shortcuts carry it too)
 START_URL = "http://127.0.0.1:8764/"              # the launcher's start page
 CONFIG = os.environ.get("APP_CONFIG") or os.path.join(os.environ.get("APPDATA") or os.path.expanduser("~"),

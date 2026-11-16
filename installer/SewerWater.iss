@@ -5,11 +5,12 @@
 ; is not here: the app asks for a master folder on its first run (app.py) and the uninstaller leaves it alone.
 ;     build_setup.bat  (PyInstaller, then ISCC installer\SewerWater.iss)  ->  dist\SewerWater_Setup.exe
 
-#define AppName "Sewer & Water Network Design"
+; the app's name (user request 16-Nov-2026; was "Sewer & Water Network Design")
+#define AppName "PravaahForge"
 #define AppExe "SewerWater.exe"
 #ifndef AppVersion
   ; build_setup.bat passes launcher\about.py APP_VERSION (/DAppVersion=...); this only when ISCC runs alone
-  #define AppVersion "0.9.18"
+  #define AppVersion "0.9.19"
 #endif
 
 [Setup]
@@ -51,6 +52,9 @@ Source: "redist\MicrosoftEdgeWebview2Setup.exe"; DestDir: "{tmp}"; Flags: delete
 [InstallDelete]
 ; an older build's files (PyInstaller's _internal changes with every build)
 Type: filesandordirs; Name: "{app}\_internal"
+; the shortcuts of the old name (before 0.9.19) - the new ones are made under the new name
+Type: files; Name: "{autoprograms}\Sewer & Water Network Design.lnk"
+Type: files; Name: "{autodesktop}\Sewer & Water Network Design.lnk"
 
 [Icons]
 Name: "{autoprograms}\{#AppName}"; Filename: "{app}\{#AppExe}"; AppUserModelID: "Aurobindoji.SewerWater"

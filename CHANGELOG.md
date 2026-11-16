@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.19 (beta) - 2026-11-16
+
+- The app is now called **PravaahForge** (Sewer & Water network design): the window, the start page, About, the
+  setup, the Start menu / desktop shortcuts. The old name's shortcuts are removed by the setup. Nothing else
+  changes: the same program file, install folder, settings and master folder, and updates as before.
+
 ## 0.9.18 (beta) - 2026-11-16
 
 - Water supply: **Make a map (KML / KMZ)** on the Project tab - the project's whole map for Google Earth, the parts

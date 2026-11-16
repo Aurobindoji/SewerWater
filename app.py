@@ -196,6 +196,28 @@ def menu_renderers():
     return _LOOK[0]
 
 
+_TITLE_DARK = {}                                              # hwnd -> the title bar's last look
+
+
+def title_bar(form, dark):
+    """The window's title bar dark with the pages' theme (Windows 10 2004+ / 11: DWMWA_USE_IMMERSIVE_DARK_MODE, 20;
+    older builds 19). Redrawn at once when it changes. Windows without it keep their own (light) bar."""
+    try:
+        import ctypes
+        hwnd = int(form.Handle.ToInt64())
+        if _TITLE_DARK.get(hwnd) == bool(dark):
+            return
+        v = ctypes.c_int(1 if dark else 0)
+        dwm = ctypes.windll.dwmapi
+        if any(dwm.DwmSetWindowAttribute(ctypes.c_void_p(hwnd), a, ctypes.byref(v), ctypes.sizeof(v)) == 0
+               for a in (20, 19)):
+            _TITLE_DARK[hwnd] = bool(dark)
+            # SWP_FRAMECHANGED | NOMOVE | NOSIZE | NOZORDER | NOACTIVATE: the frame drawn again now
+            ctypes.windll.user32.SetWindowPos(ctypes.c_void_p(hwnd), None, 0, 0, 0, 0, 0x20 | 0x2 | 0x1 | 0x4 | 0x10)
+    except Exception:
+        pass
+
+
 def style_window_menu(window):
     """The menu "App" of a window (pywebview's MenuStrip): its labels in the language now and its colours in the theme
     now - set when the window is shown, again whenever it is activated or the menu opened."""
@@ -208,20 +230,22 @@ def style_window_menu(window):
         def find():
             form = window.native
             strip = next((c for c in form.Controls if isinstance(c, WF.MenuStrip)), None)
-            if strip is None or strip.Items.Count == 0:
-                return
-            top = strip.Items[0]
+            top = strip.Items[0] if strip is not None and strip.Items.Count else None
 
             def restyle(*_):
                 lang, dark = menu_look()
+                title_bar(form, dark)
+                if top is None:
+                    return
                 t, look = MENU_TXT[lang], menu_renderers()
                 for k, it in zip(APP_MENU, list(top.DropDownItems)):
                     it.Text = t[k]
                 look.apply(strip, dark)
                 look.apply(top.DropDown, dark)
             restyle()
-            strip.MenuActivate += restyle
-            top.DropDownOpening += restyle
+            if top is not None:
+                strip.MenuActivate += restyle
+                top.DropDownOpening += restyle
             form.Activated += restyle
             window._menu_restyle = restyle                    # kept with the window
         window.native.Invoke(Action(find))
@@ -449,6 +473,19 @@ class Api:
         self._last_dir = None                                     # the file dialog opens where the last file was
         self._tray = None                                         # its quit closes the hidden windows too
 
+    def restyle(self):
+        """A page changed the theme: every window's title bar and menu in it now (on the windows' thread)."""
+        if os.name != "nt":
+            return
+        from System import Action
+        for w in list(webview.windows):
+            fn = getattr(w, "_menu_restyle", None)
+            if fn is not None:
+                try:
+                    w.native.BeginInvoke(Action(fn))
+                except Exception:
+                    pass
+
     def open_window(self, url, name=""):
         """A page's window.open: one window per name (a module: 'sewer_network_design' / 'water_network_design');
         one open already is only brought forward - not loaded again, its work stays (10-Nov-2026)."""
@@ -536,6 +573,7 @@ class Api:
         if w is not None and w in webview.windows:
             if kw.get("html"):                                # its page again: the language / theme now
                 w.load_html(kw["html"])
+                w.set_title(title)
             w.restore()
             w.show()
             return w
@@ -549,7 +587,9 @@ class Api:
         self._one_window("about", "About - " + about.APP_NAME, html=about.about_html(self._master, desktop=True))
 
     def show_update(self):
-        self._one_window("update", "Update - " + TITLE, html=UPDATE_PAGE)
+        from launcher import about
+        lang = about.look()[0]
+        self._one_window("update", about.UPDATE_TXT[lang]["title"] + " - " + TITLE, html=about.update_html())
 
     def check_update(self):
         from launcher import about
@@ -566,7 +606,7 @@ class Api:
             try:
                 r = about.check()
                 if not r.get("ok") or not r.get("newer"):
-                    raise ValueError(r.get("log") or "कोई नया version नहीं / no newer version")
+                    raise ValueError(r.get("log") or about.msg("no_newer"))
                 folder = os.path.join(os.environ.get("TEMP") or os.path.expanduser("~"), "SewerWater_update")
                 self._dl["path"] = about.download(r["setup"], folder,
                                                   progress=lambda d, s: self._dl.update(done=d, size=s))
@@ -584,7 +624,8 @@ class Api:
         import subprocess
         p = (getattr(self, "_dl", None) or {}).get("path")
         if not p or not os.path.isfile(p):
-            return "setup नहीं मिला / setup not found"
+            from launcher import about
+            return about.msg("no_file")
         subprocess.Popen([p, "/SILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/CURRENTUSER", "/SP-"],
                          creationflags=getattr(subprocess, "DETACHED_PROCESS", 0) | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0),
                          close_fds=True)
@@ -598,61 +639,6 @@ class Api:
         else:
             for w in list(webview.windows):
                 w.destroy()
-
-
-# the update window (menu App -> Check for updates)
-UPDATE_PAGE = """<!doctype html><html><head><meta charset="utf-8"><style>
-body{font:15px "Segoe UI","Nirmala UI",sans-serif;margin:0;background:#f5f7fa;color:#222}
-.box{max-width:600px;margin:28px auto;background:#fff;border-radius:10px;padding:22px 28px;box-shadow:0 2px 10px #0002}
-h2{margin:0 0 10px;color:#0d47a1} .hint{color:#666;font-size:13px} .ok{color:#2e7d32} .err{color:#c62828}
-pre{white-space:pre-wrap;background:#f3f5f8;border-radius:6px;padding:10px;max-height:220px;overflow:auto;font:13px Consolas,monospace}
-button{font:15px "Segoe UI",sans-serif;padding:8px 16px;border-radius:6px;border:1px solid #1565c0;background:#1565c0;
-color:#fff;cursor:pointer;margin-top:8px} button:disabled{opacity:.45;cursor:default}
-progress{width:100%;height:16px;margin-top:10px}</style></head><body><div class="box">
-<h2>Update देखें / Check for updates</h2><div id="st">GitHub पर देख रहे हैं … / Checking GitHub …</div>
-<div id="more"></div></div><script>
-const api = () => window.pywebview.api;
-const $ = id => document.getElementById(id);
-const esc = s => String(s).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
-async function go() {
-  const r = await api().check_update();
-  if (!r.ok) { $("st").innerHTML = `<span class="err">${esc(r.log)}</span>`; return; }
-  if (!r.newer) {
-    $("st").innerHTML = `<span class="ok">✔ नया version यही है: ${esc(r.current)} / You have the newest version: ${esc(r.current)}</span>`;
-    return;
-  }
-  const mb = r.setup ? (r.setup.size / 1048576).toFixed(1) + " MB" : "";
-  $("st").innerHTML = `नया version <b>${esc(r.latest)}</b> उपलब्ध है (अभी ${esc(r.current)}) / Version <b>${esc(r.latest)}</b> is available (you have ${esc(r.current)})`;
-  let h = `<pre>${esc(r.notes || "")}</pre>`;
-  if (!r.frozen) h += `<div class="hint">App source से चल रहा है - update: git pull / The app runs from source: update with git pull.</div>`;
-  else if (!r.setup) h += `<div class="err">इस release में setup नहीं / this release has no setup</div>`;
-  else h += `<div class="hint">App बंद होकर setup चलेगा और नया version अपने-आप खुलेगा - पहले सब काम सहेज लें। ${esc(r.setup.name)}, ${mb}; SHA-256 GitHub से मिलाया जाएगा.<br>
-The app closes, the setup runs and the new version opens by itself - save your work first.</div>
-<button id="inst">Download और install / Download and install</button><progress id="pg" value="0" max="1" hidden></progress><div id="msg"></div>`;
-  $("more").innerHTML = h;
-  if ($("inst")) $("inst").onclick = install;
-}
-async function install() {
-  if (!confirm("सब काम सहेज लिया? App बंद होकर update होगा। / Is all your work saved? The app will close and update.")) return;
-  $("inst").disabled = true; $("pg").hidden = false; $("msg").textContent = "Download हो रहा है … / Downloading …";
-  await api().start_update();
-  const t = setInterval(async () => {
-    const p = await api().update_progress();
-    if (p.size) $("pg").value = p.done / p.size;
-    if (p.error) { clearInterval(t); $("msg").innerHTML = `<span class="err">${esc(p.error)}</span>`; $("inst").disabled = false; return; }
-    if (p.path) {
-      clearInterval(t);
-      $("msg").innerHTML = `<span class="ok">✔ SHA-256 मिला - setup चल रहा है, app बंद हो रहा है … / SHA-256 matched - the setup runs, the app closes …</span>`;
-      const e = await api().run_update();
-      if (e) { $("msg").innerHTML = `<span class="err">${esc(e)}</span>`; $("inst").disabled = false; }
-    }
-  }, 400);
-}
-let began = false;
-const begin = () => { if (!began) { began = true; go(); } };
-window.addEventListener("pywebviewready", begin);
-if (window.pywebview && window.pywebview.api) begin();
-</script></body></html>"""
 
 
 def main():

@@ -37,6 +37,7 @@ async function uiLoad() {
 async function uiSave() {
   try { localStorage.setItem(UI_LS, JSON.stringify({ mode: UI.mode, theme: UI.theme })); } catch (e) { }
   try { await fetch(`${UI_LAUNCHER}?mode=${UI.mode}&theme=${UI.theme}`, { signal: AbortSignal.timeout(1500) }); } catch (e) { }
+  try { if (window.pywebview && window.pywebview.api && window.pywebview.api.restyle) window.pywebview.api.restyle(); } catch (e) { }   // the desktop app's title bars / menus
 }
 // Simple mode: the hidden fields go at the page's presets (the app's defaults), whatever they hold
 function uiSimple(q, preset) { return UI.mode === "simple" ? Object.assign(q, JSON.parse(JSON.stringify(preset))) : q; }

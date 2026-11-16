@@ -59,3 +59,13 @@ def test_download_is_matched(tmp_path, monkeypatch):
 def test_about_page():
     h = A.about_html(master=r"D:\Data", desktop=True)
     assert A.APP_VERSION in h and "GPL" in h and "Claude" in h and "Aurobindoji" in h and r"D:\Data" in h
+
+
+def test_update_page_one_language():
+    """The update window in one language and the theme (user request 16-Nov-2026), as the About page."""
+    hi, en = A.update_html("hi", False), A.update_html("en", True)
+    assert "Update देखें" in hi and "Check for updates" not in hi and 'data-theme="light"' in hi
+    assert "Check for updates" in en and "देख" not in en and 'data-theme="dark"' in en
+    assert set(A.MSG["hi"]) == set(A.MSG["en"]) and set(A.UPDATE_TXT["hi"]) == set(A.UPDATE_TXT["en"])
+    assert A.msg("no_answer", "en", err="X") == "GitHub did not answer (X) - check the internet."
+    assert "/" not in A.msg("no_sha", "hi")                     # not both languages joined

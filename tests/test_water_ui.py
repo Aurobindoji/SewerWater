@@ -461,6 +461,20 @@ def test_water_dxf_export(server):
     n = next(x for x in d["nodes"] if x["head"] is not None)
     assert f"HGL {n['head']:.2f}" in txt and f"RH {n['p']:.2f}" in txt
     assert len(msp.query("SOLID[layer=='W_FLOW_ARROW']")) > 0
+    # no pipe label over a junction's name / GL / HGL / RH (user request 16-Nov-2026)
+    from water_app import cad
+
+    def box(e):
+        align, at = e.get_align_enum(), e.get_placement()[1]
+        v, hz = (align.name.split("_") if "_" in align.name else    # LEFT (on the base line), MIDDLE ...
+                 ("MIDDLE", "CENTER") if align.name == "MIDDLE" else ("BOTTOM", align.name))
+        return wdxf.text_quad(at, cad.text_width(e.dxf.text, e.dxf.height), e.dxf.height, e.dxf.rotation,
+                              {"LEFT": 0, "CENTER": 0.5, "RIGHT": 1}[hz], {"BOTTOM": 0, "MIDDLE": 0.5, "TOP": 1}[v])
+    junction = wdxf.Taken(10.0)
+    for e in msp.query("TEXT[layer=='W_JUNCTION_TEXT']"):
+        junction.add(box(e))
+    pipe = list(msp.query("TEXT[layer=='W_PIPE_TEXT']"))
+    assert pipe and not any(junction.hits(box(e)) for e in pipe)
 
 
 def test_ward_table_from_a_kml():

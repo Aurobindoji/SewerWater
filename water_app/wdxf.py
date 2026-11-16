@@ -17,7 +17,8 @@ a layout: UTM metres), its layers switched on / off in AutoCAD:
                          e.g. W_PIPE_HDPE_110, W_PIPE_DI_350; a legend of the sizes and their lengths under the network
         W_PIPE_CLOSED    the closed pipes (the boundary pipes), red whatever their size
         W_PIPE_TEXT      "P-17111 HDPE 110mm" above, "L=21.0" below - or one line, smaller, label only, or on a leader,
-                         as the sewer's plan drawing (pipe_text)
+                         as the sewer's plan drawing (pipe_text); kept off the junction texts and the other pipe
+                         labels: the other side of the pipe, slid along it, or a longer leader (Taken)
         W_FLOW_ARROW     the direction of the peak flow
         W_JUNCTION, W_JUNCTION_LOW (residual head below 17 m), W_JUNCTION_TEXT: name, GL, HGL, residual head
                          ("RH 21.95", m; user request 15-Nov-2026 - was "P")
@@ -77,6 +78,50 @@ def pipe_text(label, size, length, chord, h, r):
             return [(label, 0)], h
         return [(label, 1)], max(cad.PIPE_TEXT_MIN * h, min(h, room / w))
     return [(top, 1), (bottom, -1)], max(cad.PIPE_TEXT_MIN * h, min(h, room / two))
+
+
+def text_quad(at, w, th, ang, ax, ay):
+    """Corners of a text's box: anchor at, width w, height th, rotation ang (degrees); ax 0 / 0.5 / 1 = the anchor at
+    the box's left / centre / right, ay 0 / 0.5 / 1 = at its bottom / middle / top."""
+    ux, uy = math.cos(math.radians(ang)), math.sin(math.radians(ang))
+    vx, vy = -uy, ux
+    x0, y0 = at[0] - ax * w * ux - ay * th * vx, at[1] - ax * w * uy - ay * th * vy
+    return [(x0, y0), (x0 + w * ux, y0 + w * uy), (x0 + w * ux + th * vx, y0 + w * uy + th * vy),
+            (x0 + th * vx, y0 + th * vy)]
+
+
+def _apart(a, b):
+    """True when the convex quads a and b do not overlap (separating axes)."""
+    for q in (a, b):
+        for i in range(4):
+            ex, ey = q[(i + 1) % 4][0] - q[i][0], q[(i + 1) % 4][1] - q[i][1]
+            pa = [ey * x - ex * y for x, y in a]
+            pb = [ey * x - ex * y for x, y in b]
+            if max(pa) <= min(pb) or max(pb) <= min(pa):
+                return True
+    return False
+
+
+class Taken:
+    """The boxes already on the drawing (junction texts, pipe labels), on a grid: a pipe label is put where it meets
+    none of them (user request 16-Nov-2026: pipe labels no longer over a junction's GL / HGL / RH)."""
+
+    def __init__(self, cell):
+        self.cell, self.grid = cell, {}
+
+    def _cells(self, q):
+        xs, ys = [p[0] for p in q], [p[1] for p in q]
+        for i in range(math.floor(min(xs) / self.cell), math.floor(max(xs) / self.cell) + 1):
+            for j in range(math.floor(min(ys) / self.cell), math.floor(max(ys) / self.cell) + 1):
+                yield i, j
+
+    def add(self, q):
+        for k in self._cells(q):
+            self.grid.setdefault(k, []).append(q)
+
+    def hits(self, q):
+        seen = {id(b): b for k in self._cells(q) for b in self.grid.get(k, ())}
+        return sum(not _apart(q, b) for b in seen.values())
 
 
 def _kept(stem):
@@ -279,6 +324,19 @@ def export(stem, path=None, what="both"):
         k = order.index(x) if x in order else len(order) + used.index(x)
         doc.layers.add(size_layer(x), color=SIZE_COLOURS[k % len(SIZE_COLOURS)])
     size_len = {}
+    taken = Taken(10 * h)
+
+    def junction_lines(lab):
+        e, v = dn.get(lab, {}), nodes[lab]
+        return [lab, f"GL {cad.fmt(e.get('gl', v.get('ground')), 2)}"] + (
+            [f"HGL {cad.fmt(e.get('head'), 2)}", f"RH {cad.fmt(e.get('p'), 2)}"] if d else [])
+
+    for lab, v in nodes.items():                          # the junction texts first: the pipe labels keep off them
+        x, y = v["xy"]
+        jl = junction_lines(lab)
+        w = max(cad.text_width(t, h) for t in jl)
+        taken.add(text_quad((x + r * 1.3, y + r * 1.3), w, (len(jl) - 1) * h * 1.4 + h, 0.0, 0, 0))
+        taken.add(text_quad((x, y), 2 * r, 2 * r, 0.0, 0.5, 0.5))
     for c in net["conduits"]:
         P = pts_of(c)
         if len(P) < 2:
@@ -296,19 +354,58 @@ def export(stem, path=None, what="both"):
         tx, ty = cad.point_along(P, 0.5)
         nx, ny = -math.sin(math.radians(ang)), math.cos(math.radians(ang))
         lines, th = pipe_text(c["label"], p.get("size"), c.get("length_m"), chord, h, r)
-        for t, side in lines:
-            if side == 0:                                   # off the pipe: away from the junction texts (up-right)
-                if nx + ny > 0:
-                    nx, ny = -nx, -ny
-                ex, ey = tx + nx * LEADER * h, ty + ny * LEADER * h
-                msp.add_line((tx, ty), (ex, ey), dxfattribs={"layer": "W_PIPE_TEXT"})
-                text(t, (ex + (0.3 if nx >= 0 else -0.3) * h, ey), "W_PIPE_TEXT", th,
-                     TextEntityAlignment.MIDDLE_LEFT if nx >= 0 else TextEntityAlignment.MIDDLE_RIGHT)
+        lx, ly = (-nx, -ny) if nx + ny > 0 else (nx, ny)    # a leader: first away from the junction texts
+                                                            # (up-right of their junction)
+
+        def on_leader(t, th):
+            w, best = cad.text_width(t, th), None
+            for k, (sx, sy) in enumerate([(lx, ly), (-lx, -ly)] * 3):
+                ex, ey = tx + sx * LEADER * h * (1 + k // 2), ty + sy * LEADER * h * (1 + k // 2)
+                at = (ex + (0.3 if sx >= 0 else -0.3) * h, ey)
+                q = text_quad(at, w, th, 0.0, 0 if sx >= 0 else 1, 0.5)
+                hit = taken.hits(q)
+                if best is None or hit < best[0]:
+                    best = (hit, [("lead", t, th, (ex, ey), at, sx, q)])
+                if not hit:
+                    break
+            return best
+
+        if lines[0][1] == 0:                                # off the pipe on a leader
+            best = on_leader(lines[0][0], th)
+        else:                                               # on the pipe: in the middle, else the other side or
+            ux, uy = math.cos(math.radians(ang)), math.sin(math.radians(ang))     # slid along it, clear of texts
+            widths = [cad.text_width(t, th) for t, _ in lines]
+            slack = max(0.0, (chord - max(widths)) / 2 - r)          # up to the junction symbols (also boxes)
+            best = None
+            for s in (0.0, 0.5, -0.5, 1.0, -1.0):
+                for flip in (1, -1):
+                    ox, oy = tx + ux * s * slack, ty + uy * s * slack
+                    put = []
+                    for (t, side), w in zip(lines, widths):
+                        side *= flip
+                        at = (ox + nx * side * h * 0.6, oy + ny * side * h * 0.6)
+                        put.append(("on", t, th, side, at, None, text_quad(at, w, th, ang, 0.5, 0 if side > 0 else 1)))
+                    hit = sum(taken.hits(e[-1]) for e in put)
+                    if best is None or hit < best[0]:
+                        best = (hit, put)
+                    if not hit:
+                        break
+                if not best[0]:
+                    break
+            if best[0]:                                     # nowhere clear on the pipe: the text on a leader
+                lead = on_leader(" ".join(t for t, _ in lines), th)
+                if not lead[0]:
+                    best = lead
+        for how, t, th_, a1, at, sx, q in best[1]:
+            if how == "lead":
+                msp.add_line((tx, ty), a1, dxfattribs={"layer": "W_PIPE_TEXT"})
+                text(t, at, "W_PIPE_TEXT", th_,
+                     TextEntityAlignment.MIDDLE_LEFT if sx >= 0 else TextEntityAlignment.MIDDLE_RIGHT)
                 n["leaders"] += 1
-                continue
-            off = side * h * 0.6
-            text(t, (tx + nx * off, ty + ny * off), "W_PIPE_TEXT", th,
-                 TextEntityAlignment.BOTTOM_CENTER if side > 0 else TextEntityAlignment.TOP_CENTER, ang)
+            else:
+                text(t, at, "W_PIPE_TEXT", th_,
+                     TextEntityAlignment.BOTTOM_CENTER if a1 > 0 else TextEntityAlignment.TOP_CENTER, ang)
+            taken.add(q)
         q = p.get("flow")
         L_ = math.dist((x1, y1), (x2, y2))
         if q and abs(q) > 1e-6 and not p.get("closed") and L_ > 0:   # flow arrow: + = drawn start -> stop
@@ -327,9 +424,7 @@ def export(stem, path=None, what="both"):
         low = e.get("p") is not None and e["p"] < RESIDUAL_HEAD_M - 1e-6
         n["low"] += low
         msp.add_circle((x, y), r, dxfattribs={"layer": "W_JUNCTION_LOW" if low else "W_JUNCTION"})
-        gl = e.get("gl", v.get("ground"))
-        lines = [lab, f"GL {cad.fmt(gl, 2)}"] + ([f"HGL {cad.fmt(e.get('head'), 2)}", f"RH {cad.fmt(e.get('p'), 2)}"]
-                                                if d else [])
+        lines = junction_lines(lab)
         for j, t in enumerate(lines):
             text(t, (x + r * 1.3, y + r * 1.3 + (len(lines) - 1 - j) * h * 1.4), "W_JUNCTION_TEXT", h,
                  TextEntityAlignment.BOTTOM_LEFT)

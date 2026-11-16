@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.25 (beta) - 2026-11-16
+
+- Both module pages: **Help, Tour, CPHEEO, the language and the other app in one line** at the top of the sidebar,
+  and the theme is now one icon - ☀ light / 🌙 dark, a click switches it (the "as Windows" choice is gone from the
+  page). Simple / Advanced on the line below.
+
 ## 0.9.24 (beta) - 2026-11-16
 
 - The windows' **title bar** is dark when the pages are dark (the dark theme, or System with Windows in dark mode),

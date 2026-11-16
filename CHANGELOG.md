@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.23 (beta) - 2026-11-16
+
+- The app opens fast again: about 1 s to its window (0.9.22 took about 3.4 s). The check for a copy already running
+  is now instant (a Windows named mutex) - asking the app's port when nothing listened cost Windows 2 s at every start.
+
 ## 0.9.22 (beta) - 2026-11-16
 
 - The start page in the welcome video's look: when the video ends its last picture stays, slowly dims and the

@@ -108,7 +108,6 @@
       <div class="tools" style="margin-top:6px">
         <button data-kind="oht_ex" title="मौजूदा टंकी: क्षमता और staging भरें"><span class="sw" style="background:#00838f"></span>पुरानी टंकी (Ex-OHT)</button>
         <button data-kind="oht_new" title="नई टंकी: क्षमता OZ की माँग से, staging खाली छोड़ें तो design से"><span class="sw" style="border:2px dashed #00838f"></span>नई टंकी (Prop-OHT)</button>
-      <button data-kind="bulk" title="अस्पताल, उद्योग, रेलवे स्टेशन, बस अड्डा, कार्यालय जैसी bulk / संस्थागत माँग: नक्शे पर बिंदु, KL/day और peak factor भरें। माँग सबसे पास के junction पर जुड़ती है, 10 % distribution losses सहित, हर stage में वही।"><span class="sw" style="background:#6d4c41;border-radius:50%"></span>Bulk consumer</button>
       <button data-kind="prv" title="दबाव घटाने वाला valve (PRV): नक्शे पर pipe के ऊपर बिंदु रखें - वह सबसे पास के pipe (30 m तक) पर बैठता है और आगे के इलाके का दबाव घटाता है। Setting खाली = अपने-आप (आगे हर junction पर 17 m)। Design के सुझाए PRV Design view से एक बटन में रखे जा सकते हैं।"><span class="sw" style="background:#ef6c00;clip-path:polygon(50% 0,100% 100%,0 100%)"></span>PRV</button>
       <button data-kind="tw" title="नया tube well: नक्शे पर बिंदु (सरकारी / उपलब्ध ज़मीन)। उसकी rising main सड़क के रास्ते उसके OZ की OHT तक, economic size से (Design)। जितने नए TW चाहिए उतने न रखें तो Design OHT के पास (100 m दूरी पर) सुझाता है। Discharge खाली = 1500 LPM।"><span class="sw" style="background:#00897b;border-radius:50%"></span>नया tube well</button>
       </div>
@@ -122,8 +121,6 @@
       <div class="tools">
         <button data-kind="ward" title="वार्ड / मोहल्ला घेरें और उसकी population भरें"><span class="sw" style="background:var(--ward);opacity:.6"></span>वार्ड + population</button>
         <button data-kind="bulk" title="अस्पताल, उद्योग, रेलवे स्टेशन, बस अड्डा, कार्यालय जैसी bulk / संस्थागत माँग: नक्शे पर बिंदु, KL/day और peak factor भरें। माँग सबसे पास के junction पर जुड़ती है, 10 % distribution losses सहित, हर stage में वही।"><span class="sw" style="background:#6d4c41;border-radius:50%"></span>Bulk consumer</button>
-        <button data-kind="prv" title="दबाव घटाने वाला valve (PRV): नक्शे पर pipe के ऊपर बिंदु रखें - वह सबसे पास के pipe (30 m तक) पर बैठता है और आगे के इलाके का दबाव घटाता है। Setting खाली = अपने-आप (आगे हर junction पर 17 m)। Design के सुझाए PRV Design view से एक बटन में रखे जा सकते हैं।"><span class="sw" style="background:#ef6c00;clip-path:polygon(50% 0,100% 100%,0 100%)"></span>PRV</button>
-        <button data-kind="tw" title="नया tube well: नक्शे पर बिंदु (सरकारी / उपलब्ध ज़मीन)। उसकी rising main सड़क के रास्ते उसके OZ की OHT तक, economic size से (Design)। जितने नए TW चाहिए उतने न रखें तो Design OHT के पास (100 m दूरी पर) सुझाता है। Discharge खाली = 1500 LPM।"><span class="sw" style="background:#00897b;border-radius:50%"></span>नया tube well</button>
         <button id="wardkml" title="नगर निकाय की वार्ड सीमाओं की KML / KMZ: हर polygon एक वार्ड, नाम और population (population / pop / w_pop / जनसंख्या field) के साथ। सड़कें, बिंदु और boundary नहीं लिए जाते।"><span class="sw" style="background:var(--ward);opacity:.3"></span>KML से वार्ड…</button>
         <input type="file" id="wardfile" accept=".kml,.kmz" hidden>
       </div>

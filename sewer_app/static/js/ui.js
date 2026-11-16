@@ -96,8 +96,12 @@ function uiBuild() {
                                     "Simple: the hidden fields run at the CPHEEO / UPJN defaults - Advanced to change them.")}</div>` +
     `<div id="uitabs">` + keys.map((t, i) => `<button type="button" data-t="${t[0]}"><i>${i + 1}</i>${tr(t[1], t[2])}</button>`).join("") + `</div>`;
   if (sub) sub.after(bar); else side.prepend(bar);
-  // user request 16-Nov-2026: help, tour, CPHEEO, the language and the other app in one line, the theme an icon
-  const links = bar.querySelector("#uilinks");
+  // user request 16-Nov-2026: help, tour, CPHEEO, the language and the other app close together on the title's line,
+  // on its right, the theme an icon at the far right (on a narrow sidebar the group goes under the title, still right)
+  const tools = bar.querySelector("#uitools");
+  const head = document.getElementById("title");
+  if (head && head.parentElement) { head.parentElement.classList.add("uihead"); head.parentElement.append(tools); }
+  const links = tools.querySelector("#uilinks");
   for (const id of ["gopen", "langsw", "otherapp"]) {
     const a = document.getElementById(id);
     if (a) { const old = a.parentElement; links.append(a); if (old && !old.querySelector("a")) old.remove(); }
@@ -111,13 +115,13 @@ function uiBuild() {
     const m = e.target.closest("button"); if (!m) return;
     UI.mode = m.dataset.m; uiApply(); uiSave();
   };
-  bar.querySelector("#uitheme").onclick = () => {
+  tools.querySelector("#uitheme").onclick = () => {
     UI.theme = document.documentElement.dataset.theme === "dark" ? "light" : "dark"; uiApply(); uiSave();
   };
   bar.querySelector("#uitabs").onclick = e => { const b = e.target.closest("button"); if (b) uiTab(b.dataset.t); };
   // the guide (guide.html, its chapter of the tab shown) in a window of its own; the tour (tour.js)
-  bar.querySelector("#uiguide").onclick = () => window.open(`/guide?lang=${LANG}#${UI.tab}`, "sw_guide");
-  bar.querySelector("#uitour").onclick = () => { if (window.tourStart) tourStart(); };
+  tools.querySelector("#uiguide").onclick = () => window.open(`/guide?lang=${LANG}#${UI.tab}`, "sw_guide");
+  tools.querySelector("#uitour").onclick = () => { if (window.tourStart) tourStart(); };
   let t0 = null;
   try { t0 = localStorage.getItem(uiTabKey); } catch (e) { }
   uiTab(keys.some(t => t[0] === t0) ? t0 : keys[0][0]);

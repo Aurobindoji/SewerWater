@@ -43,16 +43,23 @@ BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))      # the se
 OUT_DIR = os.path.join(BASE, "output", "dxf_inspect")
 
 PIPE_NAME = re.compile(r"pipe|sewer|\bsw\b|^sw|main|line|nala|drain", re.I)
+# 16-Nov-2026 (a survey drawing): its power line "Ex-Utility-HT Line" and the road "CENTER LINE" were taken for pipes
 NOT_PIPE_NAME = re.compile(r"rail|road|boundary|electric|canal|pond|text|contour|building|plot|wall|"
-                           r"tree|school|temple|well|site|hatch|grid|frame|title|dim", re.I)
+                           r"tree|school|temple|well|site|hatch|grid|frame|title|dim|utility|\bht\b|\blt\b|power|"
+                           r"telephone|cable|\bofc\b|cent(er|re)\s*line", re.I)
 OUTFALL_WORD = re.compile(r"\bSTP\b|OUT\s*FALL|\bSPS\b|\bIPS\b|\bMPS\b|\bPS\b|DISPOSAL|PUMPING|TREATMENT|"
                           r"EXIST(ING)?\s*(SEWER|MH|MANHOLE)|TRUNK", re.I)
 Z_TEXT_AGREE_M = 1.0     # WATER: Z of the lines is the ground only if within this of the GL texts (median)
 LEVEL_TAG = re.compile(r"^(GL|G\.L|RL|R\.L|GROUND|ELEV|ELEVATION|LEVEL|NGL|EGL|LVL|Z)\b", re.I)
 INVERT_TAG = re.compile(r"^(IL|I\.L|INV|INVERT)\b", re.I)
 NUM = re.compile(r"[-+]?\d+(?:\.\d+)?")
-ID_RE = re.compile(r"^\s*([A-Za-z]{1,8})\s*[-_ /]\s*(\d+[A-Za-z]?)\s*$")
-DEC_RE = re.compile(r"^\s*(?:(GL|G\.L\.?|RL|R\.L\.?|NGL|EGL|EL|ELEV|LEVEL|TBM)\s*[:=.\-]?\s*)?(\d{1,4}\.\d{1,3})\s*(m|M)?\s*$")
+# a name: MH-12, J-7A, and in two parts MH-3-441 (zone 3, manhole 441 - 16-Nov-2026, a key plan's every name)
+ID_RE = re.compile(r"^\s*([A-Za-z]{1,8})\s*[-_ /]\s*(\d+(?:-\d+)?[A-Za-z]?)\s*$")
+# a level, bare or with its tag - E-77.31 m and EL-77.87 m too (16-Nov-2026: two index plans and a key plan write
+# the ground level so; it was not read at all)
+DEC_RE = re.compile(r"^\s*(?:(GL|G\.L\.?|RL|R\.L\.?|NGL|EGL|EL|ELEV|LEVEL|TBM|E)\s*[:=.\-]?\s*)?(\d{1,4}\.\d{1,4})\s*(m|M)?\s*$")
+LEVEL_SPREAD_M = 50.0    # the ground levels of one drawing lie within this (5 % to 95 %): pipe lengths do not
+LEVEL_FAR_M = 25.0       # a level this far from the drawing's middle level is a typing error (777.08 for 77.708)
 IL_RE = re.compile(r"^\s*(IL|I\.L\.?|INV|INVERT)\s*[:=.\-]?\s*(\d{1,4}(?:\.\d{1,3})?)\s*(m|M)?\s*$", re.I)
 DIA_RE = re.compile(r"^\s*(?:dia\.?\s*|%%c\s*|\u00d8\s*)?([\d,]+(?:\.\d+)?)\s*mm\s*(?:dia\.?)?\s*$", re.I)
 SLOPE_RE = re.compile(r"^\s*([\d,]+(?:\.\d+)?)\s*1\s*/\s*S\s*$|^\s*1\s*(?:in|:)\s*([\d,]+(?:\.\d+)?)\s*$", re.I)
@@ -321,22 +328,52 @@ def text_summary(texts):
     return rows
 
 
+def is_tagged_level(text):
+    """True when the text is a level WITH its tag (GL-77.81 m, EL-77.87 m, E-79.70m), not a bare number."""
+    m = DEC_RE.match((text or "").strip())
+    return bool(m and m.group(1))
+
+
+def level_texts_of_layer(texts):
+    """The texts of ONE layer that are its levels: when the layer writes its levels with a tag (GL / EL / E ...), only
+    those - the bare numbers beside them are depths, lengths (16-Nov-2026: a key plan's node layer has EL-77.87 m, IL
+    and the depth 1.20 m at every node). Returns [(text, value)]."""
+    lv = [(t, v) for t in texts for kind, v in classify(t["text"]) if kind == "level"]
+    tagged = [(t, v) for t, v in lv if is_tagged_level(t["text"])]
+    return tagged if len(tagged) >= 5 and len(tagged) >= 0.2 * len(lv) else lv
+
+
+def level_band(values):
+    """(low, high) of the ground levels: the middle level +- LEVEL_FAR_M; a level outside it is a typing error."""
+    vs = sorted(values)
+    med = vs[len(vs) // 2] if vs else 0.0
+    return med - LEVEL_FAR_M, med + LEVEL_FAR_M
+
+
 def level_candidates(texts, min_n=5):
-    """{layer: [(x, y, value), ...]} of level-like values (decimal numbers, 1-3 decimals) per layer,
-    kept only when at least 80 % of them lie within 15 m of the layer median and the median is above
-    10 (terrain levels, not pipe lengths or depths)."""
-    by = collections.defaultdict(list)
+    """{layer: [(x, y, value), ...]} of level-like values (decimal numbers, 1-4 decimals; only the tagged ones when the
+    layer tags its levels - level_texts_of_layer) per layer, kept only when at least 80 % of them lie within 15 m of
+    the layer median, the median is above 10 (terrain levels, not pipe lengths or depths), 90 % of them lie within
+    LEVEL_SPREAD_M (16-Nov-2026: pipe lengths 7 - 93 m on a pipe layer were taken for its GL) and, bare numbers, most
+    are written to 2 decimals or more."""
+    by_layer = collections.defaultdict(list)
     for t in texts:
-        for kind, v in classify(t["text"]):
-            if kind == "level":
-                by[t["layer"]].append((t["x"], t["y"], v))
+        by_layer[t["layer"]].append(t)
     out = {}
-    for lay, vals in by.items():
+    for lay, ts in by_layer.items():
+        lv = level_texts_of_layer(ts)
+        vals = [(t["x"], t["y"], v) for t, v in lv]
         if len(vals) < min_n:
+            continue
+        # bare numbers: a level is written to 2 - 3 decimals (77.338, 77.81), a length to one (26.8 m) - 16-Nov-2026,
+        # the lengths left beside the pipes of a drawing without any GL were taken for its GL
+        if not any(is_tagged_level(t["text"]) for t, _ in lv) and \
+                sum(1 for t, _ in lv if re.search(r"\.\d{2,}", t["text"])) < 0.6 * len(lv):
             continue
         vs = sorted(v for _, _, v in vals)
         med = vs[len(vs) // 2]
-        if med > 10 and sum(1 for v in vs if abs(v - med) <= 15) >= 0.8 * len(vs):
+        p5, p95 = vs[int(0.05 * (len(vs) - 1))], vs[int(round(0.95 * (len(vs) - 1)))]
+        if med > 10 and sum(1 for v in vs if abs(v - med) <= 15) >= 0.8 * len(vs) and p95 - p5 <= LEVEL_SPREAD_M:
             out[lay] = vals
     return out
 
@@ -746,16 +783,26 @@ def pair_with_labels(items, anchors, pass2_labels):
     return got, idx, {"pair_offsets": [(round(a, 2), round(b, 2), c) for a, b, c in offs], "pair_samples": len(samples)}
 
 
-def node_levels(nodes, texts, inserts, level_layers, radius, anchors=None, pass2_labels=(), z_mode="auto"):
+def node_levels(nodes, texts, inserts, level_layers, radius, anchors=None, pass2_labels=(), z_mode="auto", points=()):
     """Ground level per node from (in this order - water, 22-Oct-2026): block attributes, the GL text paired with the
-    manhole's label (anchors - see pair_with_labels) or the nearest numeric text, Z of line ends (only when Z agrees
-    with the GL texts). z_mode (the user's choice on the page, 22-Oct-2026): "auto" as said; "first" - Z of the line
-    ends before all else, whether it agrees or not (the texts where there is no Z); "off" - Z not at all."""
+    manhole's label (anchors - see pair_with_labels) or the nearest numeric text, the Z of the nearest survey point
+    (POINT, 16-Nov-2026), Z of line ends (only when Z agrees with the GL texts). z_mode (the user's choice on the page,
+    22-Oct-2026): "auto" as said; "first" - Z of the line ends before all else, whether it agrees or not (the texts
+    where there is no Z); "off" - Z not at all.
+    16-Nov-2026 (real drawings): a level far from the drawing's others (level_band - 777.08 among 76s) is not used but
+    listed (info "far"); the Z of the lines is the ground only when it has many values (one value at every line end
+    is the elevation the drawing was made at, not the ground)."""
     used = [n for n in nodes if n["deg"] > 0]
-    res = {"z": 0, "attr": 0, "text": 0, "none": 0}
+    res = {"z": 0, "attr": 0, "text": 0, "point": 0, "none": 0}
     # Z
     zs = [z for n in used for z in n["z"]]
     z_useful = zs and (max(zs) - min(zs) > 0.01) and sum(1 for z in zs if abs(z) > 0.001) > 0.5 * len(zs)
+    z_few = None
+    nz = len({round(z, 2) for z in zs if abs(z) > 0.001})
+    if z_useful and nz < max(5, 0.05 * len(used)):
+        z_useful = False                         # a few values only: the lines' elevations, not the ground
+        z_few = (f"Z of the lines not used: only {nz} different value(s) at {len(used)} line ends - the elevation the "
+                 f"lines were drawn at, not the ground")
     # attributes
     ag = Grid(max(radius, 1.0))
     for i, b in enumerate(inserts):
@@ -765,8 +812,23 @@ def node_levels(nodes, texts, inserts, level_layers, radius, anchors=None, pass2
                 if v is not None:
                     ag.add(b["x"], b["y"], v)
                     break
-    items = [(t["x"], t["y"], v, t.get("h") or 0.0) for t in texts if t["layer"] in level_layers
-             for kind, v in classify(t["text"]) if kind == "level"]
+    by_layer = collections.defaultdict(list)
+    for t in texts:
+        if t["layer"] in level_layers:
+            by_layer[t["layer"]].append(t)
+    items = [(t["x"], t["y"], v, t.get("h") or 0.0) for ts in by_layer.values() for t, v in level_texts_of_layer(ts)]
+    # survey points with their height (POINT entities; 16-Nov-2026: an index plan has 3,390 of them and no GL text)
+    pts = [(p["x"], p["y"], p["z"]) for p in points if p.get("kind") == "POINT" and abs(p.get("z") or 0) > 0.001]
+    lo, hi = level_band([v for _, _, v, _ in items] or [z for _, _, z in pts])
+    far = [(x, y, v, "text") for x, y, v, _ in items if not lo <= v <= hi] + \
+          [(x, y, z, "survey point") for x, y, z in pts if not lo <= z <= hi]
+    items = [it for it in items if lo <= it[2] <= hi]
+    pts = [p for p in pts if lo <= p[2] <= hi]
+    if len({round(z, 2) for _, _, z in pts}) < 5:
+        pts = []                                 # not a survey: a few points at one height
+    pg = Grid(max(radius, 1.0))
+    for x, y, z in pts:
+        pg.add(x, y, z)
     paired, pidx, pinfo = pair_with_labels(items, anchors or {}, set(pass2_labels))
     rest = [it for k, it in enumerate(items) if k not in set(pidx.values())]
     free_nodes = [dict(n, deg=0) if n["id"] in paired else n for n in nodes]
@@ -794,6 +856,10 @@ def node_levels(nodes, texts, inserts, level_layers, radius, anchors=None, pass2
         z_useful = False
         tinfo["z_ignored"] = (f"Z of the lines not used: {statistics.median(zt):.2f} m from the GL texts (median of "
                               f"{len(zt)} nodes having both) - a line's elevation, not the ground")
+    if z_few and z_mode == "auto" and not tinfo.get("z_ignored"):
+        tinfo["z_ignored"] = z_few
+    tinfo["far"] = far
+    tinfo["points"] = len(pts)
     node_levels.info = tinfo
     per_node = {}
     for n in used:
@@ -809,6 +875,11 @@ def node_levels(nodes, texts, inserts, level_layers, radius, anchors=None, pass2
         if n["id"] in tmatch:
             per_node[n["id"]] = ("text", tmatch[n["id"]])
             res["text"] += 1
+            continue
+        h = pg.near(n["x"], n["y"], radius) if pts else None
+        if h:
+            per_node[n["id"]] = ("survey point", h[0][3])
+            res["point"] += 1
             continue
         if z_useful and any(abs(z) > 0.001 for z in n["z"]):
             per_node[n["id"]] = ("Z", max(n["z"]))

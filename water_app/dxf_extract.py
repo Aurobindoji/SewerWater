@@ -134,6 +134,7 @@ def _network(path, pipe_layers, mh_layers, tol, level_radius, mid_snap, midline)
     if missing:
         raise ValueError(f"Layer(s) not in the drawing: {', '.join(missing)}. Layers: {', '.join(sorted(layers))}")
     pl = [ln for ln in lines if ln["layer"] in pipe_layers]
+    pl, dup_lines = drop_duplicate_lines(pl)
     mh_lay = set(s.strip() for s in mh_layers if s.strip())
 
     # ---- manholes drawn ON a continuous line: cut the line there (symbols on mh_layers, and MH
@@ -170,7 +171,22 @@ def _network(path, pipe_layers, mh_layers, tol, level_radius, mid_snap, midline)
         raise ValueError("No lines on the pipe layers.")
     chk = di.network_checks(nodes, edges, tol)
     used = [n for n in nodes if n["deg"] > 0]
-    return layers, texts, inserts, points, pipe_layers, mh_lay, nodes, edges, chk, used, mid_log
+    return layers, texts, inserts, points, pipe_layers, mh_lay, nodes, edges, chk, used, mid_log, dup_lines
+
+
+def drop_duplicate_lines(lines, tol=0.01):
+    """The pipe lines with each line drawn twice (the same points to tol, either way round - on one layer or two)
+    kept once (16-Nov-2026: an index plan has 15,658 such lines; each made a second pipe between the same junctions).
+    Returns (lines, how many were dropped)."""
+    seen, out = set(), []
+    for ln in lines:
+        k = tuple((round(p[0] / tol), round(p[1] / tol)) for p in ln["pts"])
+        key = min(k, k[::-1])
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(ln)
+    return out, len(lines) - len(out)
 
 
 def length_texts(texts, edges, near=None):
@@ -216,14 +232,18 @@ def gl_options(path, pipe_layers, mh_layers=(), tol=0.5, level_radius=10.0, mid_
     चुनकर कन्फर्म कर दे'): every layer with decimal texts - how many, how many of them are the lengths of their pipes
     (length_texts), the range / median of the others, how many junctions have one within level_radius, samples - and
     the guess (as extract: the level-like layer, without the lengths, near most junctions)."""
-    _, texts, _, _, _, _, _, edges, _, used, _ = _network(path, pipe_layers, mh_layers, tol, level_radius, mid_snap,
+    _, texts, _, _, _, _, _, edges, _, used, _, _ = _network(path, pipe_layers, mh_layers, tol, level_radius, mid_snap,
                                                           midline)
     drop = length_texts(texts, edges)
-    by = collections.defaultdict(list)
+    by_t = collections.defaultdict(list)
     for i, t in enumerate(texts):
-        v = next((v for kind, v in di.classify(t["text"]) if kind == "level"), None)
-        if v is not None:
-            by[t["layer"]].append((i, v))
+        by_t[t["layer"]].append(dict(t, _i=i))
+    by = {}
+    for lay, ts in by_t.items():                  # a layer's levels (the tagged ones when it tags them - 16-Nov-2026)
+        lv = [(t["_i"], v) for t, v in di.level_texts_of_layer(ts)]
+        if lv:
+            by[lay] = lv
+    cands = di.level_candidates([t for i, t in enumerate(texts) if i not in drop])
     rows = []
     for lay, items in by.items():
         keep = [(i, v) for i, v in items if i not in drop]
@@ -235,8 +255,7 @@ def gl_options(path, pipe_layers, mh_layers=(), tol=0.5, level_radius=10.0, mid_
         rows.append({"layer": lay, "texts": len(items), "lengths": len(items) - len(keep),
                      "min": vals[0] if vals else None, "max": vals[-1] if vals else None, "median": med,
                      "near": sum(1 for n in used if g.near(n["x"], n["y"], level_radius)),
-                     "level_like": bool(vals) and len(vals) >= 5 and med > 10 and
-                     sum(1 for v in vals if abs(v - med) <= 15) >= 0.8 * len(vals),
+                     "level_like": lay in cands,
                      "samples": [t for t, _ in collections.Counter(texts[i]["text"] for i, _ in keep).most_common(6)]})
     rows.sort(key=lambda r: (-r["level_like"], -r["near"], r["layer"]))
     guess = [rows[0]["layer"]] if rows and rows[0]["level_like"] and rows[0]["near"] else []
@@ -277,7 +296,7 @@ def extract(path, pipe_layers, mh_layers=(), level_layers=(), tol=0.5, level_rad
     # pipe_prefix for the pipes; else the module's own
     npre = f"{node_prefix}G" if node_prefix else NODE_PREFIX
     ppre = pipe_prefix or PIPE_PREFIX
-    layers, texts, inserts, points, pipe_layers, mh_lay, nodes, edges, chk, used, mid_log = _network(
+    layers, texts, inserts, points, pipe_layers, mh_lay, nodes, edges, chk, used, mid_log, dup_lines = _network(
         path, pipe_layers, mh_layers, tol, level_radius, mid_snap, midline)
 
     # ---- manhole labels
@@ -327,7 +346,7 @@ def extract(path, pipe_layers, mh_layers=(), level_layers=(), tol=0.5, level_rad
         lvl_layers = [cover[0][1]] if cover and cover[0][0] else []
     li0 = getattr(di.labels_near_nodes, "info", {})
     lres, per_node, _ = di.node_levels(nodes, gl_texts, inserts, lvl_layers, level_radius, z_mode=z_mode,
-                                       anchors=li0.get("text_at"), pass2_labels=li0.get("pass2", set()))
+                                       anchors=li0.get("text_at"), pass2_labels=li0.get("pass2", set()), points=points)
 
     # ---- tables
     mh_rows = []
@@ -378,6 +397,12 @@ def extract(path, pipe_layers, mh_layers=(), level_layers=(), tol=0.5, level_rad
     for r in mh_rows:
         if r["GL"] is None:
             prob.append({"Problem": "no GL", "Item": r["Label"], "X": r["X"], "Y": r["Y"], "Detail": ""})
+    for x, y, v, src in gi.get("far", []):
+        prob.append({"Problem": "level far from the drawing's other levels - not used (typing error?)", "Item": src,
+                     "X": round(x, 3), "Y": round(y, 3), "Detail": f"{v:g}"})
+    if dup_lines:
+        prob.append({"Problem": f"{dup_lines} line(s) drawn twice on the pipe layers - one kept", "Item": "", "X": None,
+                     "Y": None, "Detail": "the same line (to 1 cm) on the same or another pipe layer"})
     for n in used:
         if not labels.get(n["id"]):
             prob.append({"Problem": "no MH label in the drawing", "Item": final[n["id"]], "X": round(n["x"], 3),
@@ -412,7 +437,8 @@ def extract(path, pipe_layers, mh_layers=(), level_layers=(), tol=0.5, level_rad
                f"named <label>/<part>, e.g. {next(iter(by_part))}/{part_no[find(by_part[next(iter(by_part))][0])]}"
                if by_part else ""),
             f"GL          : {gl_n} of {len(mh_rows)} - texts of {', '.join(l for l in lvl_layers if l != '(no GL layer)') or '-'} "
-            f"{lres['text']}, Z of the lines {lres['z']}, block attributes {lres['attr']} (Z: {z_mode})"
+            f"{lres['text']}, survey points {lres.get('point', 0)}, Z of the lines {lres['z']}, block attributes "
+            f"{lres['attr']} (Z: {z_mode})"
             + (f", range {min(gls):.3f} - {max(gls):.3f}" if gls else "") + f"; missing {len(mh_rows) - gl_n}"]
     for name, inf in (("Label match", li), ("GL match   ", gi)):
         if inf:
@@ -426,6 +452,11 @@ def extract(path, pipe_layers, mh_layers=(), level_layers=(), tol=0.5, level_rad
     if n_len:
         summ.append(f"GL note     : {n_len} decimal text(s) on {', '.join(lvl_layers)} are the lengths of their pipes - "
                     f"not used as GL")
+    if gi and gi.get("far"):
+        summ.append(f"GL note     : {len(gi['far'])} level(s) far from the drawing's others not used (typing errors?), "
+                    f"e.g. {', '.join(f'{v:g}' for _, _, v, _ in gi['far'][:4])}; sheet Problems")
+    if dup_lines:
+        summ.append(f"Lines       : {dup_lines} line(s) drawn twice on the pipe layers - one of each kept")
     if gi and gi.get("z_ignored"):
         summ.append(f"GL note     : {gi['z_ignored']}; the nodes without a GL text are filled along the pipes (auto repair)")
     if midline:

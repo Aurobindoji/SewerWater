@@ -204,7 +204,7 @@ def dxf_layers(path, water=False):
     # sewer lines run manhole to manhole (tens of metres); a few very long lines (avg > 400 m) are rising mains
     pipe = [r["layer"] for r in rows if r["line_m"] > 0 and di.PIPE_NAME.search(r["layer"])
             and not di.NOT_PIPE_NAME.search(r["layer"]) and r["line_m"] / max(r["lines"], 1) <= 400
-            and not (water and re.search(r"nala|nallah|nalla|drain", r["layer"], re.I))]
+            and not (water and re.search(r"nala|nallah|nalla|drain|sewer|sever", r["layer"], re.I))]
     # house numbers (HH-12) look like manhole names but are not
     not_mh = re.compile(r"tbm|bench|\bbm\b|level|elev|text|road|plot|house|\bhh\b|household", re.I)
     # a manhole layer: mostly names, or one name per symbol (name, GL, IL, depth written at every manhole)

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.28 (beta) - 2026-11-16
+
+- The welcome video is sharper: 1920 px wide, made again from the original at a much higher quality (it was a
+  strongly compressed 1280 px copy); the start page's backdrop (its last frame) too.
+
 ## 0.9.27 (beta) - 2026-11-16
 
 Water supply - a network from a badly made DXF (rules measured on real drawings):

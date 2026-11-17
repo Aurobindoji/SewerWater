@@ -295,12 +295,7 @@
         <input type="number" id="wpeakv" value="2.5" min="1" max="5" step="0.1" style="width:5em" hidden></div>
       <div class="row adv"><label style="min-width:0" title="दबाव घटाने वाले valve (PRV): चालू हो तो design नक्शे के PRV लगाता है और 31 m से ऊपर के दबाव पर PRV सुझाता है, DPR (D2) में उनका ख़र्च; U.P. जल निगम की DPRs में आम नहीं, इसलिए default बंद">
         <input type="checkbox" id="wprv"> PRV का विकल्प (दबाव घटाने वाले valve)</label></div>
-      <div class="row adv"><label style="min-width:0" title="Design के बाद वही network: औसत माँग, रात का सबसे कम घंटा (draw-off pattern), fire flow; और 24 घंटे घंटा-दर-घंटा - हर OHT का पानी का स्तर (भरने के घंटों में भरती, outlet से खाली) और network का दबाव">
-        <input type="checkbox" id="wsim" checked> Load cases और 24 घंटे की simulation</label></div>
-      <div class="row adv"><label title="Fire flow (L/s): हर OZ के सबसे कमज़ोर junction (peak पर सबसे कम दबाव) पर, औसत माँग के साथ। खाली = fire case नहीं। CPHEEO p138 hydrant का flow या दबाव नहीं देता (fire engine दबाव बढ़ाते हैं)">Fire flow (L/s)</label>
-        <input type="number" id="wfirelps" min="0" max="500" step="1" placeholder="खाली = नहीं" style="width:6em">
-        <label title="Fire flow के समय उस junction पर न्यूनतम दबाव (m) - खाली = सिर्फ़ दिखाएँ, जाँच नहीं" style="min-width:0">न्यूनतम m</label>
-        <input type="number" id="wfiremin" min="0" max="60" step="0.5" placeholder="खाली" style="width:5em"></div>
+      <div class="hint adv">Load cases, 24 घंटे की simulation और fire flow: ⑥ Simulation tab में।</div>
       <details id="wcons" class="adv"><summary class="hint" style="cursor:pointer;font-weight:600">Design की सीमाएँ (constraints) - बंद = अभी जैसा</summary>
       <div class="row"><label style="min-width:0;flex:1" title="24 घंटे का सबसे व्यस्त घंटा (draw-off pattern, peak factor से अधिक हो तो) और ऊपर दिया fire flow (L/s + न्यूनतम m, दोनों भरे हों) भी design की शर्त बनें - fail हो तो उसी रास्ते के pipes बड़े; design का समय लगभग दुगना">
         <input type="checkbox" id="wcon_cases"> Load cases पर भी design</label></div>
@@ -332,6 +327,42 @@
       <div id="wdbox"></div>
       <div class="stepact" id="tblrow" hidden><button id="tblbtn" title="Design के हर pipe / junction की तालिका: manual की जाँच, बदलाव, CSV">☷ Pipe / junction तालिका</button>
         <span class="hint" id="tbledits"></span></div>
+      </div>
+      <!-- the Simulation tab (user request 17-Nov-2026): SSA / EPS on the last design, without designing again (js/sim.js) -->
+      <div data-tab="sim">
+      <div class="stepbar">Simulation</div>
+      <div class="hint" id="siminfo">आख़िरी Design के network (pipe sizes, OHT staging, PRV) पर - बिना दोबारा design किए। पहले Design चलाएँ।</div>
+      <div class="seg" id="simmode"><button data-m="ssa" class="on" title="Steady state analysis: एक पल की माँग पर network">SSA - एक पल</button><button data-m="eps" title="Extended period simulation: घंटा-दर-घंटा, टंकियों के स्तर के साथ">EPS - 24 / 48 / 72 घंटे</button></div>
+      <div class="row"><label title="आबादी का कौन-सा stage: design = +30 वर्ष; base year और +15 वर्ष तभी जब आबादी tab में उनकी आबादी देकर Design चला हो">आबादी stage</label>
+        <select id="simstage"><option value="ult">Design (+30 वर्ष)</option><option value="mid">+15 वर्ष</option><option value="init">Base year</option></select></div>
+      <div class="row simssa"><label title="किस पल की माँग: औसत, peak (design), रात (pattern का सबसे कम घंटा), pattern का कोई घंटा, या औसत का अपना गुणक">Load</label>
+        <select id="simbase"><option value="average">औसत (x 1)</option><option value="peak">Peak (design)</option><option value="night">रात (सबसे कम घंटा)</option><option value="hour">दिन का घंटा</option><option value="factor">अपना गुणक</option></select>
+        <select id="simhour" hidden></select><input type="number" id="simfactor" value="1" min="0" max="10" step="0.05" style="width:5em" hidden></div>
+      <div class="row simeps" hidden><label>अवधि</label><select id="simhours"><option value="24">24 घंटे</option><option value="48">48 घंटे</option><option value="72">72 घंटे</option></select></div>
+      <div class="row simeps" hidden><label title="OHT में पानी किन घंटों में भरता है (खाली = design / Zoning जैसा)">OHT भरने के घंटे</label>
+        <input type="text" id="siminflow" placeholder="design जैसा" style="width:9em"></div>
+      <details id="simpatbox"><summary class="hint" style="cursor:pointer;font-weight:600" title="हर घंटे की माँग = औसत x यह गुणक; 24 का जोड़ = 24 (दिन की माँग वही)">Draw-off pattern (24 घंटे)</summary>
+        <div id="simpat"></div>
+        <div class="row"><button type="button" id="simpatreset" title="Reference DPR का pattern (criteria)">मूल pattern</button><span class="hint" id="simpatsum"></span></div></details>
+      <details id="simloadbox"><summary class="hint" style="cursor:pointer;font-weight:600" title="कुछ junctions पर अतिरिक्त निकासी (L/s) - जैसे कोई बड़ा उपभोक्ता; EPS में हर घंटे">अतिरिक्त load (junctions पर)</summary>
+        <div id="simextra"></div>
+        <div class="row"><button type="button" id="simextraadd">+ load जोड़ें</button><span class="hint">या नक्शे पर junction पर click करें</span></div></details>
+      <details id="simfirebox" class="simssa"><summary class="hint" style="cursor:pointer;font-weight:600" title="चुने junctions पर fire flow, ऊपर के load के साथ">Fire (चुने junctions पर)</summary>
+        <div id="simfire"></div>
+        <div class="row"><button type="button" id="simfireadd">+ fire जोड़ें</button>
+          <label style="min-width:0" title="Fire के समय उस junction पर न्यूनतम दबाव - खाली = सिर्फ़ दिखाएँ">न्यूनतम m</label>
+          <input type="number" id="simfiremin" min="0" max="60" step="0.5" placeholder="खाली" style="width:5em"></div></details>
+      <div class="stepact"><button id="simrun" class="primary">Simulation चलाएँ</button><button id="simclear" title="Simulation के रंग नक्शे से हटाएँ">हटाएँ</button></div>
+      <div class="status" id="simstatus"></div>
+      <div id="simres"></div>
+      <div class="stepbar adv">Design के साथ बनी simulation</div>
+      <div class="row adv"><label style="min-width:0" title="Design के बाद वही network: औसत माँग, रात का सबसे कम घंटा (draw-off pattern), fire flow; और 24 घंटे घंटा-दर-घंटा - हर OHT का पानी का स्तर (भरने के घंटों में भरती, outlet से खाली) और network का दबाव">
+        <input type="checkbox" id="wsim" checked> Design के साथ load cases और 24 घंटे की simulation</label></div>
+      <div class="row adv"><label title="Fire flow (L/s): हर OZ के सबसे कमज़ोर junction (peak पर सबसे कम दबाव) पर, औसत माँग के साथ - Design के साथ, और 'Load cases पर भी design' की शर्त में। खाली = fire case नहीं। CPHEEO p138 hydrant का flow या दबाव नहीं देता (fire engine दबाव बढ़ाते हैं)">Fire flow (L/s)</label>
+        <input type="number" id="wfirelps" min="0" max="500" step="1" placeholder="खाली = नहीं" style="width:6em">
+        <label title="Fire flow के समय उस junction पर न्यूनतम दबाव (m) - खाली = सिर्फ़ दिखाएँ, जाँच नहीं" style="min-width:0">न्यूनतम m</label>
+        <input type="number" id="wfiremin" min="0" max="60" step="0.5" placeholder="खाली" style="width:5em"></div>
+      <div id="simdesign"></div>
       </div>
       <div data-tab="out">
       <div class="stepbar">सभी outputs</div>
@@ -407,6 +438,7 @@
 <script src="js/results.js"></script>
 <script src="js/outputs.js"></script>
 <script src="js/dxfnet.js"></script>
+<script src="js/sim.js"></script>
 <script src="js/start.js"></script>
 <script src="js/files.js"></script>
 <script src="js/outlist.js"></script>

@@ -397,13 +397,18 @@ class Handler(BaseHTTPRequestHandler):
         with open(path, encoding="utf-8") as fh:
             return {"ok": True, "name": name, "kml": fh.read()}
 
+    def _get_water_sim_info(self, u):                    # the Simulation tab: what the last design allows
+        from . import sim_run
+        return _answer(sim_run.info, self._name(u), plain=ValueError)
+
     def _get_outputs(self, u):                           # the Outputs tab: the project's files (16-Nov-2026)
         return _answer(output_files, self._name(u))
 
     GET = {"/api/version": _get_version, "/api/ping": _get_ping, "/api/projects": _get_projects,
            "/api/outputs": _get_outputs, "/api/city_wards_list": _get_city_wards_list, "/api/city_wards": _get_city_wards,
            "/api/water_last": _get_water_last, "/api/layout_result": _get_layout_result,
-           "/api/net": _get_net, "/api/net_texts": _get_net, "/api/project": _get_project}
+           "/api/net": _get_net, "/api/net_texts": _get_net, "/api/project": _get_project,
+           "/api/water_sim_info": _get_water_sim_info}
 
     # ----------------------------------------------------------------------------------------------- POST
     def do_POST(self):
@@ -461,6 +466,11 @@ class Handler(BaseHTTPRequestHandler):
             return _problem(e)
         return {"ok": True, "layers": rows, "guess": guess,
                 "name": safe_name(os.path.splitext(os.path.basename(path))[0])}
+
+    def _post_water_sim(self, u, req):                   # the Simulation tab: SSA / EPS on the last design
+        from . import sim_run
+        with LOCK:
+            return _answer(lambda: sim_run.run(req.get("name"), req), plain=ValueError)
 
     def _post_dxf_roads(self, u, req):                   # road centrelines + levels of a drawing -> KML for the layout
         from . import netedit
@@ -581,7 +591,7 @@ class Handler(BaseHTTPRequestHandler):
         return _answer(open_output, safe_name(req.get("name", "")), str(req.get("file") or ""), bool(req.get("folder")))
 
     POST = {"/api/save": _post_save, "/api/kmz": _post_kmz, "/api/layout": _post_layout,
-            "/api/dxf_preview": _post_dxf_preview, "/api/dxf_layers": _post_dxf_layers, "/api/dxf_roads": _post_dxf_roads,
+            "/api/dxf_preview": _post_dxf_preview, "/api/dxf_layers": _post_dxf_layers, "/api/dxf_roads": _post_dxf_roads, "/api/water_sim": _post_water_sim,
             "/api/dxf_gl_options": _post_dxf_gl_options, "/api/dxf_import": _post_dxf_import,
             "/api/open_output": _post_open_output,
             "/api/net_edit": _post_net, "/api/net_undo": _post_net, "/api/net_repair": _post_net,

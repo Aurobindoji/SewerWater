@@ -481,7 +481,8 @@ function renderWDesign(r, note) {
     r.checks.map(c => `<div class="wflag ${c.ok ? (c.warn ? "alert" : "") : "error"}" title="${esc(c.ref)}">${c.ok ? (c.warn ? "⚠" : c.note ? "ℹ" : "✔") : "✖"} ${esc(checkText(c))}</div>`).join("") +
     (r.files && r.files.excel ? `<div class="hint">Excel: ${esc(r.files.excel.split(/[\\/]/).pop())}</div>` : "") +
     (r.files && r.files.dpr ? `<div class="hint">DPR Excel: ${esc(r.files.dpr.split(/[\\/]/).pop())}</div>` : "") + `</div>` +
-    prvBox(r) + rmBox(r) + waterStageBox(r.stages) + loadCaseBox(r) + dayBox(r.day);
+    prvBox(r) + rmBox(r) + waterStageBox(r.stages);
+  if (typeof simAfterDesign === "function") simAfterDesign(r);   // its load cases and 24 h: the Simulation tab
   drawPrvs(r);
   drawRising(r);
   if ($("wtwplace")) $("wtwplace").onclick = () => {     // the suggested sites become tube wells of the drawing
@@ -590,6 +591,7 @@ $("wzrun").onclick = () => longTask(tr("पेयजल zoning (OZ / DMA)", "Wat
   const r = await api("/api/water_zoning", wInputs());
   if (!r.ok) { $("wstatus").className = "status err"; $("wstatus").textContent = r.log || "error"; return; }
   wDesign = null; tblAfterDesign(null); designLayer.clearLayers(); $("wdbox").innerHTML = "";
+  if (typeof simAfterDesign === "function") simAfterDesign(null);
   renderWZoning(r);
 }, () => /err/.test($("wstatus").className) && !wZoning ? [tr("Zoning नहीं हुई", "Zoning failed"), $("wstatus").textContent, "err"]
   : [tr("Zoning हो गई", "Zoning done"), $("wstatus").textContent + (wZoning && wZoning.flags.length ? "\n\n" + wZoning.flags.map(f => "• " + flagText(f)).join("\n") : ""),
@@ -597,7 +599,8 @@ $("wzrun").onclick = () => longTask(tr("पेयजल zoning (OZ / DMA)", "Wat
 $("wdrun").onclick = () => longTask(tr("पेयजल design (मौजूदा zoning पर)", "Water design (with the current zoning)"), async () => {
   $("wdbox").before($("wstatus"));
   const r = await api("/api/water_design", wInputs());
-  if (!r.ok) { $("wstatus").className = "status err"; $("wstatus").textContent = r.log || "error"; wDesign = null; tblAfterDesign(null); return; }
+  if (!r.ok) { $("wstatus").className = "status err"; $("wstatus").textContent = r.log || "error"; wDesign = null; tblAfterDesign(null);
+    if (typeof simAfterDesign === "function") simAfterDesign(null); return; }
   const z = await api("/api/water_last?name=" + encodeURIComponent($("pname").value));
   if (z.ok && z.zoning) { wZoning = z.zoning; renderWZoning(z.zoning); }
   renderWDesign(r);

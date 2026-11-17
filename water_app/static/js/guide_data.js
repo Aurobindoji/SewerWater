@@ -198,7 +198,7 @@ var GUIDE_DOC = {
         T("OZ 50,000 से बड़ा: zoning नई टंकी सुझाती है - अपनी जगह रखनी हो तो नक्शे पर Prop-OHT रखें।", "An OZ over 50,000: the zoning suggests a new tank - place a Prop-OHT for your own site."),
       ] },
 
-    { id: "design", title: T("5. Network Design - pipes, दबाव, simulation", "5. Network Design - pipes, pressure, simulation"),
+    { id: "design", title: T("5. Network Design - pipes, दबाव", "5. Network Design - pipes, pressure"),
       text: [
         T("App का अपना solver (Global Gradient - EPANET / WaterGEMS वाली विधि; Hazen-Williams, minor losses 10 %): सब pipes सबसे छोटे size से शुरू, peak (औसत x 2.5) पर हर junction 17 m और हर pipe 3 m/s तक होने तक बड़े, फिर जहाँ जाँच बनी रहे वहाँ एक size छोटे। WaterGEMS 2024 से तुलना: दबाव लगभग 1 cm तक मेल।",
           "The app's own solver (global gradient - the EPANET / WaterGEMS method; Hazen-Williams, minor losses 10 %): every pipe starts at the smallest size, grows until every junction has 17 m and every pipe 3 m/s at the peak (average x 2.5), then goes a size down wherever the checks still hold. Against WaterGEMS 2024: heads within about 1 cm."),
@@ -234,7 +234,30 @@ var GUIDE_DOC = {
         T("Design zoning बदलने के बाद पुराना: \"stale\" दिखे तो Design दोबारा।", "A design older than the zoning shows \"stale\" - run the design again."),
       ] },
 
-    { id: "tank", title: T("6. Tank Design - Intze OHT", "6. Tank Design - Intze OHT"),
+    { id: "sim", title: T("6. Simulation - SSA और EPS", "6. Simulation - SSA and EPS"),
+      text: [
+        T("आख़िरी Design का network (pipe sizes, OHT staging, PRV) किसी भी load पर फिर से हल - बिना दोबारा design किए। SSA = एक पल (steady state); EPS = 24 / 48 / 72 घंटे, घंटा-दर-घंटा, टंकियों के स्तर के साथ (extended period simulation)।",
+          "The network of the last design (pipe sizes, OHT stagings, PRVs) solved again at any load - without designing again. SSA = one moment (steady state); EPS = 24 / 48 / 72 hours, hour by hour, with the tanks' levels (extended period simulation)."),
+        T("Load: आबादी stage (design +30 वर्ष / +15 / base year - आबादी tab में उनकी आबादी देकर Design चला हो), SSA में औसत / peak / रात / दिन का कोई घंटा / अपना गुणक, junctions पर अतिरिक्त load और fire; EPS में 24 घंटे का draw-off pattern (बदल सकते हैं) और OHT भरने के घंटे।",
+          "Load: the population stage (design +30 years / +15 / base year - when the design ran with their populations given in the Population tab), in an SSA average / peak / night / an hour of the day / an own factor, extra loads and fires at junctions; in an EPS the 24 h draw-off pattern (editable) and the OHTs' filling hours."),
+      ],
+      steps: [
+        T("पहले Design चलाएँ; फिर Simulation tab में SSA या EPS चुनें, load भरें, \"Simulation चलाएँ\"।", "Run the design first; then in the Simulation tab choose SSA or EPS, give the load, \"Run the simulation\"."),
+        T("नक्शा: junction का रंग = दबाव, pipe का रंग = वेग / बहाव / head loss (ऊपर से चुनें); junction या pipe पर click = उसके मान और EPS में उसका पूरा chart; वहीं से \"+ load\" / \"fire\"।",
+          "Map: junction colour = head, pipe colour = velocity / flow / head loss (choose above); click a junction or pipe = its values and, in an EPS, its whole curve; \"+ load\" / \"fire\" from there."),
+        T("EPS: slider या ▶ से घंटे बदलें - नक्शा, उस घंटे का सारांश और charts (टंकियों का %, दबाव, माँग) साथ बदलते हैं। \"कमज़ोर जगहें\" पर click = नक्शे पर वहाँ।",
+          "EPS: change the hour with the slider or ▶ - the map, the hour's summary and the charts (tank %, heads, demand) follow. Click a \"weak spot\" = there on the map."),
+      ],
+      mistakes: [
+        T("SSA में टंकियाँ design के head पर (सबसे निचला जल स्तर) - दबाव का सबसे कमज़ोर हाल। EPS में स्तर घंटे के साथ बदलता है, इसलिए दबाव थोड़ा अधिक।",
+          "In an SSA the tanks are at the design head (their lowest level) - the weakest case. In an EPS the level changes hour by hour, so the heads are a little higher."),
+        T("Pattern का जोड़ 24 न हो तो दिन की माँग बदलती है, पर भराई design जितनी रहती है - टंकी का स्तर उसी से गिरता / बढ़ता है।",
+          "A pattern that does not sum to 24 changes the day's demand while the filling stays the design's - the tank level falls / rises by it."),
+        T("Design के साथ बनी load cases और 24 घंटे की simulation भी इसी tab में नीचे (\"Design के साथ बनी simulation\"); fire flow वहीं।",
+          "The load cases and 24 h made with the design are at the bottom of this tab too (\"Simulation made with the design\"); the fire flow there."),
+      ] },
+
+    { id: "tank", title: T("7. Tank Design - Intze OHT", "7. Tank Design - Intze OHT"),
       text: [
         T("आख़िरी design की हर नई टंकी (क्षमता और staging उसी से) का Intze design: पानी वाले हिस्से working stress (IS 3370 Part 2), staging / नींव / सीढ़ी limit state (IS 456), भूकंप IS 1893, हवा IS 875 (Part 3)। हर टंकी अलग, एक बार में एक।",
           "The Intze design of every new tank of the last design (its capacity and staging from it): the water-retaining parts by working stress (IS 3370 Part 2), staging / foundation / stairs by limit state (IS 456), earthquake IS 1893, wind IS 875 (Part 3). Each tank alone, one at a time."),
@@ -258,7 +281,7 @@ var GUIDE_DOC = {
       ],
       mistakes: [T("Network Design दोबारा चलाने से टंकी की क्षमता / staging बदल सकती है - drawings फिर बनाएँ।", "Running the network design again may change a tank's capacity / staging - make its drawings again.")] },
 
-    { id: "out", title: T("7. Outputs - सब files एक जगह", "7. Outputs - every file in one place"),
+    { id: "out", title: T("8. Outputs - सब files एक जगह", "8. Outputs - every file in one place"),
       text: [
         T("Outputs tab: project के output folder का रास्ता और \"📁 Folder खोलें\"; हर output (layout, zoning DXF, design DXF, design Excel, DPR, rates, Intze, वार्ड xlsx) - \"बनाएँ / फिर बनाएँ\", आख़िरी file (समय, आकार), \"खोलें\" (Excel / AutoCAD में), 📁 (Explorer में चुनी हुई); पुरानी files नीचे।",
           "The Outputs tab: the project's output folder (its path, \"📁 Open the folder\"); each output (layout, zoning DXF, design DXF, design Excel, DPR, rates, Intze, ward xlsx) - \"Make / make again\", the newest file (time, size), \"Open\" (in Excel / AutoCAD), 📁 (selected in Explorer); the older files below."),
@@ -272,7 +295,7 @@ var GUIDE_DOC = {
       ],
       mistakes: [T("DPR Export DPR से ही बनती है (Design के साथ नहीं); rates बदलने के बाद फिर Export DPR।", "The DPR is made by Export DPR only (not with the design); after a rate change, Export DPR again.")] },
 
-    { id: "faq", title: T("8. आम समस्याएँ", "8. Common problems"),
+    { id: "faq", title: T("9. आम समस्याएँ", "9. Common problems"),
       text: [
         T("Tab धुँधला: पहले का चरण (network / layout) पूरा नहीं - project खोलें या layout बनाएँ।", "A dimmed tab: the step before (network / layout) is not done - open the project or make the layout."),
         T("बहुत junctions 17 m से नीचे: टंकी नीची / दूर - staging, नई टंकी, या zoning बदलें; \"hopeless\" = कोई pipe size मदद नहीं करता।", "Many junctions below 17 m: the tank is low / far - staging, a new tank or another zoning; \"no pipe size helps\" = staging short."),

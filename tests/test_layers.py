@@ -19,7 +19,7 @@ LAYERS = {
         "net": "cad dxf_extract dxf_inspect layout netedit repair",
         "project": "city_wards project rates wards",
         "output": "dpr intze_dwg",
-        "service": "design_run intze_api kmlmap layout_cmd results wdxf zone_lines zoning_run",
+        "service": "design_run intze_api kmlmap layout_cmd results sim_run wdxf zone_lines zoning_run",
         "web": "server __main__",
     },
     "sewer_app": {

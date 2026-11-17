@@ -318,6 +318,7 @@
   body[data-tab="pop"] #side [data-tab]:not([data-tab="pop"]),
   body[data-tab="zoning"] #side [data-tab]:not([data-tab="zoning"]),
   body[data-tab="design"] #side [data-tab]:not([data-tab="design"]),
+  body[data-tab="sim"] #side [data-tab]:not([data-tab="sim"]),
   body[data-tab="out"] #side [data-tab]:not([data-tab="out"]) { display: none !important; }
   body[data-tab] .stepbar::before { display: none; }
   body[data-tab] .stepbar { margin-top: 8px; }

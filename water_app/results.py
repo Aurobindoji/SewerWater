@@ -24,7 +24,7 @@ def _keep(stem, kind, res, req):
     with open(os.path.join(folder, f"{stem}_w{kind}_ui.json"), "w", encoding="utf-8") as fh:
         json.dump(keep, fh, ensure_ascii=False, separators=(",", ":"))
     if kind == "zoning":
-        for f in (f"{stem}_wdesign_ui.json", f"{stem}_wdesign_dpr.pkl"):
+        for f in (f"{stem}_wdesign_ui.json", f"{stem}_wdesign_dpr.pkl", f"{stem}_wsim.pkl"):
             try:
                 os.remove(os.path.join(folder, f))
             except OSError:
@@ -160,6 +160,25 @@ def _dpr_data(folder, stem):
 def _keep_dpr(folder, stem, info):
     with open(_dpr_data(folder, stem), "wb") as fh:
         pickle.dump(info, fh, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def _sim_data(folder, stem):
+    return os.path.join(folder, f"{stem}_wsim.pkl")
+
+
+def _keep_sim(folder, stem, pack):
+    """The designed network for the Simulation tab (design_run._sim_pack), next to the design."""
+    with open(_sim_data(folder, stem), "wb") as fh:
+        pickle.dump(pack, fh, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def sim_pack(stem):
+    """The Simulation tab's data of the last design, None without one (or one made before 17-Nov-2026)."""
+    try:
+        with open(_sim_data(os.path.join(ui.out_root(), stem), stem), "rb") as fh:
+            return pickle.load(fh)
+    except (OSError, pickle.UnpicklingError, EOFError, AttributeError, ImportError):
+        return None
 
 
 def _dpr(folder, stem, info):

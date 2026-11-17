@@ -14,7 +14,7 @@ from . import rising as wrising
 from . import simulate as wsim
 from .zone_lines import _mid_along
 from .wards import _with_projection
-from .results import _dpr_info, _excel, _keep, _keep_dpr, edits_of
+from .results import _dpr_info, _excel, _keep, _keep_dpr, _keep_sim, edits_of
 from .zoning_run import _barrier_check, _barrier_res, _loop_flags, _loop_res, _near_nodes, _node_lps, _unserved_note, _zones, _zoning_res
 
 
@@ -97,6 +97,10 @@ def run_design(name, req):
         res["files"] = {"excel": _excel(zz[0], stem, res, z, crit)}
     except Exception as e:                                         # the design stands without its Excel
         res["log"] += f"\nExcel not written: {type(e).__name__}: {e}"
+    try:                       # what the Simulation tab runs on (17-Nov-2026)
+        _keep_sim(zz[0], stem, _sim_pack(req, out, zz[2], z, crit, res))
+    except Exception as e:                                         # the design stands without it
+        res["log"] += f"\nSimulation data not kept: {type(e).__name__}: {e}"
     try:                       # the DPR's data only - its workbook on Export DPR (dpr_file; user 15-Nov-2026)
         _keep_dpr(zz[0], stem, _dpr_info(stem, res, z, crit, req, zz[2], zz[1]))
     except Exception as e:                                         # nor without its DPR
@@ -163,6 +167,37 @@ def _fire_inputs(req):
     return num("fire_lps", 0, 500, "fire flow (L/s)"), num("fire_min_m", 0, 60, "fire के समय न्यूनतम दबाव (m)")
 
 
+def _tanks(res, z, wnet, hnet, crit):
+    """The OHTs for the 24 h run: [{name, kl, swd_m, fire_kl (one third of its OZ's fire demand), daily_kl}]."""
+    S = wdpr.settings()
+    swd = lambda kl: next(d for c, d in S["swd"] if c is None or (kl or 0) <= c)
+    city = sum(v["pop"] for v in wnet["nodes"].values())
+    tanks = []
+    for o in res["outlets"]:
+        kl = o.get("capacity_kl") or o.get("required_kl")
+        if not kl:
+            continue
+        mem = [n for n, k in z["oz"].items() if k == o["name"] and n in wnet["nodes"]]
+        fire = sum(dm.daily_kl(wnet["nodes"][n]["pop"], crit, city)["fire"] for n in mem)
+        daily = sum(hnet["nodes"][n].get("avg", 0.0) or 0.0 for n in mem if n in hnet["nodes"]) * 86.4
+        tanks.append({"name": o["name"], "kl": float(kl), "swd_m": swd(kl), "fire_kl": fire / 3.0, "daily_kl": daily})
+    return tanks
+
+
+def _sim_pack(req, out, wnet, z, crit, res):
+    """What the Simulation tab runs on, kept with the design (17-Nov-2026): the designed network (sizes, OHT heads,
+    average demands), its PRVs, the OZ of each junction, the tanks, the criteria, the filling hours and the
+    population stages as multiples of the design's average demand."""
+    ult = next((st["avg_lps"] for st in res.get("stages") or [] if st["stage"] == "ult"), None) or         res["summary"].get("demand_avg_lps")
+    stages = {st["stage"]: {"year": st.get("year"), "pop": st["pop"], "factor": round(st["avg_lps"] / ult, 4)}
+              for st in res.get("stages") or [] if ult}
+    fire_lps, fire_min = _fire_inputs(req)
+    return {"hnet": out["hnet"], "prvs": out["prvs"], "oz": dict(z["oz"]), "crit": crit,
+            "tanks": _tanks(res, z, wnet, out["hnet"], crit), "windows": crit["oht_inflow_hours"]["value"],
+            "stages": stages, "fire_lps": fire_lps, "fire_min": fire_min,
+            "peak_p": {n: round(p, 3) for n, p in out["res_h"]["pressure"].items()}}
+
+
 def _simulate(req, out, wnet, z, crit, res):
     """The designed network under the load cases and through a day (simulate.py): res["load_cases"], res["fires"],
     res["day"] and their checks."""
@@ -202,18 +237,7 @@ def _simulate(req, out, wnet, z, crit, res):
                               "detail_hi": (f"हर OZ के सबसे कमज़ोर junction पर, औसत माँग के साथ: {txt}" +
                                             (f" - {len(bad)} में {fire_min:g} m से कम" if bad else
                                              f" - सब {fire_min:g} m या अधिक" if fire_min is not None else ""))})
-    S = wdpr.settings()
-    swd = lambda kl: next(d for c, d in S["swd"] if c is None or (kl or 0) <= c)
-    city = sum(v["pop"] for v in wnet["nodes"].values())
-    tanks = []
-    for o in res["outlets"]:
-        kl = o.get("capacity_kl") or o.get("required_kl")
-        if not kl:
-            continue
-        mem = [n for n, k in z["oz"].items() if k == o["name"] and n in wnet["nodes"]]
-        fire = sum(dm.daily_kl(wnet["nodes"][n]["pop"], crit, city)["fire"] for n in mem)
-        daily = sum(hnet["nodes"][n].get("avg", 0.0) or 0.0 for n in mem if n in hnet["nodes"]) * 86.4
-        tanks.append({"name": o["name"], "kl": float(kl), "swd_m": swd(kl), "fire_kl": fire / 3.0, "daily_kl": daily})
+    tanks = _tanks(res, z, wnet, hnet, crit)
     if not tanks:
         return
     res["day"] = wsim.day(hnet, crit, tanks, prvs, crit["oht_inflow_hours"]["value"])

@@ -105,20 +105,31 @@ def start_kl(use_kl, hourly_kl, crit, windows):
     return min(use_kl, -mb["deficit"] * hourly_kl + max(0.0, use_kl - swing) / 2.0)
 
 
-def day(hnet, crit, tanks, prvs, windows=None):
+def day(hnet, crit, tanks, prvs, windows=None, pattern=None, hours=24, factor=1.0, extra=None, detail=False):
     """The 24 h run (module text). Returns {"hours": [...], "tanks": {name: {...}}}; an hour's row: h, factor,
     demand_lps, min_p / min_at / max_p / low_n / v_max, and per tank level_m (above the design's lowest level),
-    full_pct, in_kl, out_kl, spill_kl, short_kl."""
+    full_pct, in_kl, out_kl, spill_kl, short_kl.
+    The Simulation tab (17-Nov-2026): pattern (24 multiples of the average; default the criteria's), hours (24, 48,
+    72 - the pattern and filling hours each day again), factor (x the average demand: a population stage), extra
+    {node: L/s} every hour; detail: each hour's junction pressures / pipe flows and velocities too ("P", "Q", "V",
+    lists in the order of "nodes" / "pipes")."""
     win = windows or crit["oht_inflow_hours"]["value"]
-    pattern = crit["draw_off_pattern"]["value"]
+    pattern = list(pattern or crit["draw_off_pattern"]["value"])
     minor = crit["minor_loss_factor"]["value"]
     on = [dm._on(win, h) for h in range(24)]
     hours_on = sum(on) or 1.0
     s0 = start_share(crit, win)
-    net = _net(hnet)
+    net = _net(hnet, extra=extra)
     fixed = {n for n, v in net["nodes"].items() if v.get("head") is not None}
     model = hy.Model(net, minor, 1.0)
     base = model.dem.copy()
+    if extra:                                                  # the extra load: not multiplied by the pattern
+        add = np_extra(model, extra)
+        base = base - add
+    else:
+        add = 0.0
+    base = base * factor
+    extra_lps = sum(extra.values()) if extra else 0.0
     st = {}
     for t in tanks:
         use = max(t["kl"] - t.get("fire_kl", 0.0), 0.0)        # above the fire third: what the supply draws
@@ -130,20 +141,26 @@ def day(hnet, crit, tanks, prvs, windows=None):
                          "empty_h": [], "full_h": [], "min_pct": 100.0, "spill_kl": 0.0, "short_kl": 0.0,
                          "start_pct": round(100.0 * v0 / use, 1) if use else None}
     rows = []
-    for h in range(24):
-        model.dem = base * pattern[h]
+    det = {"nodes": [n for n in hnet["nodes"] if n not in fixed], "pipes": list(hnet["pipes"]), "P": [], "Q": [], "V": []}
+    for h in range(hours):
+        f = pattern[h % 24]
+        model.dem = base * f + add
         for name, s in st.items():                             # the head of the hour: the water above the outlet
             lvl = (s["vol"] / s["area_m2"]) if s["area_m2"] else 0.0
             model.set_head(name, s["low_head"] + s["fire_m"] + lvl)
         r = model.solve()
         wprv.shift(r, prvs)
-        row = dict(h=h, factor=pattern[h], demand_lps=round(float(base.sum()) * 1000.0 * pattern[h], 2),
+        row = dict(h=h, factor=f, demand_lps=round(float(base.sum()) * 1000.0 * f + extra_lps, 2),
                    **_summary(r, hnet, crit, fixed), tanks={})
+        if detail:
+            det["P"].append([round(r["pressure"].get(n, float("nan")), 2) for n in det["nodes"]])
+            det["Q"].append([round(r["flow"].get(p, 0.0), 2) for p in det["pipes"]])
+            det["V"].append([round(r["velocity"].get(p, 0.0), 3) for p in det["pipes"]])
         for t in tanks:
             s = st[t["name"]]
             lvl = (s["vol"] / s["area_m2"]) if s["area_m2"] else 0.0
             pct = 100.0 * s["vol"] / s["use_kl"] if s["use_kl"] else 0.0
-            inflow = t["daily_kl"] * on[h] / hours_on
+            inflow = t["daily_kl"] * factor * on[h % 24] / hours_on
             out = max(r["flow"].get(f"{t['name']} outlet", 0.0), 0.0) * 3.6       # L/s over the hour -> KL
             v = s["vol"] + inflow - out
             spill = max(0.0, v - s["use_kl"])
@@ -169,5 +186,32 @@ def day(hnet, crit, tanks, prvs, windows=None):
                           "start_pct": s["start_pct"], "end_pct": round(end, 1) if end is not None else None,
                           "min_pct": round(s["min_pct"], 1), "empty_h": s["empty_h"], "full_h": s["full_h"],
                           "spill_kl": round(s["spill_kl"], 1), "short_kl": round(s["short_kl"], 1)}
-    return {"hours": rows, "tanks": out, "start_share": round(s0, 3),
-            "windows": win, "pattern": list(pattern)}
+    res = {"hours": rows, "tanks": out, "start_share": round(s0, 3), "windows": win, "pattern": list(pattern)}
+    if detail:
+        res.update(det)
+    return res
+
+
+def np_extra(model, extra):
+    """The model's demand array of the extra load alone (m3/s, the model's junction order)."""
+    import numpy as np
+    a = np.zeros_like(model.dem)
+    for n, q in extra.items():
+        i = model.jx.get(n)
+        if i is not None:
+            a[i] += q / 1000.0
+    return a
+
+
+def ssa(hnet, crit, prvs, factor=1.0, extra=None):
+    """One steady state (the Simulation tab, 17-Nov-2026): every junction at its average x factor, plus extra
+    {node: L/s} (a fire, a bulk draw-off), the OHTs at the design's head (their lowest level). Returns the solver's
+    result (wprv.shift applied) and its summary."""
+    net = _net(hnet)
+    for n, v in net["nodes"].items():
+        if v.get("head") is None:
+            v["demand"] = (v.get("demand") or 0.0) * factor + (extra or {}).get(n, 0.0)
+    r = hy.solve(net, minor_loss=crit["minor_loss_factor"]["value"])
+    wprv.shift(r, prvs)
+    fixed = {n for n, v in hnet["nodes"].items() if v.get("head") is not None}
+    return r, _summary(r, hnet, crit, fixed)

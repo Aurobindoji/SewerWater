@@ -90,14 +90,29 @@ function simChart(series, lo, hi, unit, guide, mark) {
   const n = Math.max(...series.map(s => s.values.length), 2);
   const W = 330, H = 125, Lm = 34, B = 16, T = 8, R = 6;
   const x = h => Lm + (W - Lm - R) * h / (n - 1), y = v => T + (H - T - B) * (1 - (v - lo) / ((hi - lo) || 1));
-  let g = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" style="display:block">`;
+  let g = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" style="display:block;max-width:560px">`;
   for (const v of [lo, (lo + hi) / 2, hi]) g += `<line x1="${Lm}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${Lm - 3}" y="${y(v) + 3}" font-size="9" text-anchor="end" fill="var(--muted)">${fmt(v, Math.abs(hi - lo) < 3 ? 2 : 0)}</text>`;
   const step = n > 48 ? 12 : 6;
   for (let h = 0; h < n; h += step) g += `<text x="${x(h)}" y="${H - 3}" font-size="9" text-anchor="middle" fill="var(--muted)">${h}</text>`;
   if (guide !== undefined && guide !== null && guide >= lo && guide <= hi) g += `<line x1="${Lm}" x2="${W - R}" y1="${y(guide)}" y2="${y(guide)}" stroke="var(--danger)" stroke-dasharray="3 3"/>`;
   if (mark !== undefined && mark !== null) g += `<line x1="${x(mark)}" x2="${x(mark)}" y1="${T}" y2="${H - B}" stroke="var(--accent)" stroke-width="1.2"/>`;
   for (const s of series) g += `<polyline fill="none" stroke="${s.color}" stroke-width="1.7" points="${s.values.map((v, h) => `${x(h).toFixed(1)},${y(v ?? lo).toFixed(1)}`).join(" ")}"><title>${esc(s.name)}</title></polyline>`;
+  // hover: an hour's strip shows every series' value at that hour (lines on top of each other hide one another)
+  const wd = (W - Lm - R) / Math.max(n - 1, 1);
+  for (let h = 0; h < n; h++)
+    g += `<rect x="${(x(h) - wd / 2).toFixed(1)}" y="${T}" width="${wd.toFixed(1)}" height="${H - T - B}" fill="transparent">` +
+      `<title>${esc(simHourName(h))}\n${series.map(s => `${s.name}: ${fmt(s.values[h], 2)} ${unit}`).join("\n")}</title></rect>`;
   return g + `<text x="${Lm}" y="${T + 6}" font-size="9" fill="var(--muted)" dx="3">${esc(unit)}</text></svg>`;
+}
+// series drawn on top of each other (tanks sized by the same rule, filled in the same hours): one line for them,
+// named after all of them (user 17-Nov-2026: "ग्राफ पर हर जगह OHT-5 ही लिखा आ रहा है")
+function simGroup(series, tol) {
+  const out = [];
+  for (const s of series) {
+    const g = out.find(o => o.values.every((v, h) => Math.abs(v - s.values[h]) <= tol));
+    if (g) g.names.push(s.name); else out.push({ ...s, names: [s.name] });
+  }
+  return out.map(o => ({ ...o, name: o.names.length > 1 ? o.names.join(", ") : o.names[0] }));
 }
 const simRange = (vals, pad, floor0) => { const f = vals.filter(v => v !== null && !Number.isNaN(v));
   let lo = Math.min(...f), hi = Math.max(...f); if (!f.length) return [0, 1]; if (hi - lo < 1e-6) { lo -= 1; hi += 1; }
@@ -277,7 +292,7 @@ function simShow() {
       simCard(tr("सबसे कम दबाव", "lowest head"), `${fmt(s.min_p, 2)} m <span class="hint">${esc(s.min_at || "")}</span>`, s.min_p < rh) +
       simCard(tr("सबसे अधिक दबाव", "highest head"), `${fmt(s.max_p, 2)} m <span class="hint">${esc(s.max_at || "")}</span>`, info.max_pressure_m && s.max_p > info.max_pressure_m) +
       simCard(tr(`${rh} m से कम`, `below ${rh} m`), `${s.low_n} junctions`, s.low_n > 0) +
-      simCard(tr("सबसे तेज़", "fastest"), `${fmt(s.v_max, 2)} m/s`, s.v_max > (info.max_velocity_mps || 3)) + `</div>`;
+      simCard(tr("सबसे तेज़", "fastest"), `${fmt(s.v_max, 2)} m/s`, s.v_max > (info.max_velocity_mps || 3)) + simSlowCard(r.V) + `</div>`;
     if (r.fires.length) h += `<table class="wz" style="margin-top:4px"><tr><th>fire junction</th><th>L/s</th><th>${tr("दबाव", "head")} m</th><th>peak m</th></tr>` +
       r.fires.map(f => `<tr><td><a href="#" data-k="node" data-l="${esc(f.node)}">${esc(f.node)}</a></td><td>${fmt(f.lps, 1)}</td><td>${f.ok === false ? `<b style="color:var(--danger)">${fmt(f.p, 2)}</b>` : fmt(f.p, 2)}</td><td>${fmt(f.p_peak, 2)}</td></tr>`).join("") + `</table>`;
     h += simColourSeg(false) + simWorst(r.worst, false) +
@@ -306,6 +321,25 @@ function simShow() {
   }
   simLegend();
 }
+// the pipes slower than the minimum velocity now, and how many of them are of the smallest size the design may use
+// (user 17-Nov-2026: "वेग तो अधिकांश समय 0.3 से कम" - the small pipes at the streets' ends carry a few houses' water
+// but cannot be smaller than CPHEEO's 100 mm)
+function simSlowCard(V) {
+  const r = SIM.res; if (!r || !V || !wDesign) return "";
+  const vmin = (SIM.info && SIM.info.min_velocity_mps) || 0.3, closed = new Set(r.closed || []);
+  const nom = {}; for (const p of wDesign.pipes) nom[p.label] = p.nominal;
+  const sizes = Object.values(nom).filter(x => x);
+  const small = sizes.length ? Math.min(...sizes) : null;
+  let n = 0, slow = 0, slowSmall = 0;
+  r.pipes.forEach((k, i) => { if (closed.has(k) || k.endsWith(" outlet") || !(k in nom)) return;
+    n++; if (V[i] < vmin) { slow++; if (nom[k] === small) slowSmall++; } });
+  if (!n) return "";
+  const pc = 100 * slow / n;
+  return simCard(tr(`${vmin} m/s से धीमी pipes`, `pipes below ${vmin} m/s`), `${fmt(pc, 0)} % <span class="hint">(${slow})</span>`) +
+    (slow ? `<div class="hint" style="flex-basis:100%;margin:0">${tr(
+      `धीमी pipes में ${fmt(100 * slowSmall / slow, 0)} % सबसे छोटे size (${small} mm) की - गली के आख़िरी हिस्से कुछ घरों का पानी ले जाते हैं, पर CPHEEO के न्यूनतम (Table 2.7 S.No.8: 100 mm) से छोटे नहीं हो सकते; peak के घंटों में बाकी sizes तेज़ रहती हैं। रात / कम माँग में लगभग सब धीमी - स्वाभाविक।`,
+      `${fmt(100 * slowSmall / slow, 0)} % of the slow pipes are of the smallest size (${small} mm) - the streets' ends carry a few houses' water but cannot be smaller than CPHEEO's minimum (Table 2.7 S.No.8: 100 mm); at the peak hours the other sizes stay faster. At night / low demand nearly all are slow - naturally.`)}</div>` : "");
+}
 function simHourBox() {
   const r = SIM.res, row = r.hours[SIM.hour], rh = simRh();
   $("simhourlbl").textContent = simHourName(SIM.hour);
@@ -313,19 +347,20 @@ function simHourBox() {
     simCard(tr("माँग", "demand"), `${fmt(row.demand_lps, 1)} L/s <span class="hint">x ${fmt(row.factor, 2)}</span>`) +
     simCard(tr("सबसे कम दबाव", "lowest head"), `${fmt(row.min_p, 2)} m <span class="hint">${esc(row.min_at || "")}</span>`, row.min_p < rh) +
     simCard(tr("सबसे अधिक दबाव", "highest head"), `${fmt(row.max_p, 2)} m`) +
-    simCard(tr("सबसे तेज़", "fastest"), `${fmt(row.v_max, 2)} m/s`) + `</div>` +
+    simCard(tr("सबसे तेज़", "fastest"), `${fmt(row.v_max, 2)} m/s`) + simSlowCard(r.V[SIM.hour]) + `</div>` +
     `<div style="font-size:12px">` + Object.entries(row.tanks).map(([n, t]) =>
       `<span style="white-space:nowrap;margin-right:10px">${esc(n)}: <b>${fmt(t.full_pct, 0)} %</b> <span class="hint">(+${fmt(t.in_kl)} / -${fmt(t.out_kl)} KL${t.short_kl ? `, <b style="color:var(--danger)">${tr("कमी", "short")} ${fmt(t.short_kl)}</b>` : ""})</span></span>`).join("") + `</div>`;
 }
 function simEpsCharts() {
   const r = SIM.res, names = Object.keys(r.tanks), rh = simRh();
-  const lvl = names.map((n, i) => ({ name: n, color: DAY_COLORS[i % DAY_COLORS.length], values: r.hours.map(x => x.tanks[n].full_pct) }));
+  const lvl = simGroup(names.map((n, i) => ({ name: n, color: DAY_COLORS[i % DAY_COLORS.length], values: r.hours.map(x => x.tanks[n].full_pct) })), 0.5);
   const pmin = r.hours.map(x => x.min_p), pmax = r.hours.map(x => x.max_p), dem = r.hours.map(x => x.demand_lps);
   const [plo, phi] = simRange(pmin.concat(pmax, [rh]), 0.05);
   const [dlo, dhi] = simRange(dem, 0.1, true);
   $("simcharts").innerHTML =
     `<div class="hint" style="margin-bottom:0">${tr("OHT में पानी (उपयोग योग्य का %)", "water in the OHTs (% of the usable)")} - ` +
-    names.map((n, i) => `<span style="color:${DAY_COLORS[i % DAY_COLORS.length]}">■</span> ${esc(n)}`).join(" ") + `</div>` +
+    lvl.map(s => `<span style="color:${s.color}">■</span> ${esc(s.name)}` + (s.names.length > 1 ? ` <i>(${tr(`${s.names.length} टंकियाँ - एक ही रेखा`, `${s.names.length} tanks - one line`)})</i>` : "")).join(" ") +
+    ` <span class="hint">· ${tr("chart पर mouse = उस घंटे के मान", "mouse on the chart = that hour's values")}</span></div>` +
     simChart(lvl, 0, 100, "%", null, SIM.hour) +
     `<div class="hint" style="margin-bottom:0">${tr(`Network का सबसे कम / अधिक दबाव (m); लाल = ${rh} m`, `the network's lowest / highest head (m); red = ${rh} m`)}</div>` +
     simChart([{ name: tr("सबसे कम", "lowest"), color: "#c62828", values: pmin }, { name: tr("सबसे अधिक", "highest"), color: "#1565c0", values: pmax }], plo, phi, "m", rh, SIM.hour) +
@@ -333,10 +368,12 @@ function simEpsCharts() {
     simChart([{ name: tr("माँग", "demand"), color: "#6a1b9a", values: dem }], dlo, dhi, "L/s", null, SIM.hour);
 }
 function simTankTable(r) {
-  const names = Object.keys(r.tanks);
+  const names = Object.keys(r.tanks), col = {};
+  for (const g of simGroup(names.map((n, i) => ({ name: n, color: DAY_COLORS[i % DAY_COLORS.length], values: r.hours.map(x => x.tanks[n].full_pct) })), 0.5))
+    for (const n of g.names) col[n] = g.color;                  // the colour of its line in the chart
   return `<table class="wz"><tr><th>OHT</th><th>KL</th><th>${tr("दैनिक", "daily")} KL</th><th>${tr("शुरू", "start")} %</th><th>${tr("न्यूनतम", "lowest")} %</th><th>${tr("अंत", "end")} %</th><th>${tr("खाली (घंटे)", "dry (hours)")}</th><th>${tr("छलका", "spilt")} KL</th></tr>` +
     names.map((n, i) => { const t = r.tanks[n];
-      return `<tr><td><span style="color:${DAY_COLORS[i % DAY_COLORS.length]}">■</span> ${esc(n)}</td><td>${fmt(t.kl)}</td><td>${fmt(t.daily_kl)}</td><td>${fmt(t.start_pct)}</td>` +
+      return `<tr><td><span style="color:${col[n]}">■</span> ${esc(n)}</td><td>${fmt(t.kl)}</td><td>${fmt(t.daily_kl)}</td><td>${fmt(t.start_pct)}</td>` +
         `<td>${t.min_pct < 5 ? `<b style="color:var(--danger)">${fmt(t.min_pct)}</b>` : fmt(t.min_pct)}</td><td>${fmt(t.end_pct)}</td>` +
         `<td>${t.empty_h.length ? `<b style="color:var(--danger)">${t.empty_h.slice(0, 6).map(h => `<a href="#" data-h="${h}">${h}</a>`).join(", ")}${t.empty_h.length > 6 ? " …" : ""}</b>` : "-"}</td><td>${fmt(t.spill_kl)}</td></tr>`; }).join("") + `</table>`;
 }

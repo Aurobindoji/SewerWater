@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.9.29 (beta) - 2026-11-17
+
+Water supply - junction and pipe names:
+- The junction prefix chosen at the DXF import is now put on the drawing's own names too: the letters before the
+  number change, the number stays (MH-1-595 becomes JN-1-595). A name another junction already has keeps its own.
+- The page's "change prefix" takes the letters before the first number as the prefix (MH- of MH-3-441, not MH-3-).
+- New button on the Network tab, **all new names - from the tanks 1, 2, 3 …**: every junction and pipe gets the
+  prefix above it and a number, counted out from each tank of the last zoning along its zone's pipes (the
+  straightest way first). The drawing's name stays on each card as the old name, and is saved in
+  `<name>_network_old_names.csv`. One undo step. Run Zoning and Design again afterwards.
+
+Faster, same results:
+- A large water design (about 12,500 junctions) takes about 33 s instead of 38 s; the results and the Excel report
+  are unchanged.
+- Code cleanup inside the app (unused code removed, the network corrections reorganised); nothing changes in use.
+
 ## 0.9.28 (beta) - 2026-11-16
 
 - The welcome video is sharper: 1920 px wide, made again from the original at a much higher quality (it was a

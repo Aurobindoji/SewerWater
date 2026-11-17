@@ -112,10 +112,10 @@ def own_taskbar_name():
 MENU_TXT = {
     "hi": {"show": "खोलें", "open_master": "Master folder खोलें", "change_master": "Master folder बदलें…",
            "update": "Update देखें…", "about": "परिचय (About)", "quit": "बंद करें",
-           "note": "App tray में चल रहा है - खोलने के लिए icon पर double-click, बंद करने के लिए right-click → बंद करें।"},
+           "note": "App background में चल रहा है"},          # user 17-Nov-2026: only this
     "en": {"show": "Show", "open_master": "Open the master folder", "change_master": "Change the master folder…",
            "update": "Check for updates…", "about": "About", "quit": "Quit",
-           "note": "The app keeps running in the tray: double-click its icon to open it; right-click → Quit to close it."},
+           "note": "The app is running in the background"},
 }
 APP_MENU = ("open_master", "change_master", "update", "about", "quit")     # the items of the menu "App", in order
 

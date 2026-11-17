@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.32 (beta) - 2026-11-17
+
+- Simulation tab: tanks whose levels run alike are drawn as one line named after all of them; every chart shows
+  the hour's values on hover; a card shows the share of pipes slower than 0.3 m/s and how many of them are of the
+  smallest size (the street ends, at CPHEEO's 100 mm minimum).
+- The tray message says only that the app is running in the background.
+
 ## 0.9.31 (beta) - 2026-11-17
 
 Water supply - a Simulation tab, beside Network Design:

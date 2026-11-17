@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.9.31 (beta) - 2026-11-17
+
+Water supply - a Simulation tab, beside Network Design:
+- The network of the last design (pipe sizes, tank stagings, PRVs) is solved again under any load, without
+  designing again. Run the design once after updating so that the tab has its data.
+- **SSA** (one moment): average, peak, night, any hour of the day or an own factor; the population stage (design,
+  +15 years, base year); extra loads and fires at junctions, with a head to hold at the fire.
+- **EPS** (24, 48 or 72 hours): the 24 h draw-off pattern can be edited on the page, and the tanks' filling hours
+  given; a time slider and a player step through the hours.
+- The map shows each junction's head and each pipe's velocity, flow or head loss in colour, with a legend. Click a
+  junction or pipe for its values and, in an EPS, its curve through the run; add a load or a fire there. Charts of
+  the tanks' levels, the network's heads and the demand; the weak spots listed.
+- The design's own load cases, 24 h run and fire flow are now in this tab.
+
 ## 0.9.30 (beta) - 2026-11-17
 
 Water supply - DXF drawings converted from a PDF now import:

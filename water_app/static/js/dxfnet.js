@@ -259,6 +259,27 @@ $("dxfimport").onclick = async () => {
   } finally { $("dxfimport").disabled = false; loading(false); }
 };
 
+// a survey drawing's roads as the map's own layout (user request 17-Nov-2026): the layers ticked as Pipe are the road
+// centrelines, those ticked as GL the levels (none: the drawing's own level layers and survey points); they come onto
+// the map as a KML project (roads + GL points), the layout is then made as for a KML
+$("dxfroads").onclick = async () => {
+  const sel = k => Array.from(document.querySelectorAll(`#laybox input[data-k="${k}"]:checked`)).map(i => i.value);
+  const err = m => { $("dxfstatus").className = "status err"; $("dxfstatus").textContent = m; };
+  if (!sel("pipe").length) return err(tr("सड़क-केंद्र रेखा (centre line) की layer को Pipe column में चुनें।", "Tick the road centreline layer in the Pipe column."));
+  if ($("dxfepsg").value === "local") return err(tr("सड़कों से layout नक्शे पर बनता है - Coordinates में UTM चुनें।", "The road layout is made on the map - choose a UTM system under Coordinates."));
+  if (dirty && drawn.getLayers().length && !confirm("नक्शे पर खींचा बिना सहेजा काम हट जाएगा। आगे बढ़ें?")) return;
+  const r = await withLoading(tr("सड़कें और GL पढ़ रहे हैं …", "Reading the roads and levels …"),
+    () => api("/api/dxf_roads", { path: $("dxfpath").value, road_layers: sel("pipe"), level_layers: sel("gl"), epsg: $("dxfepsg").value }));
+  if (!r.ok) return err(r.log);
+  $("dxfpanel").hidden = true; $("dxfstatus").textContent = ""; clearPreview(); $("glbox").hidden = true;
+  await openKml(`${$("dxfname").value.trim() || "roads"}_roads`, r.kml, true);
+  if ($("glmode")) $("glmode").value = "spots";
+  status(tr(`Drawing से ${r.roads} सड़कें और ${r.spots} GL बिंदु नक्शे पर` + (r.far ? ` (${r.far} दूर के level छोड़े)` : "") +
+            " - अब boundary / टंकियाँ जोड़ें, 'सहेजें' दबाएँ और Layout बनाएँ (GL: spot levels)",
+            `${r.roads} roads and ${r.spots} GL points of the drawing on the map` + (r.far ? ` (${r.far} far levels left out)` : "") +
+            " - now add the boundary / tanks, press Save and make the layout (GL: spot levels)"), "ok");
+};
+
 function remember(name, kind) {        // the project open now: opened again after a page reload (F5)
   try { if (name) localStorage.setItem(LS_LAST, JSON.stringify({ name, kind })); else localStorage.removeItem(LS_LAST); } catch (e) { }
 }

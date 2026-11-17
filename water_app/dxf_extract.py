@@ -135,7 +135,21 @@ def _network(path, pipe_layers, mh_layers, tol, level_radius, mid_snap, midline)
     if missing:
         raise ValueError(f"Layer(s) not in the drawing: {', '.join(missing)}. Layers: {', '.join(sorted(layers))}")
     pl = [ln for ln in lines if ln["layer"] in pipe_layers]
-    pl, dup_lines = drop_duplicate_lines(pl)
+    pl, dup = drop_duplicate_lines(pl)
+    pl, tiny = drop_tiny_lines(pl, tol)
+    dup_lines = {"dup": dup, "tiny": tiny, "split": di.inventory.info.get("split"),
+                 "scale": di.inventory.info.get("scale"), "tol": None, "twin": 0}
+    if dup_lines["split"] or dup_lines["scale"]:
+        # a converted drawing: each pipe stroked twice (the two strokes meet the same junctions), then the pipes
+        # stopping short of their junctions (only measurable without the second strokes), then the strokes again
+        pl, n1 = drop_twin_pipes(pl, di.build_network(pl, tol)[1])
+        learnt = gap_tolerance(pl, tol)
+        n2 = 0
+        if learnt:
+            dup_lines["tol"] = (tol, learnt[0], learnt[1])
+            pl = snap_ends(pl, learnt[0])
+            pl, n2 = drop_twin_pipes(pl, di.build_network(pl, tol)[1])
+        dup_lines["twin"] = n1 + n2
     mh_lay = set(s.strip() for s in mh_layers if s.strip())
 
     # ---- manholes drawn ON a continuous line: cut the line there (symbols on mh_layers, and MH
@@ -173,6 +187,90 @@ def _network(path, pipe_layers, mh_layers, tol, level_radius, mid_snap, midline)
     chk = di.network_checks(nodes, edges, tol)
     used = [n for n in nodes if n["deg"] > 0]
     return layers, texts, inserts, points, pipe_layers, mh_lay, nodes, edges, chk, used, mid_log, dup_lines
+
+
+GAP_MAX_M = 6.0           # a learnt snap tolerance is never more than this
+
+
+def gap_tolerance(lines, tol):
+    """(snap tolerance, line ends it joins) learnt from a drawing whose pipes stop short of their junctions, else
+    None (17-Nov-2026, a drawing from a PDF: the pipes end 2 - 4 m before each junction, around its symbol; none ends
+    0.5 - 1.25 m from another). The distance of every line end to the nearest other line's end, up to GAP_MAX_M:
+    when 20 or more lie above tol and none of them within 2 x tol, they are one kind of gap - the tolerance becomes
+    their 95 % value + 10 %."""
+    g = di.Grid(max(tol, 0.5))
+    for k, ln in enumerate(lines):
+        for p in (ln["pts"][0], ln["pts"][-1]):
+            g.add(p[0], p[1], k)
+    gaps = []
+    for k, ln in enumerate(lines):
+        for p in (ln["pts"][0], ln["pts"][-1]):
+            o = [h[0] for h in g.near(p[0], p[1], GAP_MAX_M) if h[3] != k]
+            if o and o[0] > tol:
+                gaps.append(o[0])
+    gaps.sort()
+    if len(gaps) < 20 or gaps[0] <= 2 * tol:
+        return None
+    t = min(GAP_MAX_M, gaps[int(0.95 * (len(gaps) - 1))] * 1.1)
+    return round(t, 2), sum(1 for x in gaps if x <= t)
+
+
+def snap_ends(lines, t):
+    """The lines with their ends gathered: ends within t of each other (chained) moved to their middle - one junction
+    where the pipes of a converted drawing stop around its symbol (four pipes: the opposite ends are farther apart than
+    t, each is near its neighbours)."""
+    ends = [(k, i, ln["pts"][i]) for k, ln in enumerate(lines) for i in (0, -1)]
+    parent = list(range(len(ends)))
+
+    def find(a):
+        while parent[a] != a:
+            parent[a] = parent[parent[a]]
+            a = parent[a]
+        return a
+    g = di.Grid(t)
+    for j, (_, _, p) in enumerate(ends):
+        for _, _, _, o in g.near(p[0], p[1], t):
+            parent[find(o)] = find(j)
+        g.add(p[0], p[1], j)
+    groups = collections.defaultdict(list)
+    for j in range(len(ends)):
+        groups[find(j)].append(j)
+    out = [dict(ln, pts=list(ln["pts"])) for ln in lines]
+    for js in groups.values():
+        if len(js) < 2:
+            continue
+        x = sum(ends[j][2][0] for j in js) / len(js)
+        y = sum(ends[j][2][1] for j in js) / len(js)
+        for j in js:
+            k, i, p = ends[j]
+            out[k]["pts"][i] = (x, y, p[2])
+    for ln in out:
+        ln["len"] = sum(di.seg_len(a, b) for a, b in zip(ln["pts"], ln["pts"][1:]))
+    return out
+
+
+def drop_twin_pipes(lines, edges):
+    """The pipe lines without the second stroke of a pipe (17-Nov-2026, a drawing from a PDF: 217 of 754 pipes were a
+    second line between the same two junctions, its length within 10 % of the first - the pipe drawn twice, a little
+    apart). edges: build_network of these lines (one edge per open line, in their order). Returns (lines, how many
+    were left out)."""
+    open_ = [k for k, ln in enumerate(lines) if not ln["closed"]]
+    seen, drop = {}, set()
+    for e, k in zip(edges, open_):
+        key = (min(e["a"], e["b"]), max(e["a"], e["b"]))
+        if e["a"] != e["b"] and key in seen and abs(e["len"] - seen[key]) <= 0.1 * max(e["len"], seen[key]):
+            drop.add(k)
+            continue
+        seen.setdefault(key, e["len"])
+    return [ln for k, ln in enumerate(lines) if k not in drop], len(drop)
+
+
+def drop_tiny_lines(lines, tol):
+    """The pipe lines without the pieces shorter than the snap tolerance (17-Nov-2026: a drawing from a PDF has
+    thousands of symbol strokes of 0.1 m in a pipe's colour - each made a pipe of its own). Returns (lines, how many
+    were left out)."""
+    out = [ln for ln in lines if ln["len"] >= tol]
+    return out, len(lines) - len(out)
 
 
 def drop_duplicate_lines(lines, tol=0.01):
@@ -418,8 +516,8 @@ def extract(path, pipe_layers, mh_layers=(), level_layers=(), tol=0.5, level_rad
     for x, y, v, src in gi.get("far", []):
         prob.append({"Problem": "level far from the drawing's other levels - not used (typing error?)", "Item": src,
                      "X": round(x, 3), "Y": round(y, 3), "Detail": f"{v:g}"})
-    if dup_lines:
-        prob.append({"Problem": f"{dup_lines} line(s) drawn twice on the pipe layers - one kept", "Item": "", "X": None,
+    if dup_lines["dup"]:
+        prob.append({"Problem": f"{dup_lines['dup']} line(s) drawn twice on the pipe layers - one kept", "Item": "", "X": None,
                      "Y": None, "Detail": "the same line (to 1 cm) on the same or another pipe layer"})
     for n in used:
         if not labels.get(n["id"]):
@@ -474,8 +572,25 @@ def extract(path, pipe_layers, mh_layers=(), level_layers=(), tol=0.5, level_rad
     if gi and gi.get("far"):
         summ.append(f"GL note     : {len(gi['far'])} level(s) far from the drawing's others not used (typing errors?), "
                     f"e.g. {', '.join(f'{v:g}' for _, _, v, _ in gi['far'][:4])}; sheet Problems")
-    if dup_lines:
-        summ.append(f"Lines       : {dup_lines} line(s) drawn twice on the pipe layers - one of each kept")
+    if dup_lines["split"]:
+        summ.append(f"Drawing     : everything on layer {dup_lines['split']} in many colours - a layer per colour "
+                    f"('{dup_lines['split']} colour <n>'; a drawing converted from a PDF?)")
+    if dup_lines["scale"]:
+        s_, agree, n_ = dup_lines["scale"]
+        summ.append(f"Drawing     : not in metres - scaled x {s_:.4g} to metres ({agree} of {n_} length texts give "
+                    f"that ratio of written to drawn length); check a known length")
+    if dup_lines["tol"]:
+        t0, t1, n_ = dup_lines["tol"]
+        summ.append(f"Drawing     : the pipes stop short of their junctions ({n_} line ends 2 x {t0:g} m or more from "
+                    f"the next, none nearer) - ends within {t1:g} m of each other joined at their middle; check short pipes")
+    if dup_lines["twin"]:
+        summ.append(f"Lines       : {dup_lines['twin']} pipe(s) drawn twice a little apart (a second line between the "
+                    f"same two junctions, length within 10 %) - one of each kept")
+    if dup_lines["dup"]:
+        summ.append(f"Lines       : {dup_lines['dup']} line(s) drawn twice on the pipe layers - one of each kept")
+    if dup_lines["tiny"]:
+        summ.append(f"Lines       : {dup_lines['tiny']} piece(s) shorter than {tol:g} m on the pipe layers left out "
+                    f"(symbols / hatching, not pipes)")
     if gi and gi.get("z_ignored"):
         summ.append(f"GL note     : {gi['z_ignored']}; the nodes without a GL text are filled along the pipes (auto repair)")
     if midline:

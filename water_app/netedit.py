@@ -216,7 +216,74 @@ def dxf_layers(path, water=False):
     # symbols of the network's nodes (a filled circle at every junction, often with its level)
     mh += [r["layer"] for r in rows if r["blocks"] + r["circles"] >= 5 and r["layer"] not in mh
            and re.search(r"node|junction|\bjn\b|jn-|valve", r["layer"], re.I)]
+    if di.inventory.info.get("split"):
+        pipe, mh = _colour_guess(lines, texts, rows, mh)
     return rows, {"pipe": pipe, "mh": mh, "level": list(di.level_candidates(texts))}
+
+
+def _colour_guess(lines, texts, rows, mh):
+    """The pipe and junction layers of a drawing split by colour (17-Nov-2026, a drawing from a PDF: the layer names
+    "0 colour 82" say nothing): a pipe layer has a pipe label (P-142, L-5m, D-110mm) next to LABELLED_SHARE of its
+    lines (a real drawing: the pipe colours 41 - 62 %; black - buildings, roads and some pipes - 32 %, its labelled lines
+    already on "0 colour 7 labelled" - dxf_inspect._labelled_apart); a layer whose names are mostly such labels is no
+    junction layer (one with the junctions' names stays one, though its pipes are on it too)."""
+    from . import dxf_inspect as di
+    hit = di.pipe_label_hits(lines, texts)
+    hs = sorted(t.get("h") or 0.0 for t in texts if di.PIPE_LABEL.match(t["text"] or "")) or [1.0]
+    h = hs[len(hs) // 2] or 1.0
+    n_long = collections.Counter(ln["layer"] for ln in lines if ln["len"] >= 2 * h)
+    n_hit = collections.Counter(lines[k]["layer"] for k in hit)
+    pipe = [r["layer"] for r in rows if n_hit[r["layer"]] >= 5 and n_hit[r["layer"]] >= di.LABELLED_SHARE * n_long[r["layer"]]]
+    pl = collections.Counter(t["layer"] for t in texts if di.PIPE_LABEL.match(t["text"] or ""))
+    ids = {r["layer"]: r["ids"] for r in rows}
+    mh = [m for m in mh if pl[m] < 0.5 * max(ids.get(m, 0), 1)]
+    return pipe, mh
+
+
+def dxf_roads_kml(path, road_layers, level_layers=(), epsg=32644):
+    """A drawing's road centrelines and ground levels as a KML for the map's own layout (user request 17-Nov-2026:
+    "survey drawing की सड़कों से layout"): the lines of road_layers as roads, the spot levels as GL points - the texts
+    of level_layers that are levels and their points / blocks with a height; without level_layers the drawing's
+    likeliest level layers (level_candidates) and every survey point with a height. A level far from the others
+    (level_band) is left out. Returns {"kml", "roads", "spots", "far"}; ValueError for a drawing not on the map."""
+    from . import dxf_inspect as di
+    if not epsg:
+        raise ValueError("सड़कों से layout के लिए drawing का coordinate system (UTM) चुनें - local drawing नक्शे पर नहीं आती")
+    layers, lines, texts, inserts, points = _inventory(path)
+    lays = {s for s in road_layers if s}
+    missing = sorted(lays - set(layers))
+    if missing:
+        raise ValueError(f"layer '{missing[0]}' इस drawing में नहीं")
+    roads = [ln["pts"] for ln in lines if ln["layer"] in lays and ln["len"] > 0]
+    if not roads:
+        raise ValueError("चुनी layers में कोई line नहीं")
+    lv = {s for s in level_layers if s} or set(di.level_candidates(texts))
+    spots = [(t["x"], t["y"], v) for t in texts if t["layer"] in lv for kd, v in di.classify(t["text"]) if kd == "level"]
+    spots += [(q["x"], q["y"], q["z"]) for q in list(points) + list(inserts)
+              if (q["layer"] in lv if level_layers else q.get("kind") == "POINT") and abs(q.get("z") or 0.0) > 0.001]
+    far = 0
+    if spots:
+        lo, hi = di.level_band([v for _, _, v in spots])
+        far = sum(1 for s in spots if not lo <= s[2] <= hi)
+        spots = [s for s in spots if lo <= s[2] <= hi]
+    to_ll = converters({"epsg": int(epsg)})[0]
+
+    def esc(s):
+        return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+    def coords(pts):
+        return " ".join(f"{b},{a}" for a, b in to_ll([[p[0], p[1]] for p in pts]))
+    pm_r = "".join(f"<Placemark><name>road {k + 1}</name><LineString><coordinates>{coords(r)}</coordinates>"
+                   f"</LineString></Placemark>" for k, r in enumerate(roads))
+    ll = to_ll([[x, y] for x, y, _ in spots])
+    pm_s = "".join(f"<Placemark><name>GL {v:.2f}</name><ExtendedData><Data name=\"GL\"><value>{v:.2f}</value></Data>"
+                   f"</ExtendedData><Point><coordinates>{b},{a}</coordinates></Point></Placemark>"
+                   for (_, _, v), (a, b) in zip(spots, ll))
+    name = esc(os.path.splitext(os.path.basename(path))[0])
+    kml = ('<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2"><Document>'
+           f"<name>{name}</name><Folder><name>Roads</name>{pm_r}</Folder>"
+           f"<Folder><name>Spot levels (GL)</name>{pm_s}</Folder></Document></kml>\n")
+    return {"kml": kml, "roads": len(roads), "spots": len(spots), "far": far}
 
 
 def import_dxf(out_root, stem, path, pipe_layers, mh_layers=(), level_layers=(), epsg=32644, log=print, z_mode="auto",

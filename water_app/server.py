@@ -462,6 +462,13 @@ class Handler(BaseHTTPRequestHandler):
         return {"ok": True, "layers": rows, "guess": guess,
                 "name": safe_name(os.path.splitext(os.path.basename(path))[0])}
 
+    def _post_dxf_roads(self, u, req):                   # road centrelines + levels of a drawing -> KML for the layout
+        from . import netedit
+        path, missing = dxf_path(req)
+        return missing or _answer(lambda: dict(netedit.dxf_roads_kml(
+            path, [x for x in req.get("road_layers") or [] if x], [x for x in req.get("level_layers") or [] if x],
+            epsg_of(req)), ok=True), plain=ValueError)
+
     def _post_dxf_gl_options(self, u, req):              # the layers the GL could come from, for the user to choose
         from . import dxf_extract
         path, missing = dxf_path(req)
@@ -574,7 +581,7 @@ class Handler(BaseHTTPRequestHandler):
         return _answer(open_output, safe_name(req.get("name", "")), str(req.get("file") or ""), bool(req.get("folder")))
 
     POST = {"/api/save": _post_save, "/api/kmz": _post_kmz, "/api/layout": _post_layout,
-            "/api/dxf_preview": _post_dxf_preview, "/api/dxf_layers": _post_dxf_layers,
+            "/api/dxf_preview": _post_dxf_preview, "/api/dxf_layers": _post_dxf_layers, "/api/dxf_roads": _post_dxf_roads,
             "/api/dxf_gl_options": _post_dxf_gl_options, "/api/dxf_import": _post_dxf_import,
             "/api/open_output": _post_open_output,
             "/api/net_edit": _post_net, "/api/net_undo": _post_net, "/api/net_repair": _post_net,

@@ -1,8 +1,37 @@
-"""design._Paths (numpy, 17-Nov-2026) gives what design._path_table (the plain loop it replaced in the design rounds)
+"""design._Paths (numpy, 17-Nov-2026) gives what _path_table below (the plain loop it replaced in the design rounds)
 gives: random networks with loops, equal heads, fixed pipes, junctions without a head and two sources."""
 import random
 
 from water_app import design
+
+
+def _path_table(net, res, adj, fixed):
+    """For every junction at once: following the neighbour with the higher head back
+    to the source, (the steepest pipe on that way, the source reached or None) - nodes taken from the highest head
+    down, each from its upstream neighbour's entry."""
+    head = res["head"]
+    hl = res["hl_per_km"]
+    pipes = net["pipes"]
+    out = {}
+    for n in sorted(head, key=head.get, reverse=True):
+        if n in fixed:
+            out[n] = (None, n)
+            continue
+        best = None
+        for pid, o in adj[n]:
+            h = head.get(o)
+            if h is not None and h > head[n] and (best is None or h > best[0]):
+                best = (h, pid, o)
+        if best is None:
+            out[n] = (None, None)
+            continue
+        _, pid, o = best
+        bp, src = out.get(o, (None, None))
+        cand = pid if not pipes[pid].get("fixed") else None
+        if bp is not None and (cand is None or hl[bp] >= hl[cand]):
+            cand = bp
+        out[n] = (cand, src)
+    return out
 
 
 def _case(seed):
@@ -38,6 +67,6 @@ def test_paths_match_the_loop():
         for pid, p in net["pipes"].items():
             adj[p["a"]].append((pid, p["b"]))
             adj[p["b"]].append((pid, p["a"]))
-        want = design._path_table(net, res, adj, fixed)
+        want = _path_table(net, res, adj, fixed)
         got = design._Paths(net, adj, fixed).table(res, list(res["head"]))
         assert got == want, seed

@@ -92,59 +92,11 @@ def allowed_pipes(crit, cat=None):
     return out or cat[-1:]
 
 
-def _path_pipe(net, res, start, adj, fixed=None):
-    """From a low junction back towards the source, always to the neighbour with the higher head: (the pipe with the
-    steepest head loss on that path that can still grow, the head of the source reached or None)."""
-    best, bg, cur, seen = None, -1.0, start, {start}
-    fixed = fixed if fixed is not None else {n for n, v in net["nodes"].items() if v.get("head") is not None}
-    while cur not in fixed:
-        up = [(res["head"].get(o, -1e9), pid, o) for pid, o in adj[cur] if o not in seen]
-        if not up:
-            break
-        h, pid, o = max(up)
-        if h <= res["head"][cur]:
-            break
-        if not net["pipes"][pid].get("fixed") and res["hl_per_km"][pid] > bg:
-            best, bg = pid, res["hl_per_km"][pid]
-        seen.add(o)
-        cur = o
-    return best, (cur if cur in fixed else None)
-
-
-def _path_table(net, res, adj, fixed):
-    """For every junction at once (what _path_pipe gives for one): following the neighbour with the higher head back
-    to the source, (the steepest pipe on that way, the source reached or None) - nodes taken from the highest head
-    down, each from its upstream neighbour's entry."""
-    head = res["head"]
-    hl = res["hl_per_km"]
-    pipes = net["pipes"]
-    out = {}
-    for n in sorted(head, key=head.get, reverse=True):
-        if n in fixed:
-            out[n] = (None, n)
-            continue
-        best = None
-        for pid, o in adj[n]:
-            h = head.get(o)
-            if h is not None and h > head[n] and (best is None or h > best[0]):
-                best = (h, pid, o)
-        if best is None:
-            out[n] = (None, None)
-            continue
-        _, pid, o = best
-        bp, src = out.get(o, (None, None))
-        cand = pid if not pipes[pid].get("fixed") else None
-        if bp is not None and (cand is None or hl[bp] >= hl[cand]):
-            cand = bp
-        out[n] = (cand, src)
-    return out
-
-
 class _Paths:
-    """_path_table with numpy (17-Nov-2026: the Python loop was a fifth of a 12,000-junction design): the network's
-    arrays built once, then per result each junction's upstream neighbour (the highest head above its own, the first
+    """The upstream path table of the upsizing rounds, with numpy (17-Nov-2026: the Python loop was a fifth of a
+    12,000-junction design): the network's arrays built once, then per result each junction's upstream neighbour (the highest head above its own, the first
     in adj on a tie) and, by pointer doubling up those links, the steepest growable pipe on the way (the upstream one
-    on a tie) and the source reached - the same answer as _path_table."""
+    on a tie) and the source reached - the same answer as the plain loop in tests/test_water_paths.py."""
 
     def __init__(self, net, adj, fixed):
         self.ids = list(adj)

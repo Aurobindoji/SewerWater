@@ -74,8 +74,16 @@ class Model:
         ia, ib = self.ia, self.ib
         self.ma, self.mb = ia >= 0, ib >= 0
         self.mab, self.ma_only, self.mb_only = self.ma & self.mb, self.ma & ~self.mb, self.mb & ~self.ma
-        self.rows = np.concatenate([ia[self.ma], ib[self.mb], ia[self.mab], ib[self.mab]])
-        self.cols = np.concatenate([ia[self.ma], ib[self.mb], ib[self.mab], ia[self.mab]])
+        rows = np.concatenate([ia[self.ma], ib[self.mb], ia[self.mab], ib[self.mab]])
+        cols = np.concatenate([ia[self.ma], ib[self.mb], ib[self.mab], ia[self.mab]])
+        # the matrix pattern never changes: its CSC structure built once, each entry's slot in it (17-Nov-2026 - the
+        # COO -> CSC conversion of every Newton step was a tenth of a large design's time)
+        nj = len(self.junc)
+        key, self.slot = np.unique(cols.astype(np.int64) * max(nj, 1) + rows, return_inverse=True)
+        self.indices = (key % max(nj, 1)).astype(np.int32)
+        self.indptr = np.searchsorted(key // max(nj, 1), np.arange(nj + 1)).astype(np.int32)
+        # right-hand side: demand first, then what each pipe brings (np.bincount sums in this order, as np.add.at did)
+        self.fidx = np.concatenate([np.arange(nj), ia[self.ma], ib[self.mb], ia[self.ma_only], ib[self.mb_only]])
         self._r()
         self.q = None
 
@@ -121,13 +129,15 @@ class Model:
             pinv = 1.0 / g
             y = q - r * aq ** (N_HW - 1) * q / g                      # = q (1 - 1/n)
             vals = np.concatenate([pinv[ma], pinv[mb], -pinv[mab], -pinv[mab]])
-            F = -self.dem.copy()
-            np.add.at(F, ia[ma], -y[ma])                              # pipe leaves a
-            np.add.at(F, ib[mb], y[mb])                               # pipe enters b
-            np.add.at(F, ia[ma_only], pinv[ma_only] * hb[ma_only])    # b a fixed head
-            np.add.at(F, ib[mb_only], pinv[mb_only] * ha[mb_only])    # a a fixed head
+            F = np.bincount(self.fidx, minlength=nj, weights=np.concatenate([
+                -self.dem,
+                -y[ma],                                               # pipe leaves a
+                y[mb],                                                # pipe enters b
+                pinv[ma_only] * hb[ma_only],                          # b a fixed head
+                pinv[mb_only] * ha[mb_only]]))                        # a a fixed head
             if nj:
-                A = sp.csc_matrix((vals, (self.rows, self.cols)), shape=(nj, nj))
+                data = np.bincount(self.slot, weights=vals, minlength=len(self.indices))
+                A = sp.csc_matrix((data, self.indices, self.indptr), shape=(nj, nj))
                 H = np.atleast_1d(spl.spsolve(A, F, permc_spec="MMD_AT_PLUS_A"))     # A is symmetric
             Ha = np.where(ma, H[np.maximum(ia, 0)] if nj else 0.0, ha)
             Hb = np.where(mb, H[np.maximum(ib, 0)] if nj else 0.0, hb)

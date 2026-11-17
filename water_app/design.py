@@ -26,6 +26,8 @@ import json
 import math
 import os
 
+import numpy as np
+
 from . import hydraulics as hy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -46,19 +48,28 @@ def _val(crit, key):
     return crit[key]["value"]
 
 
+def _where(d, test):
+    """The items of a {key: float} dict whose value passes test (on a numpy array) - in the dict's order, the values as
+    they are (17-Nov-2026: the dict comprehensions of check() were a tenth of a large design's time)."""
+    vals = np.fromiter(d.values(), dtype=float, count=len(d))
+    keys = list(d)
+    return {keys[i]: d[keys[i]] for i in np.flatnonzero(test(vals)).tolist()}
+
+
 def check(net, res, crit, fixed=None):
     """Failing junctions (residual head) and pipes (velocity); notes for low velocity / high pressure."""
     rh, vmax, vmin = _val(crit, "residual_head_m"), _val(crit, "max_velocity_mps"), _val(crit, "min_velocity_mps")
     if fixed is None:
         fixed = {n for n, v in net["nodes"].items() if v.get("head") is not None}
-    low = {n: p for n, p in res["pressure"].items() if n not in fixed and p < rh - 1e-6}
-    fast = {p: v for p, v in res["velocity"].items() if v > vmax + 1e-9}
+    pres, vel = res["pressure"], res["velocity"]
+    low = {n: p for n, p in _where(pres, lambda a: a < rh - 1e-6).items() if n not in fixed}
+    fast = _where(vel, lambda a: a > vmax + 1e-9)
     if "max_hl_distribution_m_per_km" in crit:            # too steep: one size up, as too fast (a constraint)
         g = _val(crit, "max_hl_distribution_m_per_km")
-        fast.update({p: res["velocity"][p] for p, h in res["hl_per_km"].items() if h > g + 1e-9 and p not in fast})
-    slow = {p: v for p, v in res["velocity"].items() if 1e-9 < v < vmin}
+        fast.update({p: vel[p] for p in _where(res["hl_per_km"], lambda a: a > g + 1e-9) if p not in fast})
+    slow = _where(vel, lambda a: (a > 1e-9) & (a < vmin))
     top = high_limit(crit)
-    high = {n: p for n, p in res["pressure"].items() if n not in fixed and p > top}
+    high = {n: p for n, p in _where(pres, lambda a: a > top).items() if n not in fixed}
     return low, fast, slow, high
 
 
@@ -129,6 +140,63 @@ def _path_table(net, res, adj, fixed):
     return out
 
 
+class _Paths:
+    """_path_table with numpy (17-Nov-2026: the Python loop was a fifth of a 12,000-junction design): the network's
+    arrays built once, then per result each junction's upstream neighbour (the highest head above its own, the first
+    in adj on a tie) and, by pointer doubling up those links, the steepest growable pipe on the way (the upstream one
+    on a tie) and the source reached - the same answer as _path_table."""
+
+    def __init__(self, net, adj, fixed):
+        self.ids = list(adj)
+        self.ix = ix = {n: i for i, n in enumerate(self.ids)}
+        self.pids = list(net["pipes"])
+        px = {p: i for i, p in enumerate(self.pids)}
+        en, eo, ep = [], [], []
+        for n, lst in adj.items():
+            for pid, o in lst:
+                en.append(ix[n])
+                eo.append(ix[o])
+                ep.append(px[pid])
+        self.en, self.eo, self.ep = (np.array(v, dtype=np.int64) for v in (en, eo, ep))
+        self.isfixed = np.array([n in fixed for n in self.ids], dtype=bool)
+        self.nans = [np.nan] * len(self.ids)
+        self.growable = np.array([not net["pipes"][p].get("fixed") for p in self.pids], dtype=bool)
+
+    def table(self, res, want):
+        head, hl = res["head"], res["hl_per_km"]
+        nn = len(self.ids)
+        hn = np.fromiter(map(head.get, self.ids, self.nans), dtype=float, count=nn)
+        hlp = np.fromiter(map(hl.__getitem__, self.pids), dtype=float, count=len(self.pids))
+        hlo, hhi = hn[self.en], hn[self.eo]
+        ok = (hhi > hlo) & ~self.isfixed[self.en]             # NaN compares False: no head, no link
+        e = np.flatnonzero(ok)
+        order = e[np.lexsort((-hhi[e], self.en[e]))]          # by junction, then highest head; stable: adj order
+        first = order[np.r_[True, self.en[order][1:] != self.en[order][:-1]]] if len(order) else order
+        anc = np.arange(nn)
+        bp = np.full(nn, -1, dtype=np.int64)
+        bv = np.full(nn, -np.inf)
+        own = self.en[first]
+        anc[own] = self.eo[first]
+        g = self.growable[self.ep[first]]
+        bp[own[g]] = self.ep[first][g]
+        bv[own[g]] = hlp[self.ep[first][g]]
+        while True:                                           # each node's segment doubles towards its root
+            up = anc[anc]
+            if np.array_equal(up, anc):
+                break
+            ubp, ubv = bp[anc], bv[anc]
+            take = (ubp >= 0) & ((bp < 0) | (ubv >= bv))
+            bp = np.where(take, ubp, bp)
+            bv = np.where(take, ubv, bv)
+            anc = up
+        out = {}
+        for n in want:
+            i = self.ix.get(n)
+            if i is not None and n in head:
+                out[n] = (self.pids[bp[i]] if bp[i] >= 0 else None, self.ids[anc[i]] if self.isfixed[anc[i]] else None)
+        return out
+
+
 def _down_min(net, res, adj, fixed):
     """For every junction the lowest residual head of the junctions fed through it (each junction hangs from its
     neighbour with the highest head) - the head a pipe into it may still lose."""
@@ -173,6 +241,7 @@ def design(net, crit=None, pipes=None, economise=True, max_rounds=400, log=None,
 
     fixed_nodes = {n for n, v in net["nodes"].items() if v.get("head") is not None}
     rh = _val(crit, "residual_head_m")
+    paths = _Paths(net, adj, fixed_nodes)
 
     model = hy.Model(net, minor_loss=minor, demand_factor=pf)        # built once; the sizes change in it
     cases = list(cases or [])
@@ -217,7 +286,7 @@ def design(net, crit=None, pipes=None, economise=True, max_rounds=400, log=None,
         # head short) or whose whole way is at the largest size is set aside (no pipe helps: the OHT's staging is
         # reported short)
         done = collections.Counter()
-        table = _path_table(net, res, adj, fixed_nodes) if work else {}
+        table = paths.table(res, work) if work else {}
         for n in sorted(work, key=work.get):
             pid, src = table.get(n, (None, None))
             h0 = net["nodes"][src]["head"] if src is not None else None
@@ -236,7 +305,7 @@ def design(net, crit=None, pipes=None, economise=True, max_rounds=400, log=None,
             if not cw:
                 continue
             done = collections.Counter()
-            table = _path_table(net, r, adj, fixed_nodes)
+            table = paths.table(r, cw)
             for n in sorted(cw, key=cw.get):
                 pid, src = table.get(n, (None, None))
                 h0 = net["nodes"][src]["head"] if src is not None else None

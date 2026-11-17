@@ -234,12 +234,20 @@ def _tech(res, z, req, wnet, net):
 def _excel(folder, stem, res, z, crit):
     """Design report: Summary / Checks, Zones, DMAs, Pipes, Nodes."""
     from openpyxl import Workbook
+    from openpyxl.cell import WriteOnlyCell
     from openpyxl.styles import Font
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Summary"
-    ws.append(["Water distribution network design (PFR) - " + stem])
-    ws["A1"].font = Font(bold=True, size=13)
+    from openpyxl.utils import get_column_letter
+    wb = Workbook(write_only=True)          # streamed to the file (17-Nov-2026: a 12,000-pipe design, a tenth faster)
+
+    def sheet(title):
+        w = wb.create_sheet(title)
+        for k in range(1, 20):
+            w.column_dimensions[get_column_letter(k)].width = 16
+        return w
+    ws = sheet("Summary")
+    a1 = WriteOnlyCell(ws, "Water distribution network design (PFR) - " + stem)
+    a1.font = Font(bold=True, size=13)
+    ws.append([a1])
     s = res["summary"]
     for k, v in [("population (design)", s["population"]), ("average demand without fire (L/s)", s["demand_avg_lps"]),
                  ("peak factor", s["peak_factor"]), ("lowest residual head (m)", s["min_pressure"]),
@@ -253,7 +261,7 @@ def _excel(folder, stem, res, z, crit):
     ws.append(["check", "result", "detail", "CPHEEO / UPJN reference"])
     for c in res["checks"]:
         ws.append([c["check"], "OK" if c["ok"] else ("note" if c.get("note") else "NOT MET"), c["detail"], c["ref"]])
-    ws2 = wb.create_sheet("Zones")
+    ws2 = sheet("Zones")
     ws2.append(["OZ (OHT)", "OHT", "population", "connections", "demand KLD", "OHT capacity KL (existing)",
                 "required KL (max 33 % / mass balance)", "staging m", "staging", "VFD pump head m", "VFD pump kW", "CWR KL", "tube wells",
                 "tube wells new (+15 years)", "standby tube wells (CPHEEO 5.7.5 / the page's table)", "rebored tube wells",
@@ -266,22 +274,22 @@ def _excel(folder, stem, res, z, crit):
                     o.get("vfd_head_m"), o.get("vfd_kw"), x["cwr_kl"],
                     x["tubewells"], x.get("tubewells_new"), x.get("tubewells_standby"), x.get("rebore"),
                     x.get("dma_count"), x["elev_min"], x["elev_max"]])
-    ws3 = wb.create_sheet("DMAs")
+    ws3 = sheet("DMAs")
     ws3.append(["DMA", "OZ", "population", "connections", "inlet pipe"])
     for d in z["dmas"]:
         ws3.append([d["name"], d["zone"], d["population"], d["connections"], d["inlet_pipe"] or "(at the OHT)"])
-    ws4 = wb.create_sheet("Pipes")
+    ws4 = sheet("Pipes")
     ws4.append(["pipe", "from", "to", "length m", "size", "internal dia mm", "closed", "peak flow L/s", "velocity m/s",
                 "head loss m/km", "OZ", "DMA"])
     for p in res["pipes"]:
         ws4.append([p["label"], p["from"], p["to"], p["length"], p["size"], p["id_mm"], "yes" if p["closed"] else "",
                     p["flow"], p["v"], p["hl_km"], p["oz"], p["dma"]])
-    ws5 = wb.create_sheet("Nodes")
+    ws5 = sheet("Nodes")
     ws5.append(["node", "GL m", "HGL m", "residual head m", "peak demand L/s", "OZ", "DMA"])
     for n in res["nodes"]:
         ws5.append([n["label"], n["gl"], n["head"], n["p"], n["q"], n["oz"], n["dma"]])
     if res.get("stages"):
-        ws6 = wb.create_sheet("Stages")
+        ws6 = sheet("Stages")
         ws6.append(["stage", "year", "population", "average demand L/s", "average demand MLD", "peak flow L/s",
                     "lowest residual head m", "highest residual head m", "junctions below 17 m",
                     "junctions above 21 m", "pipes below 0.3 m/s", "their length m", "pipes above 3 m/s",
@@ -294,9 +302,6 @@ def _excel(folder, stem, res, z, crit):
                             st["fast_n"], o["oht"], o["flow_lps"], o["lowest_p"], o["highest_p"]])
         ws6.append([])
         ws6.append([crit["stages"]["ref"]])
-    for w in wb.worksheets:
-        for col in w.columns:
-            w.column_dimensions[col[0].column_letter].width = 16
     path = os.path.join(folder, f"{stem}_water_design_{time.strftime('%Y%m%d_%H%M')}.xlsx")
     wb.save(path)
     return path

@@ -133,6 +133,22 @@ def net_call(path, req, query):
             out = netedit.page_data(st)
             out["removed"] = n                    # the page says so, in its language
             return out
+        if path == "/api/net_renumber":          # the app's own names, from the new tanks (user request 17-Nov-2026)
+            from . import results
+            z = results.last_results(stem).get("zoning")
+            if not z or not z.get("zones"):
+                raise ValueError("पहले Zoning चलाएँ - नए नाम टंकियों से शुरू होते हैं / run the Zoning first: the new "
+                                 "names start at the tanks")
+            if z.get("stale"):
+                raise ValueError("Zoning इस network से पुरानी है - पहले Zoning फिर चलाएँ / the zoning is older than "
+                                 "the network: run it again first")
+            by_zone = collections.defaultdict(list)
+            for lab, zn in (z.get("pipe_zone") or {}).items():
+                by_zone[zn].append(lab)
+            seeds = [(zn["node"], by_zone.get(zn["name"], [])) for zn in z["zones"] if zn.get("node")]
+            nmap, pmap = netedit.renumber(st, seeds, name_prefix(req.get("node_prefix"), "J-"),
+                                          name_prefix(req.get("pipe_prefix"), "P-"), bool(req.get("pipes", True)))
+            return dict(netedit.page_data(st), renamed={"nodes": nmap, "pipes": pmap}, tanks=len(seeds))
         if path == "/api/net_place":
             moved = netedit.place(st, req["from"], req["to"], req.get("points") or [])
             return dict(netedit.page_data(st), points=moved)
@@ -562,7 +578,7 @@ class Handler(BaseHTTPRequestHandler):
             "/api/dxf_gl_options": _post_dxf_gl_options, "/api/dxf_import": _post_dxf_import,
             "/api/open_output": _post_open_output,
             "/api/net_edit": _post_net, "/api/net_undo": _post_net, "/api/net_repair": _post_net,
-            "/api/net_save": _post_net, "/api/net_place": _post_net, "/api/net_joints": _post_net, "/api/projection": _post_projection,
+            "/api/net_save": _post_net, "/api/net_place": _post_net, "/api/net_joints": _post_net, "/api/net_renumber": _post_net, "/api/projection": _post_projection,
             "/api/ward_kml_table": _post_ward_kml_table, "/api/city_wards_xlsx": _post_city_wards_xlsx,
             "/api/city_wards_import": _post_city_wards_import, "/api/water_join_plan": _post_water_join_plan,
             "/api/water_zoning": _post_water_zoning, "/api/water_design": _post_water_design,

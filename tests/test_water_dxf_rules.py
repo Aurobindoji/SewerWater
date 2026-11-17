@@ -128,3 +128,41 @@ def test_the_chosen_prefix_on_the_drawing_names(tmp_path):
     assert got == sorted(["JN-1-5", "JN-1-6", "JN-1-7", "JN-2-5", "JN-2-6", "JN-2-7", "JN-3-5", "JN-9"])
     keep = dxf_extract.extract(path, ["PIPE"], ["node"], [])            # no prefix chosen: the drawing's names
     assert sorted(r["Label"] for r in keep["mh_rows"]) == sorted(names)
+
+
+def _grid_net():
+    """A tank junction T at the left of a 3 x 2 street grid (100 m blocks); names as a drawing gives them."""
+    pts = {"T": (0, 0), "MH-1-9": (100, 0), "MH-1-3": (200, 0), "MH-2-7": (100, 100), "MH-2-1": (200, 100),
+           "MH-3-5": (300, 0)}
+    links = [("T", "MH-1-9"), ("MH-1-9", "MH-1-3"), ("MH-1-3", "MH-3-5"), ("MH-1-9", "MH-2-7"), ("MH-2-7", "MH-2-1"),
+             ("MH-2-1", "MH-1-3")]
+    net = {"nodes": {n: {"xy": list(p), "ground": 78.0, "gl_source": "text"} for n, p in pts.items()},
+           "conduits": [{"label": f"CO-{i}", "start_node": a, "stop_node": b, "length_m": 100.0, "vertices": [],
+                         "id": i} for i, (a, b) in enumerate(links)],
+           "outfalls": []}
+    return net
+
+
+def test_new_names_start_at_the_tank_and_run_along_a_line(tmp_path):
+    """User request 17-Nov-2026: the app's own names, from the new tank along the pipes, the old ones kept."""
+    net = _grid_net()
+    order, pipes = netedit.renumber_order(net, [("T", [k["label"] for k in net["conduits"]])])
+    assert order[0] == "T"
+    assert order[:4] == ["T", "MH-1-9", "MH-1-3", "MH-3-5"]            # straight on first, along the line
+    assert sorted(order) == sorted(net["nodes"]) and sorted(pipes) == sorted(k["label"] for k in net["conduits"])
+    st = {"stem": "g", "net": net, "ex_issues": [], "reviewed": [], "edits": [], "next_id": 6, "_root": str(tmp_path),
+          "kind": "dxf", "dxf": "", "summary": []}
+    netedit._UNDO.pop("g", None)
+    nmap, pmap = netedit.renumber(st, [("T", [k["label"] for k in net["conduits"]])], "JN-", "P-")
+    assert nmap["T"] == "JN-1" and nmap["MH-3-5"] == "JN-4"
+    assert set(st["net"]["nodes"]) == {f"JN-{i}" for i in range(1, 7)}
+    assert st["net"]["nodes"]["JN-1"]["old"] == "T" and st["net"]["nodes"]["JN-4"]["old"] == "MH-3-5"
+    assert {k["label"] for k in st["net"]["conduits"]} == {f"P-{i}" for i in range(1, 7)}
+    assert all(k["start_node"] in st["net"]["nodes"] and k["stop_node"] in st["net"]["nodes"] for k in st["net"]["conduits"])
+    files = netedit.save_network(st)
+    rows = open(files["old_names"], encoding="utf-8-sig").read()
+    assert "junction,JN-4,MH-3-5" in rows
+    netedit.renumber(st, [("JN-1", [k["label"] for k in st["net"]["conduits"]])], "N-", "PI-")   # again: first name kept
+    assert st["net"]["nodes"]["N-4"]["old"] == "MH-3-5"
+    netedit.undo(st)
+    assert "JN-4" in st["net"]["nodes"]

@@ -403,6 +403,24 @@ $("rnbtn").onclick = () => {
                   `Rename these?\n${say.join("\n")}\n\n(the numbers stay; Undo brings them back at once. Run Zoning / Design again.)`))) return;
   netEdit(ops, null);
 };
+// every junction / pipe named afresh by the app (user request 17-Nov-2026): <prefix>1, 2, 3 ... from each new tank of
+// the last zoning, along its zone's pipes; the old names kept and shown on the cards. The tables' changes follow.
+$("rnall").onclick = async () => {
+  const np = $("rnpre").value.trim() || "J-", pp = $("rppre").value.trim() || "P-";
+  if (!confirm(tr(`सब junctions को ${np}1, ${np}2 … और सब pipes को ${pp}1, ${pp}2 … नए नाम दें?\n\nनंबर आख़िरी Zoning की हर टंकी से शुरू होकर उसी क्षेत्र की pipes के साथ-साथ बढ़ेंगे (पहले OHT-1 का क्षेत्र, फिर OHT-2 …)। पुराने नाम junction / pipe के card में और save पर अलग CSV में रहेंगे। Undo से एक बार में वापस। उसके बाद Zoning / Design फिर चलाएँ।`,
+                  `Give every junction a new name ${np}1, ${np}2 ... and every pipe ${pp}1, ${pp}2 ...?\n\nThe numbers start at each tank of the last zoning and run along its zone's pipes (OHT-1's zone first, then OHT-2 ...). The old names stay on the junction / pipe cards and in a CSV of their own when saved. Undo takes it back at once. Run Zoning / Design again after it.`))) return;
+  $("nstatus").className = "status"; $("nstatus").textContent = tr("नए नाम दिए जा रहे हैं …", "naming ...");
+  const r = await api("/api/net_renumber", { name: NET.name, node_prefix: np, pipe_prefix: pp, pipes: true });
+  if (!r.ok) { $("nstatus").className = "status err"; $("nstatus").textContent = r.log; return; }
+  if (typeof WEDITS === "object" && r.renamed) {                 // the tables' changes go with the names
+    const re = (o, m) => { const out = {}; for (const [k, v] of Object.entries(o || {})) out[m[k] || k] = v; return out; };
+    WEDITS.junctions = re(WEDITS.junctions, r.renamed.nodes); WEDITS.pipes = re(WEDITS.pipes, r.renamed.pipes);
+  }
+  applyNet(r, null);
+  $("nstatus").className = "status ok";
+  $("nstatus").textContent = tr(`नए नाम: ${Object.keys(r.renamed.nodes).length} junctions, ${Object.keys(r.renamed.pipes).length} pipes - ${r.tanks} टंकियों से। अब Zoning / Design फिर चलाएँ।`,
+                                `New names: ${Object.keys(r.renamed.nodes).length} junctions, ${Object.keys(r.renamed.pipes).length} pipes - from ${r.tanks} tanks. Now run Zoning / Design again.`);
+};
 function netSummary() {
   prefixFill();
   const nl = NET.labelLevels || 0;
@@ -499,6 +517,7 @@ function netSelect(sel) {
       <div class="row"><label>नाम</label><input type="text" id="n_label" value="${esc(n)}"></div>
       <div class="row"><label>GL (m)</label><input type="number" id="n_gl" step="0.01" value="${v.gl ?? ""}"></div>
       <div class="hint">GL का स्रोत: ${esc(v.src || "-")}</div>
+      ${v.old ? `<div class="hint">${tr("पुराना नाम (drawing)", "Old name (drawing)")}: <b>${esc(v.old)}</b></div>` : ""}
       ${NET.suggest[n] ? `<div class="row"><span>सुझाव: <b>${esc(NET.suggest[n][0])}</b> <span class="hint">(${NET.suggest[n][1]} m दूर लिखा${NET.suggest[n][2] !== null ? `, GL ${NET.suggest[n][2]}` : ""})</span></span>
         <button id="n_sug" class="primary">लागू करें</button></div>` : ""}
       ${mine.map(i => `<div class="row"><label style="min-width:0"><input type="checkbox" data-rk="${esc(i[0])}"${i[6] ? " checked" : ""}> जाँच लिया: ${esc(TYPE_HI[i[1]] || i[1])}${i[5] ? ` <span class="hint">(${esc(i[5])})</span>` : ""}</label></div>`).join("")}
@@ -518,6 +537,7 @@ function netSelect(sel) {
     const c = NET.conds[sel.id]; if (!c) return netSelect(null);
     L.polyline(c.pts, { color: "#ffd600", weight: 7, opacity: .8, renderer: netRenderer, interactive: false }).addTo(selLayer);
     box.innerHTML = `<b>Pipe ${esc(c.label)}</b> <span class="hint">${esc(c.from)} → ${esc(c.to)}, ${c.len.toFixed(2)} m</span>
+      ${c.old ? `<div class="hint">${tr("पुराना नाम", "Old name")}: <b>${esc(c.old)}</b></div>` : ""}
       <div class="row"><button data-go="${esc(c.from)}">${esc(c.from)}</button><button data-go="${esc(c.to)}">${esc(c.to)}</button>
       <button class="danger" id="c_del">Pipe हटाएँ</button></div>
       ${c.aj ? `<div class="hint" style="color:${JOIN_COL}">🔗 ${tr("अलग टुकड़ा जोड़ने के लिए अपने-आप बना सीधा pipe - असली सड़क का रास्ता देखकर ठीक करें (हटाकर हाथ से खींचें)",

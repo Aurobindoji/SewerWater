@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.9.30 (beta) - 2026-11-17
+
+Water supply - DXF drawings converted from a PDF now import:
+- A drawing with everything on one layer in many colours gets a layer per colour ("0 colour 82"). The pipe colours
+  are suggested by their pipe labels (P-, D-, L-..m); in a mixed colour (black: buildings, roads and some pipes) the
+  labelled lines get a layer of their own ("0 colour 7 labelled").
+- A drawing at paper size is scaled to metres when its length labels (L-5m, 12.3 m) agree on one ratio.
+- Small symbol strokes are not taken for pipes; a pipe drawn twice a little apart is kept once; pipes that stop a few
+  metres short of their junctions are joined there. The import summary says each of these.
+
+Water supply - a layout from a survey drawing's roads:
+- New button **सड़कों से layout** in the DXF panel: tick the road centreline layer under Pipe (and the level layer
+  under GL, or leave it empty for the drawing's levels and survey points). The roads and ground levels come onto the
+  map as a new project; add the boundary and tanks, save, and make the layout as for a KML.
+
 ## 0.9.29 (beta) - 2026-11-17
 
 Water supply - junction and pipe names:

@@ -485,6 +485,19 @@ class Handler(BaseHTTPRequestHandler):
         return missing or _answer(dxf_extract.gl_options, path, [x for x in req.get("pipe_layers") or [] if x],
                                   [x for x in req.get("mh_layers") or [] if x])
 
+    def _post_dxf_netpreview(self, u, req):               # the network of the ticked layers, nothing saved
+        from . import netedit
+        path, missing = dxf_path(req)
+        if missing:
+            return missing
+        pipes = [x for x in req.get("pipe_layers") or [] if x]
+        if not pipes:
+            return {"ok": False, "log": "कम से कम एक pipe layer चुनें"}
+        zm = req.get("z_mode") if req.get("z_mode") in ("auto", "first", "off") else "auto"
+        return _answer(lambda: netedit.dxf_net_preview(
+            path, pipes, req.get("mh_layers") or [], req.get("level_layers") or [], epsg_of(req), zm,
+            bool(req.get("joints_only")), name_prefix(req.get("node_prefix"), "J-"), name_prefix(req.get("pipe_prefix"), "P-")))
+
     def _post_dxf_import(self, u, req):
         with LOCK:
             return net_import(req)
@@ -592,7 +605,7 @@ class Handler(BaseHTTPRequestHandler):
 
     POST = {"/api/save": _post_save, "/api/kmz": _post_kmz, "/api/layout": _post_layout,
             "/api/dxf_preview": _post_dxf_preview, "/api/dxf_layers": _post_dxf_layers, "/api/dxf_roads": _post_dxf_roads, "/api/water_sim": _post_water_sim,
-            "/api/dxf_gl_options": _post_dxf_gl_options, "/api/dxf_import": _post_dxf_import,
+            "/api/dxf_gl_options": _post_dxf_gl_options, "/api/dxf_import": _post_dxf_import, "/api/dxf_netpreview": _post_dxf_netpreview,
             "/api/open_output": _post_open_output,
             "/api/net_edit": _post_net, "/api/net_undo": _post_net, "/api/net_repair": _post_net,
             "/api/net_save": _post_net, "/api/net_place": _post_net, "/api/net_joints": _post_net, "/api/net_renumber": _post_net, "/api/projection": _post_projection,

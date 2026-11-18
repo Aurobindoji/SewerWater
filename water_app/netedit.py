@@ -122,6 +122,7 @@ def store(st):
 
 # ---------------------------------------------------------------- the drawing
 _INV = {}                       # (path, mtime) -> inventory of the drawing (layers, lines, texts, inserts, points)
+_INV_INFO = {}                  # (path, mtime) -> its dxf_inspect.inventory.info (what the reading did)
 
 
 def _inventory(path):
@@ -131,8 +132,55 @@ def _inventory(path):
     if key not in _INV:
         doc, _ = di.load(path)
         _INV.clear()                                    # one drawing at a time
+        _INV_INFO.clear()
         _INV[key] = di.inventory(doc.modelspace())
+        _INV_INFO[key] = dict(di.inventory.info)
     return _INV[key]
+
+
+def dxf_net_preview(path, pipe_layers, mh_layers=(), level_layers=(), epsg=32644, z_mode="auto", joints_only=False,
+                    node_prefix=None, pipe_prefix=None):
+    """The network the import would make from these layers - for the map only, nothing saved (user request
+    18-Nov-2026: the whole network seen before the import). The drawing is not read again (_inventory). ->
+    {nodes [[lat, lon, name, ground, pipes]], pipes [[part, [[lat, lon], ...]]], summary, problems {kind: count},
+    lines (the extraction's summary), local}; part 1 = the largest connected part."""
+    from . import dxf_extract, network
+    inv = _inventory(path)
+    info = _INV_INFO[(os.path.abspath(path), os.path.getmtime(path))]
+    ex = dxf_extract.extract(path, list(pipe_layers), list(mh_layers), list(level_layers), z_mode=z_mode,
+                             node_prefix=node_prefix, pipe_prefix=pipe_prefix, inv=(inv, info))
+    net = _net_json(network.from_extract(ex))
+    if joints_only:
+        through_merge(net)
+    st = {"epsg": int(epsg) if epsg else None}
+    xy = [v["xy"] for v in net["nodes"].values() if v.get("xy")]
+    if st["epsg"] is None:                                       # local drawing: around the middle, as the import
+        st["origin"] = [sum(p[0] for p in xy) / len(xy), sum(p[1] for p in xy) / len(xy)] if xy else [0.0, 0.0]
+    to_ll = converters(st)[0]
+    part = repair._parts(_tuples(net))
+    deg = collections.Counter()
+    for k in net["conduits"]:
+        deg[k["start_node"]] += 1
+        deg[k["stop_node"]] += 1
+    names = [n for n in net["nodes"] if net["nodes"][n].get("xy")]
+    pts = to_ll([net["nodes"][n]["xy"] for n in names])
+    nodes = [[p[0], p[1], n, net["nodes"][n].get("ground"), deg[n]] for n, p in zip(names, pts)]
+    flat, cut = [], []
+    for k in net["conduits"]:
+        q = k.get("vertices") or [net["nodes"][n]["xy"] for n in (k["start_node"], k["stop_node"])
+                                  if net["nodes"].get(n, {}).get("xy")]
+        flat += q
+        cut.append(len(q))
+    ll, pipes, i = to_ll(flat) if flat else [], [], 0
+    for k, c in zip(net["conduits"], cut):
+        pipes.append([part.get(k["start_node"], 0), [[round(a, 7), round(b, 7)] for a, b in ll[i:i + c]]])
+        i += c
+    summ = {"junctions": len(net["nodes"]), "pipes": len(net["conduits"]),
+            "length": round(sum(k["length_m"] or 0 for k in net["conduits"]), 1),
+            "parts": len(set(part.values())), "ends": sum(1 for n in net["nodes"] if deg[n] == 1),
+            "no_gl": sum(1 for v in net["nodes"].values() if v.get("ground") is None)}
+    return {"ok": True, "nodes": nodes, "pipes": pipes, "summary": summ, "lines": ex["summary"],
+            "problems": dict(collections.Counter(p["Problem"] for p in ex["problems"])), "local": not st["epsg"]}
 
 
 def dxf_preview(path, layer, epsg=None, max_lines=4000, max_pts=3000):

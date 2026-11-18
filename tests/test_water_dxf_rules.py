@@ -166,3 +166,21 @@ def test_new_names_start_at_the_tank_and_run_along_a_line(tmp_path):
     assert st["net"]["nodes"]["N-4"]["old"] == "MH-3-5"
     netedit.undo(st)
     assert "JN-4" in st["net"]["nodes"]
+
+
+def test_network_preview_is_what_the_import_makes(tmp_path):
+    """The page's network preview (18-Nov-2026): the same junctions and pipes as the import, an apart piece as a second
+    part, its open ends counted - and nothing saved."""
+    doc, msp = base()
+    msp.add_line((500.0, 0.0), (530.0, 0.0), dxfattribs={"layer": "PIPE"})        # a piece apart from the rest
+    p = str(tmp_path / "net.dxf")
+    doc.saveas(p)
+    r = netedit.dxf_net_preview(p, ["PIPE"], ["node"], epsg=None)
+    st = netedit.import_dxf(str(tmp_path / "out"), "net", p, ["PIPE"], ["node"], epsg=None, log=lambda *a: None)
+    s = r["summary"]
+    assert (s["junctions"], s["pipes"]) == (len(st["net"]["nodes"]), len(st["net"]["conduits"]))
+    assert s["parts"] == 2 and s["ends"] == 4
+    assert sorted({part for part, _ in r["pipes"]}) == [1, 2] and r["local"]
+    assert not (tmp_path / "net").exists()
+    j = netedit.dxf_net_preview(p, ["PIPE"], ["node"], epsg=None, joints_only=True)["summary"]
+    assert (j["junctions"], j["pipes"]) == (4, 2)

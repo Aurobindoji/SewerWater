@@ -272,10 +272,59 @@ $("dxfimport").onclick = async () => {
       joints_only: $("djoints").checked });
     $("log").hidden = !r.log; $("log").textContent = r.log || "";
     if (!r.ok) { $("dxfstatus").className = "status err"; $("dxfstatus").textContent = "Network नहीं निकला - नीचे का संदेश देखें।"; return; }
-    $("dxfpanel").hidden = true; $("dxfstatus").textContent = ""; clearPreview(); $("glbox").hidden = true;
+    $("dxfpanel").hidden = true; $("dxfstatus").textContent = ""; clearPreview(); clearNetPrev(); $("glbox").hidden = true;
     showNet(r, true); refreshList(); await loadDxfOhts(r.name);
     status(`DXF network: ${r.summary.manholes} junctions, ${r.summary.conduits} pipes - गड़बड़ियाँ नीचे`, "ok");
   } finally { $("dxfimport").disabled = false; loading(false); }
+};
+
+// ---- the whole network of the ticked layers on the map, nothing saved (user request 18-Nov-2026): what the import would
+// make - the largest part blue, other parts orange, open ends red - with the counts; a tick changed afterwards marks it
+// as old (it is not made again by itself: a big drawing takes a while)
+const netPrev = L.layerGroup().addTo(map);
+const netPrevJn = L.layerGroup();                 // the junctions that are no open end: only zoomed in (PREV_TEXT_ZOOM)
+const netPrevZoom = () => { const on = netPrev.getLayers().length && map.getZoom() >= PREV_TEXT_ZOOM;
+  if (on && !map.hasLayer(netPrevJn)) netPrevJn.addTo(map); else if (!on && map.hasLayer(netPrevJn)) map.removeLayer(netPrevJn); };
+map.on("zoomend", netPrevZoom);
+function clearNetPrev() { netPrev.clearLayers(); netPrevJn.clearLayers(); netPrevZoom(); $("netprevbox").hidden = true; $("netprevbox").innerHTML = ""; }
+$("dxfclose").addEventListener("click", clearNetPrev);
+$("laybox").addEventListener("change", e => {
+  if (e.target.dataset.k && !$("netprevbox").hidden && !$("netprevold")) $("netprevbox").insertAdjacentHTML("afterbegin",
+    `<div id="netprevold" class="warn">${tr("Layers बदलीं - यह पुराना network है; \"Network देखें\" फिर दबाएँ", "The layers changed - this is the old network; press \"Show network\" again")}</div>`);
+});
+$("dxfnetprev").onclick = async () => {
+  const sel = k => Array.from(document.querySelectorAll(`#laybox input[data-k="${k}"]:checked`)).map(i => i.value);
+  if (!sel("pipe").length) { $("dxfstatus").className = "status err"; $("dxfstatus").textContent = tr("कम से कम एक Pipe layer चुनें।", "Tick at least one Pipe layer."); return; }
+  const r = await withLoading(tr("Network बना रहे हैं (सहेजा नहीं जाएगा) …", "Making the network (not saved) …"),
+    () => api("/api/dxf_netpreview", { path: $("dxfpath").value, pipe_layers: sel("pipe"), mh_layers: sel("mh"), level_layers: sel("gl"),
+      epsg: $("dxfepsg").value, joints_only: $("djoints").checked, node_prefix: $("dnpre").value.trim(), pipe_prefix: $("dppre").value.trim() }));
+  if (!r.ok) { $("dxfstatus").className = "status err"; $("dxfstatus").textContent = r.log; return; }
+  $("dxfstatus").textContent = "";
+  clearPreview();                         // the layers' own 👁 look shown no more: its red would read as open ends
+  netPrev.clearLayers(); netPrevJn.clearLayers();
+  for (const [part, pts] of r.pipes)
+    L.polyline(pts, { color: part === 1 ? "#1565c0" : "#ef6c00", weight: part === 1 ? 3 : 4, opacity: .9, renderer: netRenderer, interactive: false }).addTo(netPrev);
+  for (const [lat, lon, name, gl, deg] of r.nodes) {
+    const end = deg === 1;
+    L.circleMarker([lat, lon], { radius: end ? 4 : 2.5, color: end ? "#fff" : "#37474f", weight: end ? 1.5 : 1,
+      fillColor: end ? "#d32f2f" : "#37474f", fillOpacity: 1, renderer: netRenderer })
+      .bindTooltip(`${esc(name)} - ${deg} pipe${deg === 1 ? "" : "s"}, GL ${gl === null || gl === undefined ? "-" : fmt(gl, 2)}`, { direction: "top" }).addTo(end ? netPrev : netPrevJn);
+  }
+  const s = r.summary, bad = (v, t) => v ? `<b style="color:var(--danger)">${t}</b>` : t;
+  const probs = Object.entries(r.problems).sort((a, b) => b[1] - a[1]);
+  $("netprevbox").innerHTML = `<div class="box" style="margin-top:6px"><b>${tr("Network का पूर्वावलोकन (सहेजा नहीं)", "Network preview (not saved)")}</b><br>` +
+    `${s.junctions.toLocaleString("en-IN")} junctions, ${s.pipes.toLocaleString("en-IN")} pipes, ${fmt(s.length / 1000, 2)} km; ` +
+    bad(s.parts > 1, tr(`${s.parts} अलग टुकड़े`, `${s.parts} separate parts`)) + ` (<span style="color:#1565c0">■</span> ${tr("सबसे बड़ा", "largest")}, <span style="color:#ef6c00">■</span> ${tr("बाकी", "others")}); ` +
+    `<span style="color:#d32f2f">●</span> ${tr(`${s.ends} खुले सिरे (बाकी junctions पास zoom पर)`, `${s.ends} open ends (the other junctions when zoomed in)`)}; ` + bad(s.no_gl, tr(`${s.no_gl} बिना GL`, `${s.no_gl} without GL`)) +
+    (probs.length ? `<details style="margin-top:4px"><summary style="cursor:pointer">${tr("Drawing की गड़बड़ियाँ", "problems of the drawing")}: ${probs.reduce((a, p) => a + p[1], 0)}</summary>` +
+      probs.map(([k, v]) => `<div>${v} x ${esc(k)}</div>`).join("") + `</details>` : "") +
+    `<div class="row" style="margin-top:4px"><button id="netprevclear">${tr("हटाएँ", "Remove")}</button>` +
+    `<span class="hint" style="min-width:0">${tr("ठीक लगे तो \"Network निकालें\"; नहीं तो layers बदलकर फिर देखें", "fine: \"Extract network\"; else change the layers and look again")}</span></div></div>`;
+  $("netprevbox").hidden = false;
+  $("netprevclear").onclick = clearNetPrev;
+  const b = L.featureGroup(netPrev.getLayers()).getBounds();
+  if (b.isValid()) map.fitBounds(b, { padding: [30, 30], maxZoom: 19 });
+  netPrevZoom();
 };
 
 // a survey drawing's roads as the map's own layout (user request 17-Nov-2026): the layers ticked as Pipe are the road
@@ -290,7 +339,7 @@ $("dxfroads").onclick = async () => {
   const r = await withLoading(tr("सड़कें और GL पढ़ रहे हैं …", "Reading the roads and levels …"),
     () => api("/api/dxf_roads", { path: $("dxfpath").value, road_layers: sel("pipe"), level_layers: sel("gl"), epsg: $("dxfepsg").value }));
   if (!r.ok) return err(r.log);
-  $("dxfpanel").hidden = true; $("dxfstatus").textContent = ""; clearPreview(); $("glbox").hidden = true;
+  $("dxfpanel").hidden = true; $("dxfstatus").textContent = ""; clearPreview(); clearNetPrev(); $("glbox").hidden = true;
   await openKml(`${$("dxfname").value.trim() || "roads"}_roads`, r.kml, true);
   if ($("glmode")) $("glmode").value = "spots";
   status(tr(`Drawing से ${r.roads} सड़कें और ${r.spots} GL बिंदु नक्शे पर` + (r.far ? ` (${r.far} दूर के level छोड़े)` : "") +

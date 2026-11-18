@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.9.33 (beta) - 2026-11-18
+
+DXF import (water supply; the layer ticks in sewer too):
+- A layer ticked under Pipe / Junction / GL shows on the map at once, and goes when its last tick is taken off; the
+  suggested layers are shown as soon as the drawing is read.
+- "Network देखें" shows the whole network the ticked layers would make, before the import and without saving it:
+  the largest connected part in blue, separate parts in orange, open ends in red (the other junctions when zoomed
+  in), with the counts of junctions, pipes, km, parts, open ends, junctions without GL and the drawing's problems.
+  The drawing is not read again, so it takes a few seconds.
+
+Simulation: the EPS player runs on from hour 0 after the last hour, until it is paused.
+
 ## 0.9.32 (beta) - 2026-11-17
 
 - Simulation tab: tanks whose levels run alike are drawn as one line named after all of them; every chart shows

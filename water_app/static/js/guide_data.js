@@ -245,8 +245,8 @@ var GUIDE_DOC = {
         T("पहले Design चलाएँ; फिर Simulation tab में SSA या EPS चुनें, load भरें, \"Simulation चलाएँ\"।", "Run the design first; then in the Simulation tab choose SSA or EPS, give the load, \"Run the simulation\"."),
         T("नक्शा: junction का रंग = दबाव, pipe का रंग = वेग / बहाव / head loss (ऊपर से चुनें); junction या pipe पर click = उसके मान और EPS में उसका पूरा chart; वहीं से \"+ load\" / \"fire\"।",
           "Map: junction colour = head, pipe colour = velocity / flow / head loss (choose above); click a junction or pipe = its values and, in an EPS, its whole curve; \"+ load\" / \"fire\" from there."),
-        T("EPS: slider या ▶ से घंटे बदलें - नक्शा, उस घंटे का सारांश और charts (टंकियों का %, दबाव, माँग) साथ बदलते हैं। \"कमज़ोर जगहें\" पर click = नक्शे पर वहाँ।",
-          "EPS: change the hour with the slider or ▶ - the map, the hour's summary and the charts (tank %, heads, demand) follow. Click a \"weak spot\" = there on the map."),
+        T("EPS: slider या ▶ से घंटे बदलें (▶ आख़िरी घंटे के बाद फिर 0 से चलता रहता है, ⏸ तक) - नक्शा, उस घंटे का सारांश और charts (टंकियों का %, दबाव, माँग) साथ बदलते हैं। \"कमज़ोर जगहें\" पर click = नक्शे पर वहाँ।",
+          "EPS: change the hour with the slider or ▶ (it goes on from hour 0 after the last one, until ⏸) - the map, the hour's summary and the charts (tank %, heads, demand) follow. Click a \"weak spot\" = there on the map."),
       ],
       mistakes: [
         T("SSA में टंकियाँ design के head पर (सबसे निचला जल स्तर) - दबाव का सबसे कमज़ोर हाल। EPS में स्तर घंटे के साथ बदलता है, इसलिए दबाव थोड़ा अधिक।",

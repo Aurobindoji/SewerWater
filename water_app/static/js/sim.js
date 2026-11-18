@@ -301,7 +301,7 @@ function simShow() {
     const n = r.n_hours;
     h += `<div class="box"><b>EPS</b>: ${n} ${tr("घंटे", "hours")}, ${esc(r.stage)}` + (r.extra_lps ? `, ${tr("अतिरिक्त", "extra")} ${fmt(r.extra_lps, 1)} L/s` : "") +
       (r.note ? `<div class="warn">${esc(r.note)}</div>` : "") +
-      `<div class="row" style="margin-top:6px"><button type="button" id="simplay" title="${tr("घंटे-दर-घंटे चलाएँ", "play hour by hour")}">▶</button>` +
+      `<div class="row" style="margin-top:6px"><button type="button" id="simplay" title="${tr("घंटे-दर-घंटे चलाएँ - आख़िरी घंटे के बाद फिर 0 से, ⏸ दबाने तक", "play hour by hour - after the last hour again from 0, until ⏸")}">▶</button>` +
       `<input type="range" id="simslider" min="0" max="${n - 1}" value="${SIM.hour}" style="flex:1"><span id="simhourlbl" style="min-width:9em;text-align:right"></span></div>` +
       `<div id="simhourbox"></div>` + simColourSeg(true) + `<div id="simcharts"></div>` + simTankTable(r) + simWorst(r.worst, true) +
       `<div class="hint">${tr("हर घंटे की माँग = औसत x pattern; OHT भरने के घंटों में भरती, outlet के बहाव से खाली; टंकी का head उसके स्तर से (design का सबसे निचला स्तर + पानी)।", "Each hour's demand = average x the pattern; an OHT fills in its filling hours and empties by its outlet; its head follows its level (the design's lowest level + the water).")}</div></div>`;
@@ -315,7 +315,8 @@ function simShow() {
     $("simplay").onclick = () => {
       if (SIM.timer) return simStop();
       $("simplay").textContent = "⏸";
-      SIM.timer = setInterval(() => { if (SIM.hour >= r.n_hours - 1) { simStop(); return; } simSetHour(SIM.hour + 1); }, 700);
+      // keeps running until ⏸ (user request 17-Nov-2026): after the last hour back to hour 0
+      SIM.timer = setInterval(() => simSetHour(SIM.hour >= r.n_hours - 1 ? 0 : SIM.hour + 1), 700);
     };
     simHourBox(); simEpsCharts();
   }

@@ -85,9 +85,11 @@ $("dxflayers").onclick = async () => {
     rows.map(l => `<tr><td><button class="txtbtn lprev" data-l="${esc(l.layer)}" title="इस layer की lines / बिंदु नक्शे पर, अपने रंग में (कई layers एक साथ; दोबारा click = बंद)">👁</button></td><td title="${esc(l.layer)}">${esc(l.layer)}</td><td>${Math.round(l.line_m).toLocaleString("en-IN")}</td><td>${l.texts}</td><td>${l.ids}</td><td>${l.levels}</td><td>${(l.blocks || 0) + (l.circles || 0)}</td>
       <td>${l.line_m > 0 ? ck("pipe", l.layer) : ""}</td><td>${ck("mh", l.layer)}</td><td>${l.levels ? ck("gl", l.layer) : ""}</td></tr>`).join("") +
     `</table><div id="prevbox" class="hint"></div><div class="hint">${tr("Pipe = pipelines की layers; Junction = junction / node / valve के चिह्न या नाम की layers", "Pipe = layers of the pipelines; Junction = layers of junction / node / valve symbols or names")}; ` +
-    tr(`GL खाली छोड़ें तो सबसे उपयुक्त layer अपने-आप (सुझाव: ${esc(r.guess.level.join(", ") || "-")}). 👁 से layers की lines, texts (पास zoom पर शब्द) और चिह्न (बिंदु) नक्शे पर देखकर पक्का करें - कई 👁 एक साथ, हर layer अपने रंग में; उसी 👁 पर दोबारा click = वह layer बंद। नाला, सड़क, भवन, घरों के नाम pipe / junction नहीं हैं`,
-       `leave GL empty for the best layer automatically (suggested: ${esc(r.guess.level.join(", ") || "-")}). Check layers with 👁 - their lines, texts (words when zoomed in) and symbols (points) on the map, several at once, each in its own colour; the same 👁 again = that layer off. Drains, roads, buildings, house names are no pipes / junctions`) + `</div>`;
+    tr(`GL खाली छोड़ें तो सबसे उपयुक्त layer अपने-आप (सुझाव: ${esc(r.guess.level.join(", ") || "-")}). 👁 से layers की lines, texts (पास zoom पर शब्द) और चिह्न (बिंदु) नक्शे पर देखकर पक्का करें - कई 👁 एक साथ, हर layer अपने रंग में; उसी 👁 पर दोबारा click = वह layer बंद। Pipe / Junction / GL में tick करते ही वह layer नक्शे पर, tick हटाते ही बंद। नाला, सड़क, भवन, घरों के नाम pipe / junction नहीं हैं`,
+       `leave GL empty for the best layer automatically (suggested: ${esc(r.guess.level.join(", ") || "-")}). Check layers with 👁 - their lines, texts (words when zoomed in) and symbols (points) on the map, several at once, each in its own colour; the same 👁 again = that layer off. A tick under Pipe / Junction / GL shows that layer at once, untick hides it. Drains, roads, buildings, house names are no pipes / junctions`) + `</div>`;
   document.querySelectorAll("#laybox .lprev").forEach(b => b.onclick = () => previewLayer(b.dataset.l, b));
+  document.querySelectorAll("#laybox input[data-k]").forEach(i => i.onchange = () => tickPreview(i.value));
+  tickAll();                                                        // the suggested layers on the map at once
   if (!$("dxfname").value.trim()) $("dxfname").value = r.name;     // (set from the file's name before the reading)
   $("dxfopts").hidden = false;
 };
@@ -114,7 +116,7 @@ function hidePreview(layer) {
   const b = prevBtn(layer); if (b) { b.classList.remove("on"); b.style.background = b.style.borderColor = ""; }
 }
 function clearPreview() { [...PREV.keys()].forEach(hidePreview); prevLayer.clearLayers(); prevBox(); }
-async function previewLayer(layer, btn) {
+async function previewLayer(layer, btn, fit = true) {
   if (PREV.has(layer)) { hidePreview(layer); prevBox(); return; }       // the same 👁 again: that layer off
   const r = await withLoading(tr(`"${layer}" पढ़ रहे हैं …`, `Reading "${layer}" …`),
     () => api("/api/dxf_preview", { path: $("dxfpath").value, layer, epsg: $("dxfepsg").value }));
@@ -146,7 +148,24 @@ async function previewLayer(layer, btn) {
     (r.local ? `<br>${tr("Local coordinates: नक्शे पर 0, 0 के पास (असली जगह नहीं)", "Local coordinates: shown around 0, 0 (not the real place)")}` : "");
   PREV.set(layer, { group, colour, info, words, dots, shown: null });
   btn.classList.add("on"); btn.style.background = btn.style.borderColor = colour;
-  prevTexts(); prevFit(); prevBox();
+  prevTexts(); if (fit) prevFit(); prevBox();
+}
+// a tick under Pipe / Junction / GL shows its layer on the map at once, the last tick of a layer taken off hides it - the
+// chosen layers seen together before the import (user request 17-Nov-2026); the drawing is read once, so it is quick
+const PREV_BUSY = new Set();
+const ticked = layer => [...document.querySelectorAll("#laybox input[data-k]")].some(i => i.value === layer && i.checked);
+async function tickPreview(layer, fit = !PREV.size) {
+  if (PREV_BUSY.has(layer) || ticked(layer) === PREV.has(layer)) return;
+  if (!ticked(layer)) { hidePreview(layer); prevBox(); return; }
+  const btn = prevBtn(layer); if (!btn) return;
+  PREV_BUSY.add(layer);
+  try { await previewLayer(layer, btn, fit); } finally { PREV_BUSY.delete(layer); }
+  if (!ticked(layer) && PREV.has(layer)) { hidePreview(layer); prevBox(); }   // ticked off while it was read
+}
+async function tickAll() {
+  const lays = [...new Set([...document.querySelectorAll("#laybox input[data-k]:checked")].map(i => i.value))];
+  for (const l of lays) await tickPreview(l, false);
+  prevFit();
 }
 // the texts of the layers shown: their words from PREV_TEXT_ZOOM on, small points further out (too many to read there)
 const PREV_TEXT_ZOOM = 17;

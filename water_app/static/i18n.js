@@ -18,7 +18,7 @@ const I18N_EN = {
   "खोलें": "Open",
   "सहेजें": "Save",
   "KML/KMZ खोलें…": "Open KML/KMZ…",
-  "नक्शा बनाएँ (KML / KMZ)": "Make a map (KML / KMZ)",
+  "नक्शा export करें (KML / KMZ)": "Export the map (KML / KMZ)",
   "Project का पूरा नक्शा (network, टंकियाँ, tube wells, OZ / DMA, वार्ड ...) KML या KMZ file में - Google Earth में खुलता है, हर चीज़ अपने folder में": "The project's whole map (network, tanks, tube wells, OZ / DMA, wards ...) as a KML or KMZ file - opens in Google Earth, each part in its own folder",
   "नक्शे में क्या हो": "What the map holds",
   "Pipes (design के बाद size-वार रंग)": "Pipes (after a design, a colour per size)",

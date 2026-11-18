@@ -62,7 +62,7 @@ Uninstall करने पर आपका data folder नहीं हटता
 
 ### 3.1 Project
 - **Project नाम** भरें → **सहेजें**: project `projects\<नाम>.kml` में Google Earth वाले format में सहेजा जाता है।
-- **खोलें**: सहेजे हुए projects की सूची से। **KML download**: नक्शे की सब चीज़ें एक KML में।
+- **खोलें**: सहेजे हुए projects की सूची से। **KML download**: केवल नक्शे पर हाथ से खींची drawing एक KML में (फिर खोलने के लिए)। **नक्शा export करें (KML / KMZ)**: project का पूरा काम (network, टंकियाँ, OZ / DMA, design ...) Google Earth के लिए।
 - **KML/KMZ खोलें…**: Google Earth में बनी file - सड़कें (paths), boundary, वार्ड (polygons, आबादी सहित),
   spot levels, STP / OHT आदि अपने-अपने folder से पहचाने जाते हैं। उदाहरण: `samples\sample_area.kml`।
 - **नया (सब हटाएँ)**: नक्शा खाली।

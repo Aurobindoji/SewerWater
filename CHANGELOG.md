@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.9.34 (beta) - 2026-11-18
+
+Water supply:
+- The DXF import's problems and summary in water words: junctions, not manholes ("no junction label in the
+  drawing", "junction on a continuous line"); loops are no longer listed as a problem (a water network has them),
+  and separate parts ask for a tank / source each, not an outfall. Projects saved before keep their checks.
+- The network preview lists the drawing's problems in Hindi on a Hindi page.
+- "नक्शा बनाएँ (KML / KMZ)" is now "नक्शा export करें (KML / KMZ)" ("Export the map"); the tooltips and the guide
+  tell it apart from "KML download" (only the drawing made by hand, to open again).
+
 ## 0.9.33 (beta) - 2026-11-18
 
 DXF import (water supply; the layer ticks in sewer too):

@@ -281,6 +281,23 @@ $("dxfimport").onclick = async () => {
 // ---- the whole network of the ticked layers on the map, nothing saved (user request 18-Nov-2026): what the import would
 // make - the largest part blue, other parts orange, open ends red - with the counts; a tick changed afterwards marks it
 // as old (it is not made again by itself: a big drawing takes a while)
+// the drawing's problems (dxf_extract's English texts, by their start) in Hindi on a Hindi page
+const PROB_HI = [
+  [/^no junction label in the drawing/, () => "Drawing में junction का नाम नहीं (नाम बनाया गया)"],
+  [/^junction label used by more than one junction/, () => "एक ही नाम कई junctions पर"],
+  [/^no GL$/, () => "GL नहीं"],
+  [/^near-miss gap/, () => "सिरे पास-पास, पर जुड़े नहीं"],
+  [/^line ends on another line without a node/, () => "Line दूसरी line पर ख़त्म, वहाँ junction नहीं"],
+  [/^junction on a continuous line/, () => "लगातार line पर junction - line वहाँ काटी गई (CAD में जाँचें)"],
+  [/^GL matched in pass 2 - within 1 m/, () => "GL दूसरे दौर में मिला - पड़ोसियों से 1 m के भीतर (कम जोखिम)"],
+  [/^GL matched in pass 2 \(nearest free text\)/, () => "GL दूसरे दौर में मिला (सबसे पास का text) - CAD में जाँचें"],
+  [/^label matched in pass 2 - number fits/, () => "नाम दूसरे दौर में मिला - पड़ोसी से मेल (कम जोखिम)"],
+  [/^label matched in pass 2 \(nearest free text\)/, () => "नाम दूसरे दौर में मिला (सबसे पास का text) - CAD में जाँचें"],
+  [/^level far from the drawing's other levels/, () => "Level बाकी levels से बहुत दूर - नहीं लिया (टाइपिंग की गलती?)"],
+  [/^(\d+) line\(s\) drawn twice/, m => `${m[1]} lines दो बार खींची थीं - एक-एक रखी`],
+  [/^(\d+) separate parts/, m => `${m[1]} अलग टुकड़े`],
+];
+const probText = k => { for (const [re, f] of PROB_HI) { const m = k.match(re); if (m) return tr(f(m), k); } return k; };
 const netPrev = L.layerGroup().addTo(map);
 const netPrevJn = L.layerGroup();                 // the junctions that are no open end: only zoomed in (PREV_TEXT_ZOOM)
 const netPrevZoom = () => { const on = netPrev.getLayers().length && map.getZoom() >= PREV_TEXT_ZOOM;
@@ -316,8 +333,8 @@ $("dxfnetprev").onclick = async () => {
     `${s.junctions.toLocaleString("en-IN")} junctions, ${s.pipes.toLocaleString("en-IN")} pipes, ${fmt(s.length / 1000, 2)} km; ` +
     bad(s.parts > 1, tr(`${s.parts} अलग टुकड़े`, `${s.parts} separate parts`)) + ` (<span style="color:#1565c0">■</span> ${tr("सबसे बड़ा", "largest")}, <span style="color:#ef6c00">■</span> ${tr("बाकी", "others")}); ` +
     `<span style="color:#d32f2f">●</span> ${tr(`${s.ends} खुले सिरे (बाकी junctions पास zoom पर)`, `${s.ends} open ends (the other junctions when zoomed in)`)}; ` + bad(s.no_gl, tr(`${s.no_gl} बिना GL`, `${s.no_gl} without GL`)) +
-    (probs.length ? `<details style="margin-top:4px"><summary style="cursor:pointer">${tr("Drawing की गड़बड़ियाँ", "problems of the drawing")}: ${probs.reduce((a, p) => a + p[1], 0)}</summary>` +
-      probs.map(([k, v]) => `<div>${v} x ${esc(k)}</div>`).join("") + `</details>` : "") +
+    (probs.length ? `<details style="margin-top:4px"><summary style="cursor:pointer">${tr("Drawing की गड़बड़ियाँ", "problems of the drawing")}: ${probs.reduce((a, p) => a + p[1], 0).toLocaleString("en-IN")}</summary>` +
+      probs.map(([k, v]) => `<div>${/^\d/.test(k) && v === 1 ? "" : `${v.toLocaleString("en-IN")} x `}${esc(probText(k))}</div>`).join("") + `</details>` : "") +
     `<div class="row" style="margin-top:4px"><button id="netprevclear">${tr("हटाएँ", "Remove")}</button>` +
     `<span class="hint" style="min-width:0">${tr("ठीक लगे तो \"Network निकालें\"; नहीं तो layers बदलकर फिर देखें", "fine: \"Extract network\"; else change the layers and look again")}</span></div></div>`;
   $("netprevbox").hidden = false;

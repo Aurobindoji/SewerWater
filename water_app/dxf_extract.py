@@ -525,10 +525,10 @@ def extract(path, pipe_layers, mh_layers=(), level_layers=(), tol=0.5, level_rad
                      "Y": None, "Detail": "the same line (to 1 cm) on the same or another pipe layer"})
     for n in used:
         if not labels.get(n["id"]):
-            prob.append({"Problem": "no MH label in the drawing", "Item": final[n["id"]], "X": round(n["x"], 3),
+            prob.append({"Problem": "no junction label in the drawing", "Item": final[n["id"]], "X": round(n["x"], 3),
                          "Y": round(n["y"], 3), "Detail": "generated name"})
         elif labels[n["id"]] in dup:
-            prob.append({"Problem": "MH label used by more than one node", "Item": final[n["id"]],
+            prob.append({"Problem": "junction label used by more than one junction", "Item": final[n["id"]],
                          "X": round(n["x"], 3), "Y": round(n["y"], 3), "Detail": f"drawing label {labels[n['id']]}"})
     for nid, other, d in chk["gaps"]:
         prob.append({"Problem": "near-miss gap (not joined)", "Item": f"{final.get(nid)} - {final.get(other)}",
@@ -538,20 +538,18 @@ def extract(path, pipe_layers, mh_layers=(), level_layers=(), tol=0.5, level_rad
                      "X": round(nodes[nid]["x"], 3), "Y": round(nodes[nid]["y"], 3),
                      "Detail": f"on line handle {edges[eid]['handle']}"})
     for x, y, src, hdl, d in mid_log:
-        prob.append({"Problem": "manhole on a continuous line - line cut there (check in CAD)", "Item": src,
+        prob.append({"Problem": "junction on a continuous line - line cut there (check in CAD)", "Item": src,
                      "X": x, "Y": y, "Detail": f"line handle {hdl}, {d} m from the line"})
-    if chk["loops"]:
-        prob.append({"Problem": f"{chk['loops']} loop(s) in the network", "Item": "", "X": None, "Y": None,
-                     "Detail": "a sewer must be a tree - remove or split one line per loop"})
+    # loops are wanted in a water network: no problem (only counted in the summary)
     if chk["parts"] > 1:
         prob.append({"Problem": f"{chk['parts']} separate parts", "Item": "", "X": None, "Y": None,
-                     "Detail": f"nodes per part {chk['part_sizes']} - one outfall per part, or join them"})
+                     "Detail": f"junctions per part {chk['part_sizes']} - join them, or each part needs its own tank / source"})
 
     # ---- summary lines (printed by main)
     gl_n = sum(1 for r in mh_rows if r["GL"] is not None)
     gls = [r["GL"] for r in mh_rows if r["GL"] is not None]
-    summ = [f"Pipe layers : {', '.join(pipe_layers)} - {len(co_rows)} conduits, {chk['length']:,.1f} m",
-            f"Manholes    : {len(mh_rows)}; label from drawing {len(mh_rows) - gen}, generated {gen}"
+    summ = [f"Pipe layers : {', '.join(pipe_layers)} - {len(co_rows)} pipes, {chk['length']:,.1f} m",
+            f"Junctions   : {len(mh_rows)}; label from drawing {len(mh_rows) - gen}, generated {gen}"
             + (f" ({len(dup)} duplicate label(s))" if dup else "")
             + (f"; {renamed} drawing name(s) given the chosen prefix {node_prefix}" if renamed else "")
             + (f"; {len(by_part)} label(s) repeated in different parts of the network (two numbering series?) "
@@ -566,7 +564,7 @@ def extract(path, pipe_layers, mh_layers=(), level_layers=(), tol=0.5, level_rad
             summ.append(f"{name} : {inf['matched']} of {inf['texts']} texts placed one-to-one - pass 1 (learnt offsets) "
                         f"{inf['pass1']}, pass 2 (nearest free, CHECK) {inf['pass2_n']}; unused texts {inf['texts_unused']}")
             summ.append(f"              offsets text -> symbol (dx, dy, count) from {inf['offset_samples']} isolated "
-                        f"manholes: {inf['offsets']}")
+                        f"junctions: {inf['offsets']}")
             if inf["unused_offsets"]:
                 summ.append(f"              unused texts lie at (dx, dy ~2 m, count): {inf['unused_offsets']}")
     n_len = sum(1 for i in drop if texts[i]["layer"] in lvl_layers)
@@ -599,8 +597,8 @@ def extract(path, pipe_layers, mh_layers=(), level_layers=(), tol=0.5, level_rad
         summ.append(f"GL note     : {gi['z_ignored']}; the nodes without a GL text are filled along the pipes (auto repair)")
     if midline:
         n_sym = sum(1 for r_ in mid_log if r_[2].startswith("symbol"))
-        summ.append(f"Mid-line    : {len(mid_log)} manhole(s) drawn on a continuous line - line cut there "
-                    f"({n_sym} from symbols, {len(mid_log) - n_sym} from left-over MH labels); sheet Problems")
+        summ.append(f"Mid-line    : {len(mid_log)} junction(s) drawn on a continuous line - line cut there "
+                    f"({n_sym} from symbols, {len(mid_log) - n_sym} from left-over junction labels); sheet Problems")
     summ.append(f"Network     : {chk['parts']} part(s), {chk['loops']} loop(s), {len(chk['gaps'])} near-miss gap(s), "
                 f"{len(chk['tjoints'])} T-joint(s) without node, {chk['dead_ends']} dead ends")
     summ.append(f"Problems    : {len(prob)} (sheet Problems)")

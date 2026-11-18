@@ -184,3 +184,25 @@ def test_network_preview_is_what_the_import_makes(tmp_path):
     assert not (tmp_path / "net").exists()
     j = netedit.dxf_net_preview(p, ["PIPE"], ["node"], epsg=None, joints_only=True)["summary"]
     assert (j["junctions"], j["pipes"]) == (4, 2)
+
+
+def test_water_words_and_old_projects(tmp_path):
+    """Junctions, not manholes, in the water import's problems; loops are no problem (18-Nov-2026). A project saved
+    before keeps its old texts - they still give their issues."""
+    from water_app import repair
+    doc, msp = base()
+    msp.add_line((500.0, 0.0), (530.0, 0.0), dxfattribs={"layer": "PIPE"})
+    p = str(tmp_path / "w.dxf")
+    doc.saveas(p)
+    ex = dxf_extract.extract(p, ["PIPE"], [])
+    text = " ".join(p_["Problem"] + " " + p_["Detail"] for p_ in ex["problems"]) + " ".join(ex["summary"])
+    assert "no junction label in the drawing" in text and "Junctions   :" in text
+    assert not any(w in text for w in ("MH label", "manhole", "Manhole", "sewer", "outfall", "loop(s) in the network"))
+    net = {"nodes": {}, "conduits": [], "outfalls": []}
+    for old, new in (("no MH label in the drawing", "no junction label in the drawing"),
+                     ("MH label used by more than one node", "junction label used by more than one junction"),
+                     ("manhole on a continuous line - line cut there (check in CAD)",
+                      "junction on a continuous line - line cut there (check in CAD)")):
+        types = [[i["type"] for i in repair.check(net, {"problems": [{"Problem": t, "Item": "J-1", "X": 0.0, "Y": 0.0}]}, [])
+                  if i["item"] == "J-1"] for t in (old, new)]
+        assert types[0] == types[1] and types[0], (old, types)

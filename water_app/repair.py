@@ -377,7 +377,11 @@ def check(net, ex=None, outfalls=(), gravity=False):
 
     def add(t, item, xy, detail=""):
         out.append({"type": t, "item": item, "x": xy[0] if xy else None, "y": xy[1] if xy else None, "detail": detail})
-    kind = {"no GL": "no ground level", "no MH label in the drawing": "no drawing label (name generated)",
+    kind = {"no GL": "no ground level", "no junction label in the drawing": "no drawing label (name generated)",
+            "junction on a continuous line - line cut there": "manhole on a continuous line - check",
+            "junction label used by more than one junction": "label used twice in the drawing",
+            # as written before 0.9.34 (a saved project's problems of its import)
+            "no MH label in the drawing": "no drawing label (name generated)",
             "label matched in pass 2 - number fits": "label matched in pass 2 - low risk",
             "label matched in pass 2 (nearest free text)": "label matched in pass 2 - CHECK",
             "GL matched in pass 2 - within 1 m": "GL matched in pass 2 - low risk",

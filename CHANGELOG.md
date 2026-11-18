@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.35 (beta) - 2026-11-18
+
+- "DXF network…" (sewer and water): the panel now opens just below the bar with the tabs, so its DXF file box and
+  Browse button are in view - before, the page scrolled them under that bar.
+
 ## 0.9.34 (beta) - 2026-11-18
 
 Water supply:

@@ -45,7 +45,11 @@ function setMode(m) {
 
 // its panel is on the Network tab (user 16-Nov-2026: pressed on the Project tab, nothing seemed to happen)
 $("dxfopen").onclick = () => { if (window.uiTab) uiTab("network"); $("dxfpanel").hidden = false;
-  $("dxfpanel").scrollIntoView({ block: "start" }); $("dxfpath").focus(); };
+  // the panel just below the sticky bar (title, Simple / Advanced, tabs) - scrollIntoView put its file picker under
+  // that bar (user report 18-Nov-2026)
+  const side = $("side"), bar = $("uibar");
+  side.scrollTop += $("dxfpanel").getBoundingClientRect().top - (bar ? bar.getBoundingClientRect().bottom : side.getBoundingClientRect().top) - 8;
+  $("dxfpath").focus({ preventScroll: true }); };
 $("dxfclose").onclick = () => { $("dxfpanel").hidden = true; };
 // a DXF picked in the file dialog: uploaded as it is (the page cannot know its path), then its layers read
 // in the desktop app (app.py): Windows' own file dialog - the DXF is read where it lies, not uploaded; in a browser

@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.9.36 (beta) - 2026-11-22
+
+Water supply - Intze OHT drawings and design:
+- Sheet 2 laid out as a consultant's drawing: the tank's section at 1:30 over the sheet's height, the details in a
+  column on the right; the domes' plans with their crown; a detail of the top ring beam.
+- No text over another text, over a drawn line or off the frame (checked with the real font, for tanks from 100 to
+  3400 KL).
+- Concrete drawn as one piece (no joint lines); the cone's face runs down to the bottom ring beam's side; the top
+  dome meets the wall without a step.
+- Bars: at the top ring beam the wall's outer verticals run on into the dome's top layer and the dome's bars are
+  hooked in the beam; the stair flight's top bar stays inside the concrete; bar ends at landings and in the landing
+  beam no longer meet.
+- The top ring beam is nominal (4 - 12 #); the rest of the top dome's pull goes into the wall's top band of hoops.
+- Small tanks: the raft is made deep enough for its foundation ring beam (a 150 KL tank's drawing used to hang).
+
 ## 0.9.35 (beta) - 2026-11-18
 
 - "DXF network…" (sewer and water): the panel now opens just below the bar with the tabs, so its DXF file box and

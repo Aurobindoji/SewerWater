@@ -12,7 +12,7 @@ import re
 import urllib.request
 
 APP_NAME = "PravaahForge"                     # user request 16-Nov-2026 (was "Sewer & Water Network Design")
-APP_VERSION = "0.9.35"
+APP_VERSION = "0.9.36"
 REPO = "Aurobindoji/SewerWater"
 REPO_URL = f"https://github.com/{REPO}"
 LATEST_API = f"https://api.github.com/repos/{REPO}/releases/latest"

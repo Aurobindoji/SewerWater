@@ -297,9 +297,9 @@ output folder की files खुलती हैं।
 | भूकंप | seismic zone (default III), मिट्टी का प्रकार | IS 1893 (Part 1, Part 2) |
 | हवा | Vb (default 47 m/s) | IS 875 (Part 3) |
 | Wall पर पानी | CPHEEO की अधिकतम SWD (3 / 4 / 5 m), नीचे cone | CPHEEO Table 2.7 S.No.12, p176 |
-| आकार, annular raft, सीढ़ी, drawing की शैली | reference design (Brookfield Consultants) की practice | Reference design |
-| Braces / raft के moments | reference design report के सूत्र | Reference design report |
-| Net SBC | default 80 kN/m² (soil test आने तक) | Reference design; हर टंकी की अपनी भरें |
+| आकार, annular raft, सीढ़ी, drawing की शैली | प्रचलित practice | - |
+| Braces / raft के moments | प्रचलित सूत्र | - |
+| Net SBC | default 80 kN/m² (soil test आने तक) | हर टंकी की अपनी भरें |
 
 ### 7.5 Rates और DPR
 - **Rates**: U.P. जल निगम का Schedule of Rates 2025-26 (`R SOR 2025-26` / `sor` sheet) और UPJN का pipe rate

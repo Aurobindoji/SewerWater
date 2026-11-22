@@ -3,7 +3,7 @@
 ## 0.9.36 (beta) - 2026-11-22
 
 Water supply - Intze OHT drawings and design:
-- Sheet 2 laid out as a consultant's drawing: the tank's section at 1:30 over the sheet's height, the details in a
+- Sheet 2 laid out anew: the tank's section at 1:30 over the sheet's height, the details in a
   column on the right; the domes' plans with their crown; a detail of the top ring beam.
 - No text over another text, over a drawn line or off the frame (checked with the real font, for tanks from 100 to
   3400 KL).

@@ -186,8 +186,8 @@ const TIPS = [
                  "Read the layers of the DXF - then choose which are the sewers / pipes, manholes and levels"],
   ["#dxfclose", "यह panel बंद करें", "Close this panel"],
   ["#dxfname", "नए project का नाम", "Name of the new project"],
-  ["#dxfepsg", "Drawing के coordinates किस UTM zone के हैं: स्प्रिंगफ़ील्ड / पूर्वी UP 44N, पश्चिमी UP 43N; Local = नक्शे के बिना, केवल drawing",
-               "UTM zone of the drawing's coordinates: Springfield / eastern UP 44N, western UP 43N; Local = no map, drawing only"],
+  ["#dxfepsg", "Drawing के coordinates किस UTM zone के हैं: पूर्वी UP 44N, पश्चिमी UP 43N; Local = नक्शे के बिना, केवल drawing",
+               "UTM zone of the drawing's coordinates: eastern UP 44N, western UP 43N; Local = no map, drawing only"],
   ["#dxfimport", "चुनी layers से network बनाएँ: manholes, sewers, labels, GL - गड़बड़ियाँ नीचे की सूची में",
                  "Make the network from the chosen layers: manholes, sewers, labels, GL - the problems in the list below"],
   // DXF network tools

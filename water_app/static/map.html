@@ -101,7 +101,7 @@
       <span class="hint" style="min-width:0">Pipe</span><input type="text" id="dppre" list="pipepre" value="P-" style="width:5em"
         title="drop-down से चुनें या लिखें; खाली = P-"></div>
         <div class="row"><label>Coordinates</label><select id="dxfepsg">
-          <option value="32644">UTM 44N (EPSG 32644) - स्प्रिंगफ़ील्ड / पूर्वी UP</option>
+          <option value="32644">UTM 44N (EPSG 32644) - पूर्वी UP</option>
           <option value="32643">UTM 43N (EPSG 32643) - पश्चिमी UP</option>
           <option value="32645">UTM 45N (EPSG 32645)</option>
           <option value="local">Local (नक्शा नहीं, केवल drawing)</option></select></div>
@@ -381,13 +381,13 @@
       <div data-tab="tank">
       <div class="stepbar">Intze OHT (नई टंकियाँ) - design और drawings</div>
       <details id="izbox" style="margin:6px 0"><summary title="नई OHTs की Intze टंकी: design (working stress, IS 3370 Part 2 / IS 456 / IS 1893 Part 2 / IS 875 Part 3), GA, reinforcement और BBS की drawings - capacity और staging आख़िरी Design से">🏗 टंकियाँ और उनके inputs (खोलने के लिए यहाँ click करें)</summary>
-      <div class="row"><label title="IS 1893 (Part 1):2016 Table 3; स्प्रिंगफ़ील्ड zone III">Seismic zone</label>
+      <div class="row"><label title="IS 1893 (Part 1):2016 Table 3; default zone III">Seismic zone</label>
         <select id="izzone"><option>II</option><option selected>III</option><option>IV</option><option>V</option></select></div>
-      <div class="row"><label title="मिट्टी की net bearing capacity नींव की गहराई पर - soil test आने तक मानी गई (Brookfield की Greenfield report: 8 t/m² = 80 kN/m²)">Net SBC (kN/m²)</label>
+      <div class="row"><label title="मिट्टी की net bearing capacity नींव की गहराई पर - soil test आने तक मानी गई (default 8 t/m² = 80 kN/m²)">Net SBC (kN/m²)</label>
         <input type="number" id="izsbc" value="80" min="30" max="1000" step="5"></div>
       <div class="row"><label title="IS 1893 (Part 1) Table 4: I चट्टान / कड़ी, II मध्यम, III नरम">मिट्टी का प्रकार</label>
         <select id="izsoil"><option value="I">I कड़ी</option><option value="II" selected>II मध्यम</option><option value="III">III नरम</option></select></div>
-      <div class="row"><label title="IS 875 (Part 3):2015 Annex A; स्प्रिंगफ़ील्ड 47 m/s">हवा की गति Vb (m/s)</label>
+      <div class="row"><label title="IS 875 (Part 3):2015 Annex A; default 47 m/s">हवा की गति Vb (m/s)</label>
         <input type="number" id="izvb" value="47" min="33" max="55" step="1"></div>
       <div class="row"><label title="raft का तल ज़मीन से कितना नीचे">नींव की गहराई (m)</label>
         <input type="number" id="izdepth" value="2.7" min="1" max="6" step="0.1"></div>
@@ -397,7 +397,7 @@
         <select id="izfy"><option value="500" selected>Fe500</option><option value="415">Fe415</option></select></div>
       <div class="row"><label title="soil test से किसी टंकी की अलग SBC: नाम=मान, कॉमा से अलग, जैसे Prop-OHT-1=120, Prop-OHT-3=80">टंकी-वार SBC</label>
         <input type="text" id="izper" placeholder="Prop-OHT-1=120" style="width:11em"></div>
-      <div class="hint">Zone 14 (Brookfield) जैसी: wall पर पानी = CPHEEO max SWD, नीचे cone, balcony, annular raft, RCC सीढ़ी; हर नई OHT की staging-foundation, container, सीढ़ी और BBS की A1 sheets (DXF + PDF) और design xlsx (output\&lt;project&gt;\intze)। एक बार में एक टंकी: उसकी पंक्ति का "Design" दबाएँ। <b>निर्माण से पहले structural engineer की जाँच ज़रूरी।</b></div>
+      <div class="hint">wall पर पानी = CPHEEO max SWD, नीचे cone, balcony, annular raft, RCC सीढ़ी; हर नई OHT की staging-foundation, container, सीढ़ी और BBS की A1 sheets (DXF + PDF) और design xlsx (output\&lt;project&gt;\intze)। एक बार में एक टंकी: उसकी पंक्ति का "Design" दबाएँ। <b>निर्माण से पहले structural engineer की जाँच ज़रूरी।</b></div>
       <div id="izlist"></div>
       </details>
       </div>

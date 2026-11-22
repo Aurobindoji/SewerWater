@@ -268,10 +268,10 @@ var GUIDE_DOC = {
       ],
       fields: [
         F("Seismic zone", "Seismic zone", T("II-V", "II-V"), T("भूकंप का बल", "The earthquake force"), "IS 1893 (Part 1):2016 Table 3", "III", "IS 1893 (Part 1, 2)"),
-        F("Net SBC (kN/m²)", "Net SBC (kN/m²)", T("नींव की गहराई पर मिट्टी की net bearing capacity", "The soil's net bearing capacity at the foundation depth"), T("Raft का आकार", "The raft's size"), T("Soil test report", "Soil test report"), "80", "Reference design"),
+        F("Net SBC (kN/m²)", "Net SBC (kN/m²)", T("नींव की गहराई पर मिट्टी की net bearing capacity", "The soil's net bearing capacity at the foundation depth"), T("Raft का आकार", "The raft's size"), T("Soil test report", "Soil test report"), "80", "Default"),
         F("मिट्टी का प्रकार", "Soil type", T("I कड़ी, II मध्यम, III नरम", "I hard, II medium, III soft"), T("भूकंप का spectrum", "The earthquake spectrum"), T("Soil test", "Soil test"), "II", "IS 1893 (Part 1) Table 4"),
         F("हवा की गति Vb (m/s)", "Wind speed Vb (m/s)", T("Basic wind speed", "Basic wind speed"), T("Staging पर हवा का बल", "The wind force on the staging"), "IS 875 (Part 3) Annex A", "47", "IS 875 (Part 3):2015"),
-        F("नींव की गहराई (m)", "Foundation depth (m)", T("Raft का तल ज़मीन से नीचे", "The raft's underside below ground"), T("Soil पर भार, columns की लंबाई", "Load on the soil, the columns' length"), T("Soil test", "Soil test"), "2.7", "Reference design"),
+        F("नींव की गहराई (m)", "Foundation depth (m)", T("Raft का तल ज़मीन से नीचे", "The raft's underside below ground"), T("Soil पर भार, columns की लंबाई", "Load on the soil, the columns' length"), T("Soil test", "Soil test"), "2.7", "Default"),
         F("Concrete / steel", "Concrete / steel", T("M30 (पानी वाले), M25 (नींव / सीढ़ी), Fe500", "M30 (water-retaining), M25 (foundation / stairs), Fe500"), T("सामग्री की ताक़त", "Material strength"), "-", "M30 / M25 / Fe500", "IS 3370 (Part 1):2009 (M30 न्यूनतम)"),
         F("टंकी-वार SBC", "SBC per tank", T("किसी टंकी की अपनी SBC: Prop-OHT-1=120, …", "One tank's own SBC: Prop-OHT-1=120, …"), T("हर जगह की मिट्टी अलग", "The soil differs by site"), T("Soil test", "Soil test"), "-", "App"),
       ],

@@ -37,7 +37,7 @@ const I18N_EN = {
   "Layers पढ़ें": "Read layers",
   "बंद करें": "Close",
   "Project नाम": "Project name",
-  "UTM 44N (EPSG 32644) - स्प्रिंगफ़ील्ड / पूर्वी UP": "UTM 44N (EPSG 32644) - Springfield / eastern UP",
+  "UTM 44N (EPSG 32644) - पूर्वी UP": "UTM 44N (EPSG 32644) - eastern UP",
   "UTM 43N (EPSG 32643) - पश्चिमी UP": "UTM 43N (EPSG 32643) - western UP",
   "Local (नक्शा नहीं, केवल drawing)": "Local (no map, drawing only)",
   "Network निकालें": "Extract network",

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.37 (beta) - 2026-11-22
+
+- DPR (water and sewer): the department's name is entered once in sheet Project ("Department / implementing
+  agency", blank by default) and taken from there on the cover, certificate, Form J, salient features and the
+  signatures. The workbooks' notes give values and methods only.
+- The pages' tooltips and notes give the default values only.
+
 ## 0.9.36 (beta) - 2026-11-22
 
 Water supply - Intze OHT drawings and design:

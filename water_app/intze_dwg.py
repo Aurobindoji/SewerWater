@@ -31,6 +31,17 @@ WARN = "Design for the DPR made by the app - to be checked and signed by a struc
 B, BI = "LiberationSans-Bold", "LiberationSans"
 
 
+_FONT = []
+
+
+def tw(s, h):
+    """Width (paper mm) of the text s at the height h in the drawing's font (Liberation Sans, as the PDF writes it)."""
+    if not _FONT:
+        from ezdxf.fonts import fonts
+        _FONT.append(fonts.make_font("LiberationSans-Regular.ttf", 1.0))
+    return _FONT[0].text_width(str(s)) * h
+
+
 def fit_scale(real_w_m, real_h_m, box_w, box_h):
     for s in SCALES:
         if real_w_m * 1000.0 / s <= box_w and real_h_m * 1000.0 / s <= box_h:
@@ -114,7 +125,10 @@ class Sheet:
         self.line((x1, y), (x2, y), "DIM")
         for x in (x1, x2):
             self.line((x - 0.8, y - 0.8), (x + 0.8, y + 0.8), "DIM")
-        self.text(label, ((x1 + x2) / 2.0, y + (-1.0 if below else 1.0)), h, TA.TOP_CENTER if below else TA.BOTTOM_CENTER, "DIM")
+        if tw(label, h) > abs(x2 - x1) - 0.5:          # a short span: its text before its left end, a row off the line
+            self.text(label, (min(x1, x2) - 0.8, y + (-2.4 if below else 2.4)), h, TA.TOP_RIGHT if below else TA.BOTTOM_RIGHT, "DIM")
+        else:
+            self.text(label, ((x1 + x2) / 2.0, y + (-1.0 if below else 1.0)), h, TA.TOP_CENTER if below else TA.BOTTOM_CENTER, "DIM")
 
     def dim_across(self, p, q, label, h=1.7, off=0.0):
         """A dimension across a member from p to q (paper mm), its text beside the line, along it."""
@@ -142,20 +156,25 @@ class Sheet:
             self.line((x - 0.8, y - 0.8), (x + 0.8, y + 0.8), "DIM")
         self.text(label, (x - 1.0, (y1 + y2) / 2.0), h, TA.BOTTOM_CENTER, "DIM", rot=90)
 
-    def level(self, x, y, label, left=False, h=1.9):
+    def level(self, x, y, label, left=False, h=1.9, below=False):
+        """A level mark; its text above the line, or under it (below) when the next level up is too near."""
         s = 1.6
         self.poly([(x, y), (x - s, y + s * 1.5), (x + s, y + s * 1.5)], "LEVEL", True)
         self.line((x - (9 if left else 0), y), (x + (0 if left else 9), y), "LEVEL")
-        self.text(label, (x + (-2.6 if left else 2.6), y + 0.8), h, TA.BOTTOM_RIGHT if left else TA.BOTTOM_LEFT, "LEVEL")
+        al = (TA.TOP_RIGHT if left else TA.TOP_LEFT) if below else (TA.BOTTOM_RIGHT if left else TA.BOTTOM_LEFT)
+        self.text(label, (x + (-2.6 if left else 2.6), y + (-0.8 if below else 0.8)), h, al, "LEVEL")
 
     def leader(self, p, q, label, h=1.9, right=True, ring=0.35):
         """A note with a line to the point p, a circle of radius `ring` round it (round the bar when p is a bar)."""
+        rows = label if isinstance(label, (list, tuple)) else [label]
+        # the note inside the frame: a note placed by real metres runs off the sheet at a large scale (a small tank)
+        wmax = max((tw(r_, h) for r_ in rows), default=0.0) + 3.5
+        q = (max(q[0], 12.0 + wmax), q[1]) if not right else (min(q[0], SW - 12.0 - wmax), q[1])
         L = math.dist(p, q)
         e = (p[0] + (q[0] - p[0]) * ring / L, p[1] + (q[1] - p[1]) * ring / L) if L > ring else p
         self.line(e, q, "DIM")
         self.circle(p, ring, "DIM")
         self.line(q, (q[0] + (2.5 if right else -2.5), q[1]), "DIM")
-        rows = label if isinstance(label, (list, tuple)) else [label]
         for i, s in enumerate(rows):
             self.text(s, (q[0] + (3.2 if right else -3.2), q[1] - i * h * 1.5), h, TA.MIDDLE_LEFT if right else TA.MIDDLE_RIGHT)
 
@@ -313,10 +332,8 @@ def _container_outline(res):
     out.append((xct, lev["cone_top"]))
     xo3, xi3 = r0 + th["b3"] / 2, r0 - th["b3"] / 2
     zo = lev["cone_top"] - (xct - xo3) * ta                     # the cone's outer face at the beam's outer face
-    if zo >= lev["LWL"]:
-        out.append((xo3, zo))
-    else:
-        out += [(r0 + th["t0"] / sa, lev["LWL"]), (xo3, lev["LWL"])]
+    # the face runs on down to the beam's side, also below the beam's top: no flat ledge on the beam (user 21-Nov-2026)
+    out.append((xo3, max(zo, lev["B3_bot"] + 0.1)))
     out += [(xo3, lev["B3_bot"]), (xi3, lev["B3_bot"])]
     # the bottom dome's soffit (edge thickening), from the beam's inner face to the crown
     soff = S["bottom_dome"][41:][::-1]                           # edge -> crown
@@ -332,8 +349,14 @@ def _container_outline(res):
     # the cone's inner face, the wall's inner face, the top dome's soffit back to its crown
     out += [(R, lev["cone_top"]), (R, lev["wall_top"])]
     soff1 = S["top_dome"][41:][::-1]                             # edge -> crown
-    out.append((R, max(soff1[0][1], lev["wall_top"])))
-    out += soff1
+    # the thickened soffit carried on to the wall's inner face: it met it with a small step (user 22-Nov-2026)
+    (x0_, z0_), (x1_, z1_) = soff1[0], soff1[1]
+    if x0_ < R - 1e-9 and abs(x0_ - x1_) > 1e-9:
+        out.append((R, max(z0_ + (R - x0_) * (z0_ - z1_) / (x0_ - x1_), lev["wall_top"])))
+        out += soff1[1:]
+    else:
+        out.append((R, max(soff1[0][1], lev["wall_top"])))
+        out += soff1
     return out
 
 
@@ -378,7 +401,7 @@ def _ga(sh, res, x0, y0, bw, bh):
     for i in range(int((left + right) / 0.6)):
         x = -left + i * 0.6
         v.line((x, 0), (x - 0.3, -0.3), "THIN")
-    sh.text("G.L.", v.p(right - 0.2, 0.25), 1.8, TA.BOTTOM_RIGHT)
+    sh.text("G.L.", (v.p(-left, 0)[0] + 5.0, v.p(0, 0)[1] - 1.0), 1.8, TA.TOP_LEFT)      # under the ground, by the level dimensions
     # raft: section left, outline right; lean concrete
     v.shape(_raft_outline(res, -1.0), hatch=True)
     v.poly(_raft_outline(res, 1.0), "HIDDEN", True)
@@ -441,17 +464,22 @@ def _ga(sh, res, x0, y0, bw, bh):
             z_prev = z
     # levels on the left
     xl = v.p(-left, 0)[0] - 1.0
+    y_up = None
     for name, z in (("TOP OF DOME", lev["dome1_crown"] + th["t1"]), ("TOP OF RING BEAM", lev["B1_top"]), ("F.S.L.", lev["FSL"]),
                     ("BALCONY", lev["B2_top"]), ("L.W.L.", lev["LWL"]), ("G.L.", 0.0), ("FOUNDING LEVEL", lev["raft_bot"])):
-        sh.level(xl, v.p(0, z)[1], f"{name} {z:+.3f}", left=True, h=1.7)
+        y = v.p(0, z)[1]
+        sh.level(xl, y, f"{name} {z:+.3f}", left=True, h=1.7, below=y_up is not None and y_up - y < 5.0)
+        y_up = y
     for k, z in enumerate(g["braces"], 1):
         sh.text(f"{ordinal(k)} BRACE", (v.p(-xs_cols[-1] - dc / 2 - 0.4, z)[0], v.p(0, z)[1]), 1.6, TA.MIDDLE_RIGHT)
-    sh.text("BOTTOM RING BEAM", (v.p(-r0 - th["b3"] / 2 - 0.4, 0)[0], v.p(0, (lev["B3_bot"] + lev["LWL"]) / 2)[1]), 1.6, TA.MIDDLE_RIGHT)
+    xb_ = v.p(-r0 - th["b3"] / 2 - 0.4, 0)[0]
+    yb_ = v.p(0, (lev["B3_bot"] + lev["LWL"]) / 2)[1]
+    room = xb_ - (v.p(-left, 0)[0] + 5.0)                            # to the level dimensions on the left
+    sh.lines(["BOTTOM RING BEAM"] if tw("BOTTOM RING BEAM", 1.6) <= room else ["BOTTOM", "RING BEAM"], xb_, yb_ + 1.2, 1.6, align=TA.MIDDLE_RIGHT)
     # dimensions
     yD = v.p(0, lev["FSL"] - 1.0)[1]
     sh.dim_h(v.p(-R, 0)[0], v.p(0, 0)[0], yD, f"R = {R * 1e3:.0f}")
-    yD0 = v.p(0, lev["B3_bot"] - 1.2)[1]
-    sh.dim_h(v.p(-r0, 0)[0], v.p(0, 0)[0], yD0, f"R = {r0 * 1e3:.0f}", below=True)
+    # (the radius of the column circle: on the half plan at brace level - here its text lay over the columns)
     yR = v.p(0, lev["raft_bot"] - 0.9)[1]
     sh.dim_h(v.p(-Ro, 0)[0], v.p(-g["Ri"], 0)[0], yR, f"{(Ro - g['Ri']) * 1e3:.0f}", y_from=v.p(0, lev["raft_bot"])[1], below=True)
     sh.dim_h(v.p(-g["Ri"], 0)[0], v.p(0, 0)[0], yR, f"R = {g['Ri'] * 1e3:.0f}", below=True)
@@ -606,8 +634,8 @@ def _raft_section(sh, res, x0, y0, bw, bh):
         xcol = r0 + sg * (dc / 2 - 0.06)
         sh.poly([(px(xcol), pz(t + 1.3)), (px(xcol), pz(cb + 0.1)), (px(xcol + sg * 0.35), pz(cb + 0.1))], "REBAR")
     # labels
-    sh.leader((px(rfo + rf["ao"] * 0.5), pz(c)), (px(rfo + rf["ao"] * 0.3), pz(t + 0.25)),
-              f"{nb(rf['rad'])} RADIALLY @ {rf['rad_sp']} C/C", 1.8)
+    sh.leader((px(rfo + rf["ao"] * 0.5), pz(c)), (px(rfo + rf["ao"] * 0.85), pz(t + 0.15)),
+              f"{nb(rf['rad'])} RADIALLY @ {rf['rad_sp']} C/C", 1.8, right=False)      # away from the column
     sh.leader((px(rfo + rf["ao"] * 0.55), pz(_raft_t(res, rfo + rf["ao"] * 0.55) - c)), (px(rfo + rf["ao"] * 0.7), pz(t + 0.75)),
               [at(rf["top_rad"], "RADIALLY"), at(rf["top_hoop"], "HOOPS")], 1.8, right=False)
     sh.leader_rows(dtop, rtop, (px(rfi - 0.5), pz(t + 1.15)), f"{nb(rr['top'])} HOOPS", 1.8)
@@ -620,17 +648,18 @@ def _raft_section(sh, res, x0, y0, bw, bh):
     sh.text(f"{math.ceil(rf['ao'] / hs)} - {rf['hoop'][0]} # HOOPS", ((px(Ro) + px(rfo)) / 2, yd - 3.2), 1.7, TA.MIDDLE_CENTER)
     sh.dim_h(px(rfo), px(rfi), yd, f"{bR * 1e3:.0f}", y_from=pz(-0.1))
     ra = rfi
-    for L, n_ in rf["zones_in"]:
+    for i, (L, n_) in enumerate(rf["zones_in"]):
         sh.dim_h(px(ra), px(ra - L), yd, f"{L * 1e3:.0f}", y_from=pz(-0.1))
-        sh.text(f"{math.ceil(L / hs)} - {rf['hoop'][0]} # HOOPS", ((px(ra) + px(ra - L)) / 2, yd - 3.2), 1.7, TA.MIDDLE_CENTER)
-        sh.text(f"{n_} - {rf['rad'][1]} #", ((px(ra) + px(ra - L)) / 2, yd - 6.4), 1.7, TA.MIDDLE_CENTER)
+        dy = 7.0 if i % 2 and L * k < tw("13 - 12 # HOOPS", 1.7) + 2 else 0.0    # a narrow zone: its notes a row lower than the last
+        sh.text(f"{math.ceil(L / hs)} - {rf['hoop'][0]} # HOOPS", ((px(ra) + px(ra - L)) / 2, yd - 3.2 - dy), 1.7, TA.MIDDLE_CENTER)
+        sh.text(f"{n_} - {rf['rad'][1]} #", ((px(ra) + px(ra - L)) / 2, yd - 6.4 - dy), 1.7, TA.MIDDLE_CENTER)
         sh.line((px(ra - L), pz(c) - 1.0), (px(ra - L), pz(c) + 1.0), "REBAR")
         ra -= L
-    sh.dim_h(px(Ro), px(Ri), yd - 11, f"R = {Ro * 1e3:.0f} (OUTER), R = {Ri * 1e3:.0f} (INNER)")
+    sh.dim_h(px(Ro), px(Ri), yd - 19, f"R = {Ro * 1e3:.0f} (OUTER), R = {Ri * 1e3:.0f} (INNER)")
     xv = px(Ri) + 7
     sh.dim_v(pz(0), pz(te), xv, f"{te * 1e3:.0f}", x_from=px(Ri))
     sh.dim_v(pz(0), pz(t), px(Ro) - 6, f"{t * 1e3:.0f}", h=1.7)
-    sh.text("100 P.C.C.", (px(Ro + 0.1) - 1, pz(-0.05)), 1.6, TA.MIDDLE_RIGHT)
+    sh.text("100 P.C.C.", (px(Ro + 0.1) - 1, pz(-0.1) - 2.5), 1.6, TA.MIDDLE_RIGHT)    # under the P.C.C., off the dimension
     sh.heading("SECTION 2 - 2 (RAFT)", (x0 + bw / 2, y0 + 4), 2.8, f"SCALE 1:{s}")
 
 
@@ -729,8 +758,11 @@ def _lsec(sh, x0, y0, s, span, col_w, beam_d, up, down, stir, legs, top, bot, ri
     sh.dim_h(X(0), X(span), Z(-down) - 6 if down else Z(0) - 8, f"{span * 1e3:.2f}", y_from=Z(-down) if down else Z(0), below=True)
     sh.dim_h(X(-col_w / 2), X(col_w / 2), Z(beam_d + up) + 4, f"{col_w * 1e3:.0f}", y_from=Z(beam_d + up))
     sh.dim_v(Z(0), Z(beam_d), X(span + col_w / 2 + ov) + 6, f"{beam_d * 1e3:.0f}", x_from=X(span + col_w / 2 + ov))
-    sh.leader((X(span * 0.5), Z(beam_d - c)), (X(span * 0.5) + 4, Z(beam_d + max(up, 0.5) * 0.75)), top, 1.8)
-    sh.leader((X(span * 0.42), Z(c)), (X(span * 0.42) - 3, Z(-max(down, 0.6) * 0.55)), bot, 1.8, right=False)
+    # the notes of the top / bottom bars in the clear span between the columns, not across a column (checked: no text
+    # over a line, 21-Nov-2026): the top one from the left column's face to the right, the bottom one from the right
+    # column's face to the left
+    sh.leader((X(span * 0.5), Z(beam_d - c)), (X(col_w / 2) + 3, Z(beam_d + max(up, 0.5) * 0.75)), top, 1.8)
+    sh.leader((X(span * 0.42), Z(c)), (X(span - col_w / 2) - 3, Z(-max(down, 0.6) * 0.55) if down else Z(0) - 4), bot, 1.8, right=False)
     sh.text(f"({n_e} + {n_mid} + {n_e}) - {stir[0]} # {legs}-LEGGED STIRRUPS @ {stir[1]} / {stir[2]} C/C", (X(span / 2), Z(beam_d / 2)), 1.7, TA.MIDDLE_CENTER)
     yt = Z(beam_d + up * 0.55) if up else Z(-down * 0.5)
     sh.leader((X(span + col_w / 2 - 0.05), yt), (X(span + col_w / 2) + 6, yt), ring_txt, 1.7)
@@ -873,6 +905,43 @@ def _sheet_staging(dw, res, info):
 
 
 # ------------------------------------------------------------------------------------------- sheet 2: the container
+def _ring_bars(res, z_from):
+    """The bars at the top ring beam, as the example's detail (user 22-Nov-2026), real m: the dome's middle bar on
+    along its own line into the beam, hooked there; the dome's extra top bars at the edge into the beam and down its
+    outer side; the wall's outer vertical up and bent into the dome's top layer (a lap); the wall's inner vertical
+    up and bent out over the beam's bottom. z_from: where the wall's bars start. -> [(points, ends, inside)]."""
+    g, lev, th, opt = res["geo"], res["levels"], res["geo"]["th"], res["opt"]
+    R, cw = g["R"], opt["cover_water_mm"] / 1e3
+    S = _shapes(res)
+    zc1, R1, a1 = S["dome1"]
+    zw, zt = lev["wall_top"], lev["B1_top"]
+    xb1 = R + max(th["b1"], th["tw"])
+    tw, edge = th["tw"], res["members"]["top_dome"]["edge"]
+    mid_b = ((R + xb1) / 2, (zw + zt) / 2)
+    circ = lambda r_, x: (x, zc1 + math.sqrt(max(r_ * r_ - x * x, 0.0)))
+    out = []
+    # the dome's mesh bar (its middle, a little under it): on along its line past the wall's face to the beam's bottom
+    rm = R1 + th["t1"] / 2 - 0.012
+    pts = [circ(rm, R - 1.2 + 1.2 * i / 12) for i in range(13)]
+    (xa, za), (xb, zb) = pts[-2], pts[-1]
+    L = math.dist((xa, za), (xb, zb))
+    ux, uz = (xb - xa) / L, (zb - za) / L
+    t_end = min(((zw + cw + 0.05) - zb) / uz if uz < 0 else 9.0, ((xb1 - cw - 0.05) - xb) / ux if ux > 0 else 9.0)
+    out.append((pts + [(xb + ux * t_end, zb + uz * t_end)], (False, True), mid_b))
+    # the wall's outer vertical IS the dome's extra top bar at the edge (as the example): up the wall's outer face,
+    # through the beam under its top bars, and on in the dome's top layer for the edge's length
+    rt = R1 + th["t1"] - cw
+    zr = zt - cw - 0.04                                       # under the beam's top bars
+    xo = R + tw - cw
+    xc = min(math.sqrt(max(rt * rt - (zr - zc1) ** 2, 0.0)), xo - 0.04)
+    top = [circ(rt, xc - (xc - (R - edge)) * i / 20) for i in range(21)]
+    out.append(([(xo, z_from), (xo, zr)] + top, (False, False), mid_b))
+    # the wall's inner vertical: up over the beam's bottom bars, bent out along the beam
+    zi = zw + cw + 0.035                                      # over the beam's bottom bars
+    out.append(([(R + cw, z_from), (R + cw, zi), (R + 0.55 * tw, zi)], (False, True), mid_b))   # short: not over the outer bar
+    return out
+
+
 def _tank_section(sh, res, x0, y0, bw, bh):
     g, lev, th, M, opt = res["geo"], res["levels"], res["geo"]["th"], res["members"], res["opt"]
     R, r0 = g["R"], g["r0"]
@@ -882,14 +951,9 @@ def _tank_section(sh, res, x0, y0, bw, bh):
     zb = lev["B3_bot"] - 1.0
     height = lev["dome1_crown"] - zb + 0.8
     s = fit_scale(width, height, bw - 46, bh - 16)
-    v = View(sh, x0 + 6, y0 + 14, s, 0.0, zb)
+    v = View(sh, x0 + 6, y0 + bh - 4 - height * 1000.0 / s, s, 0.0, zb)   # its top at the box's top
     v.shape(_container_outline(res))
-    # the members' joints, thin: where one member's concrete ends and the next begins
-    for (xa_, za_), (xb_, zb_) in (((R, lev["wall_top"]), (R + max(th["b1"], th["tw"]), lev["wall_top"])),
-                                   ((R, lev["B2_top"]), (R + th["twb"], lev["B2_top"])),
-                                   ((R, lev["cone_top"]), (R + th["t0"] / math.sin(g["alpha"]), lev["cone_top"])),
-                                   ((r0 - th["b3"] / 2, lev["LWL"]), (r0 + th["b3"] / 2, lev["LWL"]))):
-        v.line((xa_, za_), (xb_, zb_), "THIN")
+    # (no joint lines on the concrete: wall, beams, balcony and cone are cast as one - user 22-Nov-2026)
     v.line((0, zb + 0.3), (0, lev["dome1_crown"] + 0.6), "CENTER")
     sh.text("C.L. OF TANK", v.p(0.1, lev["dome1_crown"] + 0.45), 1.7)
     v.line((0, lev["FSL"]), (R, lev["FSL"]), "WATER")
@@ -905,22 +969,22 @@ def _tank_section(sh, res, x0, y0, bw, bh):
     td, bd = M["top_dome"], M["bottom_dome"]
     rm = R1 + th["t1"] / 2
     mid1 = [(rm * math.sin(a1 * i / 60), zc1 + rm * math.cos(a1 * i / 60)) for i in range(61)]
-    end1 = mid1[-1]
     b1c = ((b1a + b1b) / 2, (b1z0 + b1z1) / 2)
-    inner = [q_ for q_ in mid1 if q_[0] <= R]
-    hooked(v, inner + [(R + cw, b1z1 - cw), (b1b - cw, b1z1 - cw), (b1b - cw, b1z0 + cw)], ends=(False, True), inside=b1c)
-    v.dots(mid1[:-2], td["hoop"][1] / 1e3, 0.3)
-    e1 = [(x - 0.02, z - 0.035) for x, z in inner if math.dist((x, z), end1) <= td["edge"]]
-    d_ = 0.035
-    hooked(v, e1 + [(R + cw + d_, b1z1 - cw - d_), (b1b - cw - d_, b1z1 - cw - d_), (b1b - cw - d_, b1c[1])], inside=b1c)
+    # the top ring beam's joint as the example's (user 22-Nov-2026, _ring_bars): the dome's bar on into the beam and
+    # hooked; the wall's outer vertical through the beam into the dome's top layer; the inner one bent short; the
+    # beam's corner bars only (all its bars: the detail of the top ring beam)
+    zfoot = lev["cone_top"] + cw + 0.03
+    rbars = _ring_bars(res, zfoot)
+    mbar = [q_ for q_ in mid1 if q_[0] < R - 1.2] + rbars[0][0]          # the dome's middle bar, crown to its hook
+    hooked(v, mbar, ends=(False, True), inside=b1c)
+    v.dots([q_ for q_ in mbar if q_[0] <= R - 0.05], td["hoop"][1] / 1e3, 0.3)
     # wall: verticals from the balcony ring (L at the foot) into the top ring beam (L at the top)
     w = M["wall"]
     zt = S["wall"][2][1]
-    zfoot = lev["cone_top"] + cw + 0.03
     wc = lambda z_: (R + th["tw"] / 2, z_)            # a point in the wall at the level z_
-    hooked(v, [(R + cw, zfoot), (R + cw, b1z1 - cw - 0.03)], inside=(wc(zfoot), b1c))
-    hooked(v, [(R + th["twb"] - cw, zfoot), (R + th["twb"] - cw, lev["B2_top"]), (R + th["tw"] - cw, zt),
-               (R + th["tw"] - cw, b1z1 - cw - 0.03)], inside=(wc(zfoot), b1c))
+    ob = rbars[1][0]                                  # the outer vertical: its taper at the base, then as the detail
+    hooked(v, [(R + th["twb"] - cw, zfoot), (R + th["twb"] - cw, lev["B2_top"]), (R + th["tw"] - cw, zt)] + ob[1:], ends=(False, False))
+    hooked(v, rbars[2][0], ends=rbars[2][1], inside=b1c)
     for z in w["zones"]:
         za, zb_ = lev["wall_top"] - z["top"], max(lev["wall_top"] - z["top"] - z["len"], lev["B2_top"] + 0.03)
         v.dots([(R + cw + 0.03, za), (R + cw + 0.03, zb_)], z["sp"] / 1e3, 0.3)
@@ -981,11 +1045,12 @@ def _tank_section(sh, res, x0, y0, bw, bh):
     bar_row(sh, v.p(b3a + c3 + 0.04, 0)[0], v.p(b3b - c3 - 0.04, 0)[0], v.p(0, b3z1 - c3 - 0.03)[1], br["top"][0], rb, -1.0)
     b3dots = bar_row(sh, v.p(b3a + c3 + 0.04, 0)[0], v.p(b3b - c3 - 0.04, 0)[0], v.p(0, b3z0 + c3 + 0.03)[1], br["bot"][0], rb, 1.0)
     tr_ = M["top_ring"]
-    nside = tr_["n"] // 2
-    for xx in (b1a + cw + 0.03, b1b - cw - 0.03):
-        for i in range(nside):
-            zz = b1z0 + cw + 0.03 + i * (b1z1 - b1z0 - 2 * cw - 0.06) / max(1, nside - 1)
-            sh.dot(v.p(xx, zz), 0.4)
+    # the hoop bars in a row at the top and one at the bottom, as the beam's own cross-section (TOP RING BEAM) shows
+    # them - five a face up its 200 depth ran together (user 21-Nov-2026)
+    rr_ = 0.35 / v.k + 0.004                         # the corner bars, inside the stirrup's corners
+    for xx in (b1a + cw + 2 * rr_, b1b - cw - 2 * rr_):
+        for zz in (b1z1 - cw - rr_, b1z0 + cw + rr_):
+            sh.dot(v.p(xx, zz), 0.35)
     # ---- thicknesses of the members
     tz = lev["wall_top"] - 0.45
     sh.dim_across(v.p(R, tz), v.p(R + th["tw"], tz), f"{th['tw'] * 1e3:.0f}")
@@ -1003,18 +1068,19 @@ def _tank_section(sh, res, x0, y0, bw, bh):
         p_out = ((r_in + tt) * math.sin(a_m), zc_ + (r_in + tt) * math.cos(a_m))
         sh.dim_across(v.p(*p_in), v.p(*p_out), f"{tt * 1e3:.0f}")
     (b1a_, b1z0_), _, (b1b_, b1z1_), _ = S["B1"]
-    sh.dim_across(v.p(b1b_, b1z0_), v.p(b1b_, b1z1_), f"{th['d1'] * 1e3:.0f}")
+    sh.dim_v(v.p(0, b1z0_)[1], v.p(0, b1z1_)[1], v.p(b1b_, 0)[0] + 3, f"{th['d1'] * 1e3:.0f}", x_from=v.p(b1b_, 0)[0], h=1.6)   # beside the beam
     (b3a_, b3z0_), _, (b3b_, b3z1_), _ = S["B3"]
-    sh.dim_across(v.p(b3a_, b3z0_), v.p(b3b_, b3z0_), f"{th['b3'] * 1e3:.0f}")
-    sh.dim_across(v.p(b3a_, b3z0_), v.p(b3a_, b3z1_), f"{th['d3'] * 1e3:.0f}")
+    sh.dim_h(v.p(b3a_, 0)[0], v.p(b3b_, 0)[0], v.p(0, b3z0_)[1] - 3, f"{th['b3'] * 1e3:.0f}", below=True)   # under the beam, between the column's faces
+    sh.dim_v(v.p(0, b3z0_)[1], v.p(0, b3z1_)[1], v.p(b3a_ - 0.15, 0)[0], f"{th['d3'] * 1e3:.0f}", x_from=v.p(b3a_, 0)[0], h=1.7)
     # ---- labels (inside the tank, as on the example) and dimensions
     pm = mid1[30]
-    sh.leader_bar(v.p(*pm), v.p(pm[0] * 0.75, pm[1] - 1.5), [at(td["rad"], "RADIALLY"), at(td["hoop"], "HOOPS"), f"TOP DOME {td['t']} THICK ({td['te']} AT THE EDGE)"], 1.9)
+    q_ = v.p(*pm)
+    sh.leader_bar(q_, (q_[0] + 6, q_[1] + 16), [at(td["rad"], "RADIALLY"), at(td["hoop"], "HOOPS"), f"TOP DOME {td['t']} THICK ({td['te']} AT THE EDGE)"], 1.9)
     pe = mid1[57]
-    sh.leader_bar(v.p(*pe), v.p(pe[0] - 2.2, pe[1] - 0.2), [f"{math.ceil(td['edge'] * 1e3 / td['edge_hoop'][1])} - {td['edge_hoop'][0]} # HOOPS",
-              f"{math.ceil(2 * math.pi * R * 1e3 / td['edge_rad'][1])} - {at(td['edge_rad'], 'RADIALLY')}", f"AT TOP, IN {td['edge'] * 1e3:.0f} FROM THE EDGE"], 1.8, right=False)
+    sh.leader_bar(v.p(*pe), (v.p(R + th["b1"] + 0.5, 0)[0], v.p(0, lev["B1_top"] + 0.6)[1] + 10), [f"{math.ceil(td['edge'] * 1e3 / td['edge_hoop'][1])} - {td['edge_hoop'][0]} # HOOPS",
+              f"{math.ceil(2 * math.pi * R * 1e3 / td['edge_rad'][1])} - {at(td['edge_rad'], 'RADIALLY')}", f"AT TOP, IN {td['edge'] * 1e3:.0f} FROM THE EDGE"], 1.8)
     sh.leader_bar(v.p(R + th["b1"] / 2, lev["B1_top"] - 0.05), v.p(R + th["b1"] + 0.5, lev["B1_top"] + 0.6),
-              [f"TOP RING BEAM {tr_['b']} x {tr_['d']}", f"{nb((tr_['n'], tr_['dia']))} HOOPS, 8 # STR @ 200 C/C"], 1.9)
+              [f"TOP RING BEAM {tr_['b']} x {tr_['d']}", f"{nb((tr_['n'], tr_['dia']))} HOOPS, 8 # STR @ 200 C/C", "(SEE ITS DETAIL)"], 1.9)
     xz = v.p(R + th["twb"] + 0.25, 0)[0] + 1
     for z in w["zones"]:
         za, zb_ = lev["wall_top"] - z["top"], lev["wall_top"] - z["top"] - z["len"]
@@ -1025,17 +1091,21 @@ def _tank_section(sh, res, x0, y0, bw, bh):
             sh.text(f"{z['n']} - {z['dia']} # HOOPS ON EACH FACE (LOWEST {z['len'] * 1e3:.0f})", (v.p(R - 0.3, 0)[0], v.p(0, (za + zb_) / 2 + 0.25)[1]), 1.8, TA.MIDDLE_RIGHT)
     nv = lambda dia_sp, dd: f"{math.ceil(math.pi * dd * 1e3 / dia_sp[1])} - {dia_sp[0]} # @ {dia_sp[1]} C/C"
     zm = (lev["wall_top"] + lev["B2_top"]) / 2 + 0.6
-    sh.leader(v.p(R + cw, zm), v.p(R - 1.2, zm + 0.5), [nv(w["vert"], 2 * R), "VERTICAL, EACH FACE"], 1.8, right=False)
+    sh.leader(v.p(R + cw, zm), v.p(R - 1.2, zm + 0.5), [f"WALL {w['t']} THICK, {w['tb']} AT THE BASE", nv(w["vert"], 2 * R), "VERTICAL, EACH FACE"], 1.8, right=False)
     sh.leader(v.p(R + cw, lev["B2_top"] + 0.35), v.p(R - 1.2, lev["B2_top"] + 0.95), [nv(w["base_in"], 2 * R), f"VERTICAL AT THE BASE, WATER FACE, {w['base_len'] * 1e3:.0f} LONG"], 1.8, right=False)
-    sh.text(f"WALL {w['t']} THICK, {w['tb']} AT THE BASE", (v.p(R - 0.3, 0)[0], v.p(0, zm + 1.6)[1]), 1.9, TA.MIDDLE_RIGHT)
-    sh.leader_bar(v.p(g["bal_edge"] - 0.3, lev["B2_top"] - cw), v.p(g["bal_edge"] - 0.2, lev["B2_top"] + 1.5),
+    sh.leader_bar(v.p(g["bal_edge"] - 0.3, lev["cone_top"] + cw), v.p(R - 0.1, lev["cone_top"] - 0.9),
               [f"BALCONY {bl['w'] * 1e3:.0f} WIDE, {bl['t']} THICK", f"{nb((bl['n'], bl['dia']))} HOOPS", at(bl["rad"], "RADIALLY") + " AT TOP", at(bl["dist"], "RADIALLY") + " AT BOTTOM"], 1.8)
     pc = ((r0 + R) / 2 + nx * cw, (lev["LWL"] + lev["cone_top"]) / 2 + nz * cw)
-    sh.leader_bar(v.p(*pc), v.p(pc[0] - 3.0, pc[1] + 1.3), [f"CONICAL DOME {cn['t']} THICK", f"{cn['n_low']} - {cn['hoop_low'][0]} # HOOPS @ {cn['hoop_low'][1]} (LOWER HALF) AND",
+    # its note inside the tank, over the bottom dome: raised where the dome would run through it (a small tank)
+    zq, wq = pc[1] + 1.3, tw("4 - 12 # HOOPS @ 150 (UPPER HALF) ON EACH FACE", 1.8) / v.k   # the note's width (m)
+    xl_ = max(0.0, pc[0] - 3.0 - wq)
+    zd = zc2 + math.sqrt(max(R2 * R2 - xl_ * xl_, 0.0))              # the dome's top at the note's left end
+    zq = max(zq, zd + th["t2"] + 4 * 1.8 * 1.5 / v.k + 0.1)
+    sh.leader_bar(v.p(*pc), v.p(pc[0] - 3.0, zq), [f"CONICAL DOME {cn['t']} THICK", f"{cn['n_low']} - {cn['hoop_low'][0]} # HOOPS @ {cn['hoop_low'][1]} (LOWER HALF) AND",
               f"{cn['n_up']} - {cn['hoop_up'][0]} # HOOPS @ {cn['hoop_up'][1]} (UPPER HALF) ON EACH FACE",
               f"{math.ceil(math.pi * (R + r0) * 1e3 / cn['mer'][1])} - {at(cn['mer'], 'RADIALLY')} ON EACH FACE"], 1.8, right=False)
     pb = ((R2 - cw) * math.sin(a2 * 0.45), zc2 + (R2 - cw) * math.cos(a2 * 0.45))
-    sh.leader_bar(v.p(*pb), v.p(pb[0] - 1.0, pb[1] + 1.6), [f"BOTTOM DOME {bd['t']} THICK ({bd['te']} AT THE EDGE)", at(bd["rad"], "RADIALLY") + " AND", at(bd["hoop"], "HOOPS") + " ON EACH FACE"], 1.9)
+    sh.leader_bar(v.p(*pb), v.p(pb[0] - 0.3, pb[1] - 1.0), [f"BOTTOM DOME {bd['t']} THICK ({bd['te']} AT THE EDGE)", at(bd["rad"], "RADIALLY") + " AND", at(bd["hoop"], "HOOPS") + " ON EACH FACE"], 1.9, right=False)
     pe2 = ((R2 - cw) * math.sin(a2 * 0.93), zc2 + (R2 - cw) * math.cos(a2 * 0.93))
     sh.leader_bar(v.p(*pe2), v.p(pe2[0] - 3.2, pe2[1] - 1.1), [f"{math.ceil(bd['edge'] * 1e3 / bd['edge_hoop'][1])} - {bd['edge_hoop'][0]} # HOOPS AND",
               f"{math.ceil(2 * math.pi * r0 * 1e3 / bd['edge_rad'][1])} - {at(bd['edge_rad'], 'RADIALLY')}", f"AT TOP, IN {bd['edge'] * 1e3:.0f} FROM THE EDGE"], 1.8, right=False)
@@ -1049,25 +1119,48 @@ def _tank_section(sh, res, x0, y0, bw, bh):
     xd = v.p(0, 0)[0] + 9
     for z1, z2 in ((lev["LWL"], lev["dome2_crown"]),):
         sh.dim_v(v.p(0, z1)[1], v.p(0, z2)[1], xd, f"{(z2 - z1) * 1e3:.0f}", h=1.7)
-    xr = v.p(g["bal_edge"], 0)[0] + 30
+    xr = v.p(g["bal_edge"], 0)[0] + 58
     for z1, z2 in ((lev["B3_bot"], lev["LWL"]), (lev["LWL"], lev["cone_top"]), (lev["cone_top"], lev["B2_top"]), (lev["B2_top"], lev["wall_top"]),
                    (lev["wall_top"], lev["B1_top"]), (lev["B1_top"], lev["dome1_crown"])):
         sh.dim_v(v.p(0, z1)[1], v.p(0, z2)[1], xr, f"{(z2 - z1) * 1e3:.0f}", h=1.7)
-    sh.heading("SECTION OF TANK", (x0 + bw / 2 - 20, y0 + 4), 3.0, f"SCALE 1:{s}")
+    sh.heading("SECTION OF TANK", (x0 + bw / 2 - 20, max(y0 + 4, yb - 14)), 3.0, f"SCALE 1:{s}")   # just under the view
 
 
 def _dome_plan(sh, res, key, x0, y0, bw, bh, title):
     g, m = res["geo"], res["members"][key]
     a = g["R"] if key == "top_dome" else g["r0"]
-    s = fit_scale(a + 0.3, 1.0, bw - 16, 1e9)
+    rc = round(min(1.5, max(0.8, a / 8)), 1)              # the crown, drawn whole (as the example's)
+    s = fit_scale(a + 0.3 + rc, 1.0, bw - 16, 1e9)
+    k = 1000.0 / s
     n = math.ceil(2 * math.pi * a * 1e3 / m["rad"][1])
     ne = math.ceil(2 * math.pi * a * 1e3 / m["edge_rad"][1])
-    P, hphi = _sector(sh, x0 + bw - 8, y0 + bh / 2 + 4, s, 0.0, a, min(bh - 34, 46),
-                      [(a / 2, a, n), (0.25, a / 2, max(4, n // 2)), (a - m["edge"], a, ne)],
-                      [(0.3, a - m["edge"], m["hoop"][1] / 1e3), (a - m["edge"], a, m["edge_hoop"][1] / 1e3)])
-    pm = P(a * 0.62, -hphi)
-    sh.text(f"{at(m['hoop'], 'HOOPS')};  {n} - {at(m['rad'], 'RADIALLY')} AT THE EDGE, ALTERNATE BARS STOP HALF WAY", (P(a, -hphi)[0], pm[1] - 7.5), 1.7)
-    sh.text(f"EDGE {m['edge'] * 1e3:.0f}: {math.ceil(m['edge'] * 1e3 / m['edge_hoop'][1])} - {m['edge_hoop'][0]} # HOOPS, {ne} - {at(m['edge_rad'], 'RADIALLY')} AT TOP", (P(a, -hphi)[0], pm[1] - 11), 1.7)
+    narrow = tw(f"{at(m['hoop'], 'HOOPS')};  {n} - {at(m['rad'], 'RADIALLY')} AT THE EDGE, ALTERNATE BARS STOP HALF WAY", 1.7) > bw - 4
+    xt, yt = x0 + bw - 8 - rc * k, y0 + bh / 2 + (10 if narrow else 4)
+    P, hphi = _sector(sh, xt, yt, s, 0.0, a, min(bh - 34, 46),
+                      [(a / 2, a, n), (rc, a / 2, max(4, n // 2)), (a - m["edge"], a, ne)],
+                      [(rc, a - m["edge"], m["hoop"][1] / 1e3), (a - m["edge"], a, m["edge_hoop"][1] / 1e3)])
+    # the crown in plan: its circle, the radial bars across it (every one of those that reach it is drawn as far as
+    # the ring next to the centre) and the hoops at the dome's spacing
+    sh.circle((xt, yt), rc * k, "OUTLINE")
+    nr = max(4, n // 2)
+    step = max(1, nr // 36)                                # at most 36 lines: the drawing stays readable
+    for j in range(0, nr, step):
+        t = 2 * math.pi * j / nr
+        r1 = 0.15 * k
+        sh.line((xt + r1 * math.cos(t), yt + r1 * math.sin(t)), (xt + rc * k * math.cos(t), yt + rc * k * math.sin(t)), "REBAR2")
+    r_ = m["hoop"][1] / 1e3
+    while r_ < rc:
+        sh.circle((xt, yt), r_ * k, "REBAR2")
+        r_ += m["hoop"][1] / 1e3
+    sh.dim_h(xt, xt + rc * k, yt - rc * k - 3, f"{rc * 1e3:.0f}", y_from=yt, below=True)
+    pm = P(a, -hphi)                                       # the notes under the sector's lowest corner
+    pm = (pm[0], pm[1] + 3.5)
+    rows = [f"{at(m['hoop'], 'HOOPS')};  {n} - {at(m['rad'], 'RADIALLY')} AT THE EDGE, ALTERNATE BARS STOP HALF WAY",
+            f"EDGE {m['edge'] * 1e3:.0f}: {math.ceil(m['edge'] * 1e3 / m['edge_hoop'][1])} - {m['edge_hoop'][0]} # HOOPS, {ne} - {at(m['edge_rad'], 'RADIALLY')} AT TOP"]
+    if tw(rows[0], 1.7) > bw - 4:                            # a narrow plan: shorter lines
+        rows = [f"{at(m['hoop'], 'HOOPS')};  {n} - {at(m['rad'], 'RADIALLY')}", "AT THE EDGE, ALTERNATE BARS STOP HALF WAY",
+                f"EDGE {m['edge'] * 1e3:.0f}: {math.ceil(m['edge'] * 1e3 / m['edge_hoop'][1])} - {m['edge_hoop'][0]} # HOOPS,", f"{ne} - {at(m['edge_rad'], 'RADIALLY')} AT TOP"]
+    sh.lines(rows, P(a, -hphi)[0], pm[1] - 7.5, 1.7, step=3.3)
     sh.heading(title, (x0 + bw / 2, y0 + 4), 2.6, f"SCALE 1:{s}")
 
 
@@ -1106,7 +1199,7 @@ def _small_details(sh, res, x0, y0):
     sh.heading("STEEL LADDER (INSIDE THE TANK)", (x2 + 40, y2), 2.4)
     sh.poly([(x2 + 8, y2 + 18), (x2 + 8, y2 + 12), (x2 + 72, y2 + 12), (x2 + 72, y2 + 18)])
     sh.leader((x2 + 30, y2 + 12), (x2 + 34, y2 + 22), "20 DIA M.S. BARS @ 250 C/C", 1.6)
-    sh.leader((x2 + 8, y2 + 14), (x2 + 4, y2 + 8), "ISA 50x50x6", 1.6)
+    sh.leader((x2 + 8, y2 + 14), (x2 + 3, y2 + 21), "ISA 50x50x6", 1.6, right=False)
     sh.dim_h(x2 + 8, x2 + 72, y2 + 8, "600", below=True)
     # pipe fixing
     x3 = x0 + 122
@@ -1121,25 +1214,86 @@ def _small_details(sh, res, x0, y0):
     sh.leader((x3 + 39, y2 + 30), (x3 + 58, y2 + 26), ["PIPE WITH PUDDLE COLLAR", "4 - 10 # HOOPS", "16 - 10 #, 1500 LONG", "8 # STIRRUPS IN THE DOME'S THICKENING"], 1.6)
 
 
+def _ring_detail(sh, res, x0, y0, bw, bh):
+    """DETAIL OF TOP RING BEAM (user 22-Nov-2026, as the example's): the beam with a piece of the top dome and of the
+    wall, large enough to see every bar - the dome's two layers anchored down the beam's outer side, the wall's
+    verticals bent into the beam, the beam's hoop bars in a row at the top and one at the bottom inside its stirrup."""
+    g, lev, th, M, opt = res["geo"], res["levels"], res["geo"]["th"], res["members"], res["opt"]
+    R, cw = g["R"], opt["cover_water_mm"] / 1e3
+    S = _shapes(res)
+    zc1, R1, a1 = S["dome1"]
+    tr_ = M["top_ring"]
+    b1, d1, tw = th["b1"], th["d1"], th["tw"]
+    xb1 = R + max(b1, tw)
+    zw, zt = lev["wall_top"], lev["B1_top"]
+    Ls, Lw = 0.42, 0.30                                          # the pieces of the dome and the wall shown
+    Ru = R1 + th["t1"]
+    xl = R - Ls
+    s = fit_scale(Ls + max(b1, tw) + 0.2, (zc1 + math.sqrt(Ru * Ru - xl * xl)) - (zw - Lw) + 0.15, bw - 70, bh - 18)
+    v = View(sh, x0 + 4, y0 + 16, s, xl, zw - Lw)
+    # ---- concrete: one outline, the cut ends as break lines
+    xe = min(math.sqrt(max(Ru * Ru - (zt - zc1) ** 2, 0.0)), xb1)
+    up = [(xl + (xe - xl) * i / 20, zc1 + math.sqrt(max(Ru * Ru - (xl + (xe - xl) * i / 20) ** 2, 0.0))) for i in range(21)]
+    soff = [q for q in S["top_dome"][41:] if q[0] >= xl]          # crown -> edge, the thickened soffit
+    (x0_, z0_), (x1_, z1_) = soff[-1], soff[-2]
+    zR = z0_ + (R - x0_) * (z0_ - z1_) / (x0_ - x1_) if x0_ < R and abs(x0_ - x1_) > 1e-9 else z0_
+    soff = [q for q in soff if q[0] < R] + [(R, max(zR, zw))]
+    z_soff_l = zc1 + math.sqrt(max(R1 * R1 - xl * xl, 0.0))
+    soff = [(xl, z_soff_l)] + soff
+    v.poly(up + [(xb1, zt), (xb1, zw), (R + tw, zw), (R + tw, zw - Lw)])
+    v.poly([(R, zw - Lw)] + [(R, max(zR, zw))] + soff[::-1][1:])
+    for a_, b_ in (((xl, z_soff_l), up[0]), ((R, zw - Lw), (R + tw, zw - Lw))):            # break lines (zig-zag)
+        L_ = math.dist(a_, b_)
+        ux_, uz_ = (b_[0] - a_[0]) / L_, (b_[1] - a_[1]) / L_
+        m_ = ((a_[0] + b_[0]) / 2, (a_[1] + b_[1]) / 2)
+        d_ = 0.03
+        v.poly([a_, (m_[0] - ux_ * d_, m_[1] - uz_ * d_), (m_[0] - ux_ * d_ / 3 - uz_ * d_, m_[1] - uz_ * d_ / 3 + ux_ * d_),
+                (m_[0] + ux_ * d_ / 3 + uz_ * d_, m_[1] + uz_ * d_ / 3 - ux_ * d_), (m_[0] + ux_ * d_, m_[1] + uz_ * d_), b_], "THIN")
+    # ---- the beam's stirrup and hoop bars
+    v.rect(R + cw, zw + cw, xb1 - cw, zt - cw, "REBAR")
+    rb = max(0.5, tr_["dia"] / 2e3 * v.k)
+    rm = rb / v.k
+    nt, nbt = tr_["n"] // 2, tr_["n"] - tr_["n"] // 2
+    x_a, x_b = R + cw + rm + 0.008, xb1 - cw - rm - 0.008
+    rows = []
+    for nn, zz in ((nt, zt - cw - rm - 0.003), (nbt, zw + cw + rm + 0.003)):
+        pts = [(x_a + i * (x_b - x_a) / max(1, nn - 1), zz) for i in range(nn)]
+        for q in pts:
+            sh.dot(v.p(*q), rb)
+        rows.append(pts)
+    # ---- dimensions and notes (the dome's and the wall's own bars: in the section of the tank, as the example)
+    sh.dim_h(v.p(R, 0)[0], v.p(xb1, 0)[0], v.p(0, zw - Lw)[1] - 4, f"{max(b1, tw) * 1e3:.0f}", y_from=v.p(0, zw)[1], below=True)
+    sh.dim_h(v.p(R, 0)[0], v.p(R + tw, 0)[0], v.p(0, zw - Lw * 0.45)[1], f"{tw * 1e3:.0f}")
+    sh.dim_v(v.p(0, zw)[1], v.p(0, zt)[1], v.p(xb1, 0)[0] + 4, f"{d1 * 1e3:.0f}", x_from=v.p(xb1, 0)[0])
+    zs = max(zR, zw)                                          # where the dome's soffit meets the wall's face
+    if zs - zw > 0.02:
+        sh.dim_v(v.p(0, zw)[1], v.p(0, zs)[1], v.p(R, 0)[0] - 5, f"{(zs - zw) * 1e3:.0f}", x_from=v.p(R, 0)[0])
+    xr_ = v.p(xb1, 0)[0] + 9
+    sh.leader(v.p(*rows[0][-1]), (xr_, v.p(0, zt)[1] + 6), f"{nb((tr_['n'], tr_['dia']))} HOOPS ({nt} TOP, {nbt} BOTTOM)", 1.7)
+    sh.leader(v.p(xb1 - cw - 0.06, zt - cw), (xr_, v.p(0, zt)[1] + 12), "8 # STR. @ 200 C/C", 1.7)
+    sh.heading("DETAIL OF TOP RING BEAM", (x0 + bw / 2, y0 + 5), 2.4, f"SCALE 1:{s}")
+
+
 def _sheet_container(dw, res, info):
     sh = Sheet(dw, 1, "CONTAINER", 2)
     g, M, opt, th = res["geo"], res["members"], res["opt"], res["geo"]["th"]
-    _tank_section(sh, res, 14, 22, 470, 560)
-    br, col, tr_ = M["bottom_ring"], M["column"], M["top_ring"]
-    # top ring beam
-    s = fit_scale(tr_["b"] / 1e3 + 0.1, tr_["d"] / 1e3 + 0.1, 40, 40)
-    _beam_xsec(sh, 520, 575, s, tr_["b"], tr_["d"], (tr_["n"] // 2, tr_["dia"]), (tr_["n"] - tr_["n"] // 2, tr_["dia"]), opt["cover_water_mm"],
-               "TOP RING BEAM", note="8 # STR @ 200 C/C")
-    _dome_plan(sh, res, "top_dome", 590, 500, 240, 84, "PART PLAN OF TOP DOME REINFORCEMENT")
-    _dome_plan(sh, res, "bottom_dome", 590, 410, 240, 84, "PART PLAN OF BOTTOM DOME REINFORCEMENT (EACH FACE)")
-    s2 = fit_scale(g["Lb"] + g["dc"] + 1.3, th["d3"] + 1.8, 190, 95)
-    _lsec(sh, 520, 318, s2, g["Lb"], g["dc"], th["d3"], 0.0, 1.0, br["stir"], br["legs"],
+    # the section of the tank large, over the sheet's whole height on the left (as the example, 1:30); the details in
+    # a column on the right (user request 21-Nov-2026: the drawing as the example's)
+    _tank_section(sh, res, 14, 22, 530, 560)
+    xr = 552                                        # the right column: xr .. 831
+    br, col = M["bottom_ring"], M["column"]
+    # top ring beam: the joint's detail
+    _ring_detail(sh, res, xr, 494, 150, 90)
+    _dome_plan(sh, res, "top_dome", xr + 152, 498, SW - 10 - xr - 156, 84, "PART PLAN OF TOP DOME REINFORCEMENT")
+    _dome_plan(sh, res, "bottom_dome", xr + 4, 404, SW - 10 - xr - 8, 88, "PART PLAN OF BOTTOM DOME REINFORCEMENT (EACH FACE)")
+    s2 = fit_scale(g["Lb"] + g["dc"] + 1.3, th["d3"] + 1.8, 180, 95)
+    _lsec(sh, xr + 6, 318, s2, g["Lb"], g["dc"], th["d3"], 0.0, 1.0, br["stir"], br["legs"],
           f"{nb(br['top'])} HOOPS (OVERLAP NEAR MIDSPAN ONLY)", f"{nb(br['bot'])} HOOPS (OVERLAP NEAR SUPPORT ONLY)",
           [nb((col["n"], col["dia"])), "8 # RINGS @ 100 / 200 C/C"], "PART L - SECTION OF BOTTOM RING BEAM")
     s3 = fit_scale(br["b"] / 1e3 + 0.1, br["d"] / 1e3 + 0.1, 45, 50)
-    _beam_xsec(sh, 770, 372, s3, br["b"], br["d"], br["top"], br["bot"], opt["cover_ring_mm"], "SECTION A - A", side=br["side"][0], legs=br["legs"], note="10 # STR.")
-    _small_details(sh, res, 492, 82)
-    sh.lines(["NOTES:  1. ALL DIMENSIONS ARE IN MILLIMETRE.   2. READ WITH SHEETS 1 AND 3."], 492, 78, 1.9)
+    _beam_xsec(sh, 790, 372, s3, br["b"], br["d"], br["top"], br["bot"], opt["cover_ring_mm"], "SECTION A - A", side=br["side"][0], legs=br["legs"], note="10 # STR.")
+    _small_details(sh, res, xr, 82)
+    sh.lines(["NOTES:  1. ALL DIMENSIONS ARE IN MILLIMETRE.   2. READ WITH SHEETS 1 AND 3."], xr, 78, 1.9)
     sh.frame(info)
     return sh
 
@@ -1210,21 +1364,28 @@ def _sheet_stair(dw, res, info, index):
     v.shape(pts + soff(wt))
     c = opt["cover_stair_mm"] / 1e3
     # main bars: the soffit at the cover, the length of both landings, hooked at the ends
+    # at the landings' ends the bottom bar is bent up and the top bar down, a third of the depth each and 30 mm apart:
+    # they do not meet (user 21-Nov-2026: "top-bottom steel meet at end points")
+    lg = 0.35 * (wt - 2 * c)
     mb = soff(wt - c)[::-1]
-    mb = [(c, mb[0][1]), mb[1], mb[2], (xe - c, mb[3][1])]
-    hooked(v, mb, inside=((rl / 2, -wt / 2), (xe - rl / 2, rise - wt / 2)))
-    v.dots([(mb[1][0] + 0.05, mb[1][1] + 0.025 + 0.05 * kk), (mb[2][0] - 0.05, mb[2][1] + 0.025 - 0.05 * kk)], st["dist"][1] / 1e3, 0.35)
+    mb = [(c, mb[0][1] + lg), (c, mb[0][1]), mb[1], mb[2], (xe - c, mb[3][1]), (xe - c, mb[3][1] + lg)]
+    hooked(v, mb, ends=(False, False))
+    f1, f2 = mb[2], mb[3]                             # the flight's soffit bar: its start and end
+    v.dots([(f1[0] + 0.05, f1[1] + 0.025 + 0.05 * kk), (f2[0] - 0.05, f2[1] + 0.025 - 0.05 * kk)], st["dist"][1] / 1e3, 0.35)
     # top bars of the landings: over the supports, then into the flight along the steps' inner corners
     xl = rl + c * (sec - 1.0) / kk                    # where z = -c meets the corner line less the cover
-    tb1 = [(c, -c), (xl, -c), (xl + 0.3 * go, -c * sec + (xl + 0.3 * go - rl) * kk)]
-    hooked(v, tb1, inside=((rl / 2, -wt / 2), (rl + 0.3 * go, 0.3 * go * kk - wt / 2)))
+    tb1 = [(c + 0.03, -c - lg), (c + 0.03, -c), (xl, -c), (xl + 0.3 * go, -c * sec + (xl + 0.3 * go - rl) * kk)]
+    hooked(v, tb1, ends=(False, True), inside=((rl / 2, -wt / 2), (rl + 0.3 * go, 0.3 * go * kk - wt / 2)))
+    # the upper landing's top bar: along the landing to where it meets the line of the steps' inner corners (less the
+    # cover), then down that line - straight from the landing's top it ran over the last treads, out of the concrete
     xu = rl + go - 0.3 * go
-    tb2 = [(xe - c, rise - c), (rl + go, rise - c), (xu, rise - c - (rl + go - xu) * kk)]
-    hooked(v, tb2, inside=((xe - rl / 2, rise - wt / 2), (xu, (xu - rl) * kk - wt / 2)))
+    xm = min(rl + (rise - c + c * sec) / kk, xe - c - 0.1)
+    tb2 = [(xe - c - 0.03, rise - c - lg), (xe - c - 0.03, rise - c), (xm, rise - c), (xu, (xu - rl) * kk - c * sec)]
+    hooked(v, tb2, ends=(False, True), inside=((xe - rl / 2, rise - wt / 2), (xu, (xu - rl) * kk - wt / 2)))
     v.dots([(c + 0.05, -c - 0.025), (xl - 0.02, -c - 0.025)], st["dist"][1] / 1e3, 0.3, first=st["dist"][1] / 1e3)
-    v.dots([(rl + go + 0.02, rise - c - 0.025), (xe - c - 0.05, rise - c - 0.025)], st["dist"][1] / 1e3, 0.3, first=st["dist"][1] / 1e3)
-    v.dots([(c + 0.05, -wt + c + 0.025), (mb[1][0] - 0.05, -wt + c + 0.025)], st["dist"][1] / 1e3, 0.3)
-    v.dots([(mb[2][0] + 0.05, rise - wt + c + 0.025), (xe - c - 0.05, rise - wt + c + 0.025)], st["dist"][1] / 1e3, 0.3)
+    v.dots([(xm + 0.02, rise - c - 0.025), (xe - c - 0.05, rise - c - 0.025)], st["dist"][1] / 1e3, 0.3, first=st["dist"][1] / 1e3)
+    v.dots([(c + 0.05, -wt + c + 0.025), (f1[0] - 0.05, -wt + c + 0.025)], st["dist"][1] / 1e3, 0.3)
+    v.dots([(f2[0] + 0.05, rise - wt + c + 0.025), (xe - c - 0.05, rise - wt + c + 0.025)], st["dist"][1] / 1e3, 0.3)
     for x, z in ((rl * 0.5, 0.0), (rl + go + rl * 0.5, rise)):
         bd_, bb_ = st["beam"]["d"] / 1e3, st["beam"]["b"] / 1e3
         v.rect(x - bb_ / 2, z - bd_, x + bb_ / 2, z - wt, "HIDDEN")
@@ -1256,8 +1417,10 @@ def _sheet_stair(dw, res, info, index):
     sh.line((X(dc + L1), Z(bd_)), (X(dc + L1), Z(bd_ + 0.7)))
     sh.line((X(dc + L1 + ds), Z(bd_)), (X(dc + L1 + ds), Z(bd_ + 0.7)))
     xe = dc + L1 + ds / 2 + lc
-    sh.poly([(X(0.08), Z(bd_ - 0.3)), (X(0.08), Z(bd_ - 0.04)), (X(xe - 0.04), Z(bd_ - 0.04)), (X(xe - 0.04), Z(bd_ - 0.2))], "REBAR")
-    sh.poly([(X(0.08), Z(0.3)), (X(0.08), Z(0.04)), (X(xe - 0.04), Z(0.04)), (X(xe - 0.04), Z(0.2))], "REBAR")
+    # top bars bent down into the column of the staging, bottom bars bent up into it (an L each, 60 mm apart, user
+    # 21-Nov-2026: they met end to end as one closed loop); at the free end the legs stop short of each other
+    sh.poly([(X(0.08), Z(-0.3)), (X(0.08), Z(bd_ - 0.04)), (X(xe - 0.04), Z(bd_ - 0.04)), (X(xe - 0.04), Z(bd_ / 2 + 0.03))], "REBAR")
+    sh.poly([(X(0.14), Z(bd_ + 0.3)), (X(0.14), Z(0.04)), (X(xe - 0.08), Z(0.04)), (X(xe - 0.08), Z(bd_ / 2 - 0.03))], "REBAR")
     x = dc + 0.05
     while x < xe - 0.05:
         if not (dc + L1 < x < dc + L1 + ds):
@@ -1272,7 +1435,7 @@ def _sheet_stair(dw, res, info, index):
     sh.dim_h(X(0), X(dc), Z(-0.7) - 3, f"{dc * 1e3:.0f}", below=True)
     sh.text("COLUMN OF THE STAGING", (X(dc / 2), Z(bd_ + 0.95)), 1.6, TA.MIDDLE_CENTER)
     sh.text("STAIRCASE COLUMN", (X(dc + L1 + ds / 2), Z(bd_ + 0.95)), 1.6, TA.MIDDLE_CENTER)
-    sh.heading("LANDING BEAM B1 (AT EVERY LANDING)", (236 + 125, 300 + 3), 2.6, f"SCALE 1:{s3}")
+    sh.heading("LANDING BEAM B1 (AT EVERY LANDING)", (236 + 125, min(300 + 3, Z(-0.7) - 10)), 2.6, f"SCALE 1:{s3}")   # under its dimensions
     # the staircase's column and footing
     cs, ft = st["col"], st["footing"]
     s4 = fit_scale(ft["side"] + 0.4, ft["side"] + 0.4, 95, 95)

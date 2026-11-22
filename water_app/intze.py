@@ -78,6 +78,10 @@ DEFAULTS = {
 DIAS = (8, 10, 12, 16, 20, 25, 28, 32)
 
 
+RING1_NOMINAL = 4 * math.pi * 12 * 12 / 4.0   # the top ring beam's hoop bars: 4 - 12 # (mm2), as the example
+RING1_BAND = 1.0                               # the wall's top band (m) that takes the rest of the top dome's pull
+
+
 def area(d):
     return math.pi * d * d / 4.0
 
@@ -376,8 +380,9 @@ def design(cap_kl, staging_m, swd_m, opts=None):
             new["t2"] = round(new["t2"] + 0.025, 3)
         new["t1e"] = up(1.2 * new["t1"], 0.01)
         new["t2e"] = up(1.75 * new["t2"], 0.025)
-        As1 = f["P1"] * 1e3 / sst
-        b1, d1, n1, dia1 = _ring_section(As1, 250, 200, cw)
+        # the top ring beam nominal, 4 - 12 # (as the example): the rest of the dome's pull is taken by the wall's
+        # top band of hoops (user 22-Nov-2026) - see the wall's zones
+        b1, d1, n1, dia1 = _ring_section(RING1_NOMINAL, 250, 200, cw)
         new["b1"], new["d1"] = b1 / 1e3, d1 / 1e3
         new = {k: round(v, 3) for k, v in new.items()}
         if new == th:
@@ -391,15 +396,21 @@ def design(cap_kl, staging_m, swd_m, opts=None):
     M["top_dome"] = {"t": t1m, "te": int(round(th["t1e"] * 1e3)), "edge": th["edge"],
                      "rad": _mesh(0.0024 * t1m * 1e3, (10, 12)), "hoop": _mesh(0.0024 * t1m * 1e3, (10, 12)),
                      "edge_rad": (10, 100), "edge_hoop": (12, 150)}
-    M["top_ring"] = {"b": b1, "d": d1, "n": n1, "dia": dia1, "stir": (8, 200), "P": f["P1"]}
-    # wall: hoops by zones of about 1 m from its top, both faces
+    P_ring = n1 * area(dia1) * sst / 1e3                         # what the ring beam's hoops carry (kN)
+    P_band = max(0.0, f["P1"] - P_ring)                         # the rest: the wall's top band
+    M["top_ring"] = {"b": b1, "d": d1, "n": n1, "dia": dia1, "stir": (8, 200), "P": f["P1"], "P_ring": P_ring, "P_band": P_band}
+    # wall: hoops by zones of about 1 m from its top, both faces; the zones within RING1_BAND of the top take, besides
+    # the water, the part of the dome's pull the ring beam does not (as the example: 4 - 12 # in the beam, 13 - 12 #
+    # a face in the wall's top 950)
     Hw = f["Hwall"]
     nz = max(1, int(round(Hw / 1.0)))
     zl = Hw / nz
+    band = [i for i in range(nz) if i * zl < RING1_BAND - zl / 2] or [0]   # the zones starting in its upper part
+    T_band = P_band / (len(band) * zl)                          # kN per m of height
     zones = []
     for i in range(nz):
         bot = (i + 1) * zl
-        T = GAMMA_W * max(0.0, bot - g["fb"]) * R
+        T = GAMMA_W * max(0.0, bot - g["fb"]) * R + (T_band if i in band else 0.0)
         over = max(0.0, bot - (Hw - th["taper"]))                 # into the taper
         t_loc = th["tw"] + (th["twb"] - th["tw"]) * min(1.0, over / max(th["taper"], 1e-6))
         As = max(T * 1e3 / sst, 0.0024 * t_loc * 1e6)
@@ -645,9 +656,17 @@ def design(cap_kl, staging_m, swd_m, opts=None):
         def depth_at(tmm, a, s):                 # effective depth at s from the beam's face (the slab tapers to te)
             return (tmm - (tmm - te * 1e3) * min(1.0, s / max(a, 1e-6))) - covr - 12
 
+        # the foundation ring beam lies in the raft's depth: that depth must hold the beam's moments too (21-Nov-2026:
+        # a 150 KL tank got a 350 raft whose ring beam needed millions of bars - ast_flex beyond its limit)
+        cbr0 = _circ_beam(1.5 * W_tot / (2 * math.pi * r0), r0, n_col)
+        bRm0 = bR * 1e3
         for tr_mm in range(300, 3050, 50):
             d0 = tr_mm - covr - 12
             if max(Mo_u, Mi_u) * 1e6 > mat.q_lim * fckf * 1000.0 * d0 * d0:
+                continue
+            ddr0 = tr_mm - opt["cover_fbeam_mm"] - 20
+            Mr0 = max(abs(cbr0["Ms"]), abs(cbr0["Mm"])) + cbr0["T"] * (1.0 + tr_mm / bRm0) / 1.7
+            if Mr0 * 1e6 > mat.q_lim * fckf * bRm0 * ddr0 * ddr0:
                 continue
             good, As_sh = True, {True: 0.0, False: 0.0}
             for a, outer in ((ao, True), (ai, False)):
@@ -878,8 +897,8 @@ def _rows(r, res, f, mat, C, cb3, cbr, raft, W_tot, W_live, Mw, Mlev, Mo, tve3):
     r(s, "Edge zone: radial at top / hoops", f"{b(M['top_dome']['edge_rad'])} / {b(M['top_dome']['edge_hoop'])}", "mm", "practice of the example")
     s = "4 Top ring beam"
     r(s, "Hoop tension", round(f["P1"], 1), "kN", "T1 cos theta x D / 2")
-    r(s, "Steel", round(f["P1"] * 1e3 / mat.sst_w), "mm2", f"P / {mat.sst_w:g}")
-    r(s, "Size / hoop bars", f"{M['top_ring']['b']} x {M['top_ring']['d']} / {M['top_ring']['n']}-{M['top_ring']['dia']}", "mm", "the section that holds the bars")
+    r(s, "Size / hoop bars (nominal)", f"{M['top_ring']['b']} x {M['top_ring']['d']} / {M['top_ring']['n']}-{M['top_ring']['dia']}", "mm", "as the example")
+    r(s, "Taken by the beam / by the wall's top band", f"{M['top_ring']['P_ring']:.0f} / {M['top_ring']['P_band']:.0f}", "kN", f"beam: its bars x {mat.sst_w:g}; the rest added to the wall's top hoops")
     s = "5 Cylindrical wall"
     r(s, "Thickness: top / base", f"{M['wall']['t']} / {M['wall']['tb']}", "mm", f"base: direct tension of the uncracked section <= {mat.sct} N/mm2 (IS 3370 (Part 2) Table 1); on the outer face over the lowest {M['wall']['taper']:g} m")
     for z in M["wall"]["zones"]:

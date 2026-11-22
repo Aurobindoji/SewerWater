@@ -127,3 +127,101 @@ def test_calculation_report(tmp_path):
     assert f"Provide {r['members']['raft']['rad'][0]} - {r['members']['raft']['rad'][1]} φ" in text
     intze_calc.export_pdf(r, str(tmp_path / "c.pdf"), {"name": "OHT-T"})
     assert (tmp_path / "c.pdf").stat().st_size > 20000
+
+
+def test_small_tank_ring_beam_in_the_raft_depth():
+    """A 150 KL tank got a 350 raft whose foundation ring beam needed 11 million bars (ast_flex beyond its limit) and
+    the drawing hung drawing them (21-Nov-2026): the raft's depth now holds the ring beam's moments too."""
+    for cap, stg, swd in ((150, 15, 3), (100, 12, 3), (2500, 24, 5)):
+        rr = intze.design(cap, stg, swd)["members"]["raft_ring"]
+        assert rr["top"][0] <= 16 and rr["bot"][0] <= 16, (cap, rr)
+
+
+def _text_faults(dxf):
+    """Texts over texts, texts over the drawn lines and texts off the frame, sheets 1 - 3 (the real font's widths)."""
+    from ezdxf.fonts import fonts
+    font = fonts.make_font("LiberationSans-Regular.ttf", 1.0)
+    msp = ezdxf.readfile(dxf).modelspace()
+    sw, gap = intze_dwg.SW, intze_dwg.GAP
+
+    def box(t, k=0.0):
+        h, w = t.dxf.height, font.text_width(t.dxf.text) * t.dxf.height
+        al, p = t.get_placement()[:2]
+        n = al.name
+        fx = 0.0 if "LEFT" in n else 0.5 if "CENTER" in n else 1.0
+        fy = 0.0 if n.startswith("BOTTOM") else 0.5 if n.startswith("MIDDLE") else 1.0
+        a = math.radians(t.dxf.rotation or 0.0)
+        c = [(-fx * w, -fy * h), ((1 - fx) * w, -fy * h), ((1 - fx) * w, (1 - fy) * h), (-fx * w, (1 - fy) * h)]
+        c = [(x * math.cos(a) - y * math.sin(a) + p[0], x * math.sin(a) + y * math.cos(a) + p[1]) for x, y in c]
+        mx, my = sum(x for x, _ in c) / 4, sum(y for _, y in c) / 4
+        return [(mx + (x - mx) * (1 - k), my + (y - my) * (1 - k)) for x, y in c]
+
+    def apart(A, B):
+        for P in (A, B):
+            for i in range(4):
+                (x1, y1), (x2, y2) = P[i], P[(i + 1) % 4]
+                nx, ny = y1 - y2, x2 - x1
+                pa, pb = [nx * x + ny * y for x, y in A], [nx * x + ny * y for x, y in B]
+                if max(pa) < min(pb) or max(pb) < min(pa):
+                    return True
+        return False
+
+    def crosses(a, b, P):
+        t0, t1 = 0.0, 1.0
+        dx, dy = b[0] - a[0], b[1] - a[1]
+        cx, cy = sum(x for x, _ in P) / 4, sum(y for _, y in P) / 4
+        for i in range(4):
+            (x1, y1), (x2, y2) = P[i], P[(i + 1) % 4]
+            nx, ny = y1 - y2, x2 - x1
+            if nx * (cx - x1) + ny * (cy - y1) < 0:
+                nx, ny = -nx, -ny
+            num, den = nx * (a[0] - x1) + ny * (a[1] - y1), nx * dx + ny * dy
+            if abs(den) < 1e-12:
+                if num < 0:
+                    return False
+                continue
+            t = -num / den
+            t0, t1 = (max(t0, t), t1) if den > 0 else (t0, min(t1, t))
+            if t0 > t1:
+                return False
+        return (t1 - t0) * math.hypot(dx, dy) > 0.4
+
+    segs = [((e.dxf.start.x, e.dxf.start.y), (e.dxf.end.x, e.dxf.end.y)) for e in msp.query("LINE")
+            if e.dxf.layer in ("OUTLINE", "REBAR", "DIM", "LEVEL", "WATER", "FRAME")]
+    for e in msp.query("LWPOLYLINE"):
+        if e.dxf.layer in ("OUTLINE", "REBAR", "DIM", "LEVEL", "WATER", "FRAME"):
+            pts = [(x, y) for x, y, *_ in e.get_points()] + ([tuple(e.get_points()[0][:2])] if e.closed else [])
+            segs += list(zip(pts, pts[1:]))
+    texts = [(t, box(t, 0.03), box(t, 0.15)) for t in msp.query("TEXT") if t.dxf.text.strip()]
+    bad = []
+    for k in range(3):
+        ox = k * (sw + gap)
+        mine = [x for x in texts if ox - gap / 2 <= sum(p[0] for p in x[1]) / 4 < ox + sw + gap / 2]
+        for i, (t, b, bi) in enumerate(mine):
+            if any(x < ox + 10 or x > ox + sw - 10 or y < 10 or y > intze_dwg.SH - 10 for x, y in b):
+                bad.append(("off", k + 1, t.dxf.text))
+            if any(crosses(a, c, bi) for a, c in segs):
+                bad.append(("line", k + 1, t.dxf.text))
+            bad += [("text", k + 1, t.dxf.text, t2.dxf.text) for t2, b2, _ in mine[i + 1:] if not apart(b, b2)]
+    return bad
+
+
+@pytest.mark.parametrize("cap,stg,swd", [(2500, 24, 5), (150, 15, 3)])
+def test_drawing_texts_clear(tmp_path, cap, stg, swd):
+    """No text over another, over a drawn line or off the frame on sheets 1 - 3 (user 21-Nov-2026: the drawing as the
+    example's, checked), a large tank and a small one."""
+    r = intze.design(cap, stg, swd)
+    p = intze_dwg.export(r, str(tmp_path), "t", {"name": "OHT-T"}, pdf=False)
+    assert _text_faults(p["dxf"]) == []
+
+
+def test_top_ring_nominal_rest_in_the_wall_top():
+    """The top ring beam nominal, 4 - 12 # (as the example), the rest of the dome's pull in the wall's top band of
+    hoops (user 22-Nov-2026): beam + band carry the whole pull."""
+    r = intze.design(2500, 24, 5)
+    tr_, z0 = r["members"]["top_ring"], r["members"]["wall"]["zones"][0]
+    assert (tr_["n"], tr_["dia"]) == (4, 12) and tr_["b"] >= 250
+    assert tr_["P_ring"] + tr_["P_band"] >= tr_["P"] - 1e-6
+    water = intze.GAMMA_W * max(0.0, z0["len"] - r["geo"]["fb"]) * r["geo"]["R"]
+    steel = 2 * z0["n"] * intze.area(z0["dia"]) / z0["len"]                  # both faces, mm2 per m
+    assert steel * float(r["opt"]["sst_water"]) / 1e3 >= water + tr_["P_band"] / z0["len"] - 1e-6

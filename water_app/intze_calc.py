@@ -135,10 +135,12 @@ def report(res):
     tr_ = M["top_ring"]
     r.f("Horizontal component of T1", "T1 cos θ1", f"{n_(f['T1'])} x {n_(d1['cos'], 4)}", n_(f["H1"]), "kN/m")
     r.f("Hoop tension P1", "T1 cos θ1 x D / 2", f"{n_(f['H1'])} x {n_(D)} / 2", n_(f["P1"], 1), "kN")
-    As1 = f["P1"] * 1e3 / sst
-    r.f("Ast", "P1 / σst", f"{n_(f['P1'] * 1e3, 0)} / {sst:g}", n_(As1, 0), "mm²")
-    r.p(f"Provide {tr_['n']} - {tr_['dia']} φ tor hoops ({n_(tr_['n'] * intze.area(tr_['dia']), 0)} mm²) in a {tr_['b']} x {tr_['d']}"
-        f" mm ring beam, with 8 φ stirrups @ 200 c/c.")
+    Asb = tr_["n"] * intze.area(tr_["dia"])
+    r.p(f"The ring beam is nominal, as the example: {tr_['n']} - {tr_['dia']} φ tor hoops ({n_(Asb, 0)} mm²) in a {tr_['b']} x {tr_['d']}"
+        f" mm beam, with 8 φ stirrups @ 200 c/c.")
+    r.f("Pull taken by the beam", "Ast x σst", f"{n_(Asb, 0)} x {sst:g}", n_(tr_["P_ring"], 1), "kN")
+    r.f("Rest, to the wall's top band", "P1 - beam", f"{n_(f['P1'], 1)} - {n_(tr_['P_ring'], 1)}", n_(tr_["P_band"], 1), "kN")
+    r.p(f"The rest is added to the hoop tension of the wall's zones in its top {intze.RING1_BAND * 1e3:.0f} mm (section 5).")
 
     # ------------------------------------------------------------------------------------------------ 5 wall
     r.h1("5.0 DESIGN OF CYLINDRICAL WALL")

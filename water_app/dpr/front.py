@@ -105,8 +105,7 @@ def cover(B):
         for c in range(1, 9):
             ws.cell(r, c).border = Border(left=THICK if c == 1 else None, right=THICK if c == 8 else None,
                                           top=THICK if r == top else None, bottom=THICK if r == bot else None)
-    _merge(ws, 4, 1, 8, "UTTAR PRADESH JAL NIGAM", _f(28, True))
-    _merge(ws, 6, 1, 8, "(URBAN)", _f(28, True))
+    _merge(ws, 4, 1, 8, f'=UPPER(""&{PR["agency"]})', _f(28, True))        # the department, from sheet Project
     ws.row_dimensions[4].height = ws.row_dimensions[6].height = 36
     _merge(ws, 14, 1, 8, f'="ESTIMATE FOR "&UPPER(""&{PR["title"]})', _f(18, True))
     ws.row_dimensions[14].height = 120
@@ -118,7 +117,7 @@ def cover(B):
     ws.row_dimensions[22].height = 44
     left = [("Estimate No.", None, True), ("Estimated cost", f'="Rs. "&TEXT({B.FJ["total"]},"0.00")&" Lakh"', False),
             ("O & M Cost", f'="Rs. "&TEXT({B.FJ["om"]},"0.00")&" Lakh"', False), ("Year", None, True)]
-    right = ["Executive Engineer", f'=""&{PR["office"]}', "U.P. Jal Nigam (Urban)", f'=""&{PR["district"]}']
+    right = ["Executive Engineer", f'=""&{PR["office"]}', f'=""&{PR["agency"]}', f'=""&{PR["district"]}']
     for k, (lab, v, inp) in enumerate(left):
         r = 34 + k
         _merge(ws, r, 1, 2, lab, _f(13, True), Alignment(horizontal="left", vertical="center", indent=1))
@@ -161,7 +160,7 @@ def certificate(B):
     _merge(ws, x, 1, 6, "Countersigned", _f(12, italic=True))
     x += 4
     for v in (name("ce"), f'="Chief Engineer"&IF(""&{PR["zone"]}="",""," ("&{PR["zone"]}&")")',
-              "U.P. Jal Nigam (Urban)"):
+              f'=""&{PR["agency"]}'):
         _merge(ws, x, 1, 6, v, _f(12))
         x += 1
     return ws
@@ -540,9 +539,9 @@ def _salient_9_10(K, x):
 
 def _salient_11_12(K, x):
     """11-12: agency, economics, from row x -> the last row of the page."""
-    m, heading, N, yrs = K.m, K.heading, K.N, K.yrs
+    m, heading, N, yrs, PR = K.m, K.heading, K.N, K.yrs, K.PR
     m(x, 1, 1, "11-", True, box=False)
-    m(x, 2, N, " Implementing Agency       -          U.P. Jal Nigam (Urban)", True, "left", box=False)
+    m(x, 2, N, f'=" Implementing Agency       -          "&{PR["agency"]}', True, "left", box=False)
     heading(x + 1, 12, "Economics of the Scheme:")
     x += 2
     m(x, 2, 2, "S. No.", True, r1=x + 1)

@@ -56,7 +56,7 @@ def signatures(B, ws, r, em=False):
         put(row, g, f'=IF(""&{PR[key]}="","","("&{PR[key]}&")")', True)      # a name not given: blank, not ()
         put(row + 1, g, post)
         put(row + 2, g, f'=""&{PR[office]}')
-        put(row + 3, g, "U.P. Jal Nigam (Urban)")
+        put(row + 3, g, f'=""&{PR["agency"]}')
         put(row + 4, g, f'=""&{PR[place]}')
     span = lambda gs: (gs[0][0], gs[-1][1])
     put(r, span(left), "Prepared By", True)
@@ -80,7 +80,7 @@ def signatures(B, ws, r, em=False):
     put(r, whole, "Approved By", True)
     put(r + 4, whole, f'=IF(""&{PR["ce"]}="","","("&{PR["ce"]}&")")', True)
     put(r + 5, whole, f'="Chief Engineer"&IF(""&{PR["zone"]}="",""," ("&{PR["zone"]}&")")')
-    put(r + 6, whole, f'="U.P. Jal Nigam (Urban)"&IF(""&{PR["place_zone"]}="","",", "&{PR["place_zone"]})')
+    put(r + 6, whole, "=_xlfn.TEXTJOIN(\", \",TRUE," + PR["agency"] + "," + PR["place_zone"] + ")")
     return r + 7
 
 
@@ -106,14 +106,14 @@ def signatures_em(B, ws, r):
                              ("Assistant Engineer", "Computer", "Executive Engineer")):
         put(r, g, head, True)
         put(r + 3, g, post, True)
-    put(r + 4, (1, n), "=UPPER(" + join(PR["office_em"], '"U.P. Jal Nigam (Urban)"', PR["place"])[1:] + ")")
+    put(r + 4, (1, n), "=UPPER(" + join(PR["office_em"], PR["agency"], PR["place"])[1:] + ")")
     r += 6
     put(r, halves[0], "Recommended By", True)
     put(r, halves[1], "Approved By", True)
     put(r + 3, halves[0], "Superintending Engineer (E&M)", True)
-    put(r + 4, halves[0], join(PR["circle_em"], '"U.P. Jal Nigam (Urban)"', PR["place_em_circle"]))
+    put(r + 4, halves[0], join(PR["circle_em"], PR["agency"], PR["place_em_circle"]))
     put(r + 3, halves[1], f'="Chief Engineer"&IF(""&{PR["zone"]}="",""," ("&{PR["zone"]}&")")', True)
-    put(r + 4, halves[1], join('"U.P. Jal Nigam (Urban)"', PR["place_zone"]))
+    put(r + 4, halves[1], join(PR["agency"], PR["place_zone"]))
     ws.row_dimensions[r + 4].height = 32
     return r + 5
 

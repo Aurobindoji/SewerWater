@@ -73,6 +73,7 @@ VALVES = [80, 100, 125, 150, 200, 250, 300, 350, 400, 450, 500, 600]
 
 # the Project sheet: (key, label) - texts the user types once
 TEXTS = [("title", "Name of the scheme"), ("ulb", "Name of the ULB / town"), ("district", "District"),
+         ("agency", "Department / implementing agency"),
          ("under", "Programme (UNDER ...)"), ("office", "Office (division)"), ("circle", "Circle"),
          ("zone", "Zone (Chief Engineer's office)"),
          ("ae", "Assistant Engineer (Civil) - name"), ("ee", "Executive Engineer (Civil) - name"),
@@ -81,9 +82,9 @@ TEXTS = [("title", "Name of the scheme"), ("ulb", "Name of the ULB / town"), ("d
          ("se_em", "Superintending Engineer (E&M) - name"), ("computer", "Computer / checked by - name"),
          # the signatures under Form J as the user's example (form j combined.xlsx, 7-Nov-2026)
          ("computer_em", "Computer (E&M) - name"), ("office_em", "Office (E&M division)"),
-         ("circle_em", "Circle (E&M)"), ("place", "Town of the divisions and the circle (e.g. Springfield)"),
-         ("place_em_circle", "Town of the E&M circle (e.g. Westbrook)"),
-         ("place_zone", "Town of the Chief Engineer's office (e.g. Westbrook)")]
+         ("circle_em", "Circle (E&M)"), ("place", "Town of the divisions and the circle"),
+         ("place_em_circle", "Town of the E&M circle"),
+         ("place_zone", "Town of the Chief Engineer's office")]
 
 
 COVER = [("hh_census", "Households of the city as per the last census"),

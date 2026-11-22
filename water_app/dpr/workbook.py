@@ -184,5 +184,7 @@ def write_dpr(info, path, previous=None):
     rename_sheets(B.wb, names)
     if TECH["T"] in B.wb.sheetnames:                  # the projection's graphs: on the sheet's final name (9-Nov-2026)
         projection_charts(B, B.wb[TECH["T"]])
+    from . import clean
+    clean.workbook(B.wb)                              # no source of a figure named in the DPR (user 22-Nov-2026)
     B.wb.save(path)
     return path

@@ -869,6 +869,8 @@ def write_dpr(out, path, title="", inp=None, stations=None, previous=None):
     wb._sheets = [wb[n] for n in order] + [w for w in wb.worksheets if w.title not in order]
     wb.calculation.fullCalcOnLoad = True
     dpr_format.apply(wb, copied=B.copied)                  # the look of the UPJN estimates, A4 pages
+    from . import dpr_clean
+    dpr_clean.workbook(wb)                                  # no source of a figure named in the DPR (user 22-Nov-2026)
     os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
     wb.save(path)
     return path

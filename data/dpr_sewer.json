@@ -1,6 +1,6 @@
 {
   "_readme": "Settings of the sewer DPR workbook (sewer_app/dpr.py), in the format of the Riverside Zone Sewerage Scheme estimate (UPJN, Springfield City Council; hydraulic_design_data_sheet_sample\\Copy of Riverside SewerEstimate.xlsx). RATES: the finalised rates of data/sewer_sor_rates.json (excavation, timbering, laying, granular bedding, road reinstatement, dewatering) and the pipe rate of data/sewer_catalog.json are used as they are - they are NOT repeated here. Here only the quantity rules of that DPR and the rates sewer_sor_rates.json does not have (manhole unit estimates, road cutting, interlocking reinstatement, barricading, disposal, lump items - Riverside DPR values): yellow in the workbook, column 'Rate from' says so - to be confirmed. Every value keeps its source.",
-  "office": {"value": "OFFICE OF THE EXECUTIVE ENGINEER, U.P. JAL NIGAM (URBAN)", "_source": "Riverside DPR, sheet 'Form j civil' A1 (division name left out)"},
+  "office": {"value": "OFFICE OF THE EXECUTIVE ENGINEER", "_source": "Riverside DPR, sheet 'Form j civil' A1 (division name left out)"},
   "scheme_under": {"value": "", "_source": "Riverside DPR: 'UNDER: AMRUT 2.0' - per project"},
   "district": {"value": "", "_source": "Riverside DPR: 'DISTRICT- SPRINGFIELD' - per project"},
   "water_supply_lpcd": {"value": 135, "_source": "Riverside DPR, sheet 'HY DESIGN STATEMENT_1' row 3 (sewage = 80 % of water supply, CPHEEO 3.4.1 p3-3)"},

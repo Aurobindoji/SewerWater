@@ -139,3 +139,15 @@ def test_project_sheet_texts_kept(tmp_path):
     assert second["Project"]["C4"].value == "MY SCHEME" and second["Project"]["C6"].value == "SPRINGFIELD"
     tech = [c.value for row in second["Tech"].iter_rows() for c in row if isinstance(c.value, str)]
     assert any("CEILING(" in v and "^" in v for v in tech)                  # the geometrical method as a formula
+
+
+def test_dpr_names_no_source(tmp_path):
+    """User 22-Nov-2026: the sewer DPR names no source of its figures (a DPR and its sheet, a town, the department)."""
+    import re
+    src = re.compile(r"(?:Riverside|Elmwood)(?: water)? DPR|(?:Riverside|Elmwood) '|DPR p\d|technical\.xlsx|Jal Nigam|UPJN|"
+                     r"Springfield|Westbrook|Lakeside", re.I)
+    out = pipeline.run(synth(seed=1), INP, log=quiet)
+    wb = openpyxl.load_workbook(dpr.write_dpr(out, str(tmp_path / "n_DPR.xlsx"), title="TEST SCHEME", inp=INP))
+    bad = [f"{ws.title}!{c.coordinate}: {c.value[:80]}" for ws in wb.worksheets for row in ws.iter_rows() for c in row
+           if isinstance(c.value, str) and src.search(c.value)]
+    assert bad == [], bad[:10]

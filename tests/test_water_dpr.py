@@ -435,3 +435,18 @@ def test_dpr_info_valves():
     assert info["valves"]["A"] == {100: 1, 200: 1, 250: 1}
     assert info["length"]["A"] == {"HDPE 110": 120, "DI 200": 50.5} and info["sizes"] == ["HDPE 110", "DI 200"]
     assert info["zones"][0]["proposed"] and not info["zones"][0]["existing"]
+
+
+SOURCE = re.compile(r"(?:Riverside|Elmwood)(?: water)? DPR|(?:Riverside|Elmwood) '|DPR p\d|technical\.xlsx|Jal Nigam|UPJN|"
+                    r"Springfield|Westbrook|Lakeside", re.I)
+
+
+def test_dpr_names_no_source(design):
+    """User 22-Nov-2026: the DPR names no source of its figures (a DPR and its page, a workbook, a town, the
+    department) - the department is the Project sheet's 'Department / implementing agency', blank by default."""
+    wb = openpyxl.load_workbook(design()["files"]["dpr"])
+    bad = [f"{ws.title}!{c.coordinate}: {c.value[:80]}" for ws in wb.worksheets for row in ws.iter_rows() for c in row
+           if isinstance(c.value, str) and SOURCE.search(c.value)]
+    assert bad == [], bad[:10]
+    pr = wb["Project"]
+    assert any(r[1] == "Department / implementing agency" for r in pr.iter_rows(values_only=True))

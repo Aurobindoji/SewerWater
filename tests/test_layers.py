@@ -27,7 +27,7 @@ LAYERS = {
                 "quantities rising_main spacing zoning",
         "net": "dxf_extract dxf_inspect layout netedit repair",
         "project": "inputs project results",
-        "output": "cad dpr dpr_em dpr_format dpr_front dpr_more lsection report zone_export zoning_out",
+        "output": "cad dpr dpr_clean dpr_em dpr_format dpr_front dpr_more lsection report zone_export zoning_out",
         "service": "design_run layout_cmd zoning_run",
         "web": "ui __main__",
     },

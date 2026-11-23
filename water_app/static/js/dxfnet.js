@@ -364,7 +364,7 @@ $("dxfroads").onclick = async () => {
   await openKml(`${$("dxfname").value.trim() || "roads"}_roads`, r.kml, true);
   if ($("glmode")) $("glmode").value = "spots";
   status(tr(`Drawing से ${r.roads} सड़कें और ${r.spots} GL बिंदु नक्शे पर` + (r.far ? ` (${r.far} दूर के level छोड़े)` : "") +
-            " - अब boundary / टंकियाँ जोड़ें, 'सहेजें' दबाएँ और Layout बनाएँ (GL: spot levels)",
+            " - अब boundary / टंकियाँ जोड़ें, 'Save करें' दबाएँ और Layout बनाएँ (GL: spot levels)",
             `${r.roads} roads and ${r.spots} GL points of the drawing on the map` + (r.far ? ` (${r.far} far levels left out)` : "") +
             " - now add the boundary / tanks, press Save and make the layout (GL: spot levels)"), "ok");
 };

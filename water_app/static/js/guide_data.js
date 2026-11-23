@@ -41,7 +41,7 @@ var GUIDE_DOC = {
 
     { id: "project", title: T("1. Project", "1. Project"),
       steps: [
-        T("\"नाम\" में project का नाम लिखें (अक्षर, अंक, _ -) और \"सहेजें\"।", "Type the project's name in \"Name\" (letters, digits, _ -) and \"Save\"."),
+        T("\"नाम\" में project का नाम लिखें (अक्षर, अंक, _ -) और \"Save करें\"।", "Type the project's name in \"Name\" (letters, digits, _ -) and \"Save\"."),
         T("पहले से बना project: सूची से चुनकर \"खोलें\"।", "An existing project: pick it from the list and \"Open\"."),
         T("Google Earth में बने सड़कों के नक्शे के लिए \"KML/KMZ खोलें…\"; मौजूदा network की drawing के लिए \"DXF network…\"।",
           "For a road map made in Google Earth \"Open KML/KMZ…\"; for a drawing of the existing network \"DXF network…\"."),

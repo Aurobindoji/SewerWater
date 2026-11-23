@@ -33,7 +33,7 @@ var GUIDE_DOC = {
 
     { id: "project", title: T("1. Project", "1. Project"),
       steps: [
-        T("\"नाम\" में project का नाम लिखें और \"सहेजें\"; पहले से बना हो तो सूची से \"खोलें\"।", "Type the project's name in \"Name\" and \"Save\"; an existing one: \"Open\" from the list."),
+        T("\"नाम\" में project का नाम लिखें और \"Save करें\"; पहले से बना हो तो सूची से \"खोलें\"।", "Type the project's name in \"Name\" and \"Save\"; an existing one: \"Open\" from the list."),
         T("Google Earth का नक्शा: \"KML/KMZ खोलें…\"; मौजूदा network की drawing: \"DXF network…\"।", "A Google Earth map: \"Open KML/KMZ…\"; a drawing of the existing network: \"DXF network…\"."),
       ],
       fields: [

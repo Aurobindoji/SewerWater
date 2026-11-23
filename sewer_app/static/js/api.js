@@ -9,7 +9,7 @@ async function api(path, body) {
 async function refreshList() {
   try {
     const r = await api("/api/projects");
-    $("plist").innerHTML = '<option value="">— सहेजे हुए projects —</option>' +
+    $("plist").innerHTML = '<option value="">— Saved Projects —</option>' +
       r.projects.map(p => `<option value="${esc(p.name)}">${esc(p.name)}${p.kind === "dxf" ? " (DXF)" : ""}</option>`).join("");
   } catch (e) { /* page opened without the server */ }
 }
@@ -56,7 +56,7 @@ async function openKml(name, kml, unsaved) {
   const lr = await api("/api/layout_result?name=" + encodeURIComponent(name));
   if (lr.ok) { showResult(lr); layoutReady(lr); status(`खोला: ${n.road} सड़कें, ${n.ward} वार्ड; पहले बना layout भी दिखाया`, "ok");
     await restoreResults(name, () => lr.conduits); }
-  if (unsaved) status("खोला - नक्शे के बिना सहेजे बदलाव भी वापस लाए गए ('सहेजें' दबाएँ)", "ok");
+  if (unsaved) status("खोला - नक्शे के बिना सहेजे बदलाव भी वापस लाए गए ('Save करें' दबाएँ)", "ok");
   return n;
 }
 $("pnew").onclick = () => {

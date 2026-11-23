@@ -492,15 +492,25 @@ def _ga(sh, res, x0, y0, bw, bh):
     sh.text(f"SCALE 1:{s}", (v.p(0, 0)[0], y0 + 2.5), 2.0, TA.MIDDLE_CENTER)
 
 
-def _stair_plan(sh, P, res, k, labels=True):
-    """The staircase in plan; P(x, y) gives the paper point of a real point (tank centre the origin, +x its side)."""
+def stair_side(i):
+    """The end of the staircase (+1 / -1 in y) of its i-th landing beam (0 = at the ground): the 1st flight runs from
+    the -y end to the +y end, the next back."""
+    return -1 if i % 2 == 0 else 1
+
+
+def _stair_plan(sh, P, res, k, labels=True, ends=None):
+    """The staircase in plan; P(x, y) gives the paper point of a real point (tank centre the origin, +x its side).
+    ends: {+1 / -1: (label, x where the beam starts)} - the landing beams seen at each end (default B1 from the
+    staging's column)."""
     st = res["members"]["stair"]
     xs, w, gap, lc, Lb = st["xs"], st["w"], st["gap"], st["lc"], st["Lb"]
     ds, bb = st["col"]["d"] / 1e3, st["beam"]["b"] / 1e3
     rl = w + gap / 2.0
+    ends = ends or {1: ("B1", st["xc"]), -1: ("B1", st["xc"])}
     for sgn in (1, -1):
         y = sgn * Lb / 2.0
-        sh.poly([P(st["xc"], y - bb / 2), P(xs + lc, y - bb / 2), P(xs + lc, y + bb / 2), P(st["xc"], y + bb / 2)], "OUTLINE", True)
+        xa = ends[sgn][1]
+        sh.poly([P(xa, y - bb / 2), P(xs + lc, y - bb / 2), P(xs + lc, y + bb / 2), P(xa, y + bb / 2)], "OUTLINE", True)
         sh.circle(P(xs, y), ds / 2 * k)
         a0, a1 = (0.0, math.pi) if sgn > 0 else (math.pi, 2 * math.pi)
         sh.poly([P(xs + rl * math.cos(a0 + (a1 - a0) * i / 24), y + rl * math.sin(a0 + (a1 - a0) * i / 24)) for i in range(25)])
@@ -511,8 +521,11 @@ def _stair_plan(sh, P, res, k, labels=True):
             y = -go / 2 + j * st["tread"]
             sh.line(P(xa, y), P(xa + w, y), "THIN")
     if labels:
-        sh.text("B1", P((st["xc"] + xs) / 2, Lb / 2 + 0.35), 1.6, TA.MIDDLE_CENTER)
-        sh.text("B1", P((st["xc"] + xs) / 2, -Lb / 2 - 0.35), 1.6, TA.MIDDLE_CENTER)
+        for sgn in (1, -1):
+            lab, xa = ends[sgn]
+            # the name beside the beam clear of the flights; a short beam: over the cantilever
+            xm = (xa + xs - rl) / 2 if xs - rl - xa > 0.6 else xs + lc / 2 + 0.1
+            sh.text(lab, P(xm, sgn * (Lb / 2 + 0.35)), 1.6, TA.MIDDLE_CENTER)
 
 
 def _plans(sh, res, x0, y0, bw, bh):
@@ -1274,6 +1287,99 @@ def _ring_detail(sh, res, x0, y0, bw, bh):
     sh.heading("DETAIL OF TOP RING BEAM", (x0 + bw / 2, y0 + 5), 2.4, f"SCALE 1:{s}")
 
 
+def _joint_detail(sh, res, x0, y0, bw, bh):
+    """DETAIL OF THE JOINT OF THE WALL, BALCONY AND CONE (user 23-Nov-2026): that corner of the section of the tank
+    large, its bars as the section draws them - the wall's verticals from the balcony up, the balcony's closed
+    stirrup with its hoops, the cone's water-face bar on up the wall's face (a lap), its outer bar into the balcony
+    along its bottom, the hoops of the cone and the wall. x0, y0, bw, bh: the box; the drawing in its middle, the
+    notes of the water face on its left, the outer face's on its right."""
+    g, lev, th, M, opt = res["geo"], res["levels"], res["geo"]["th"], res["members"], res["opt"]
+    R, r0, cw = g["R"], g["r0"], opt["cover_water_mm"] / 1e3
+    al, t0 = g["alpha"], th["t0"]
+    sa_, ca_ = math.sin(al), math.cos(al)
+    nx, nz = sa_, -ca_
+    w, bl, cn = M["wall"], M["balcony"], M["cone"]
+    Za, Zt = lev["cone_top"] - 0.5, lev["B2_top"] + 0.5
+    x_in = lambda z_: r0 + (z_ - lev["LWL"]) / math.tan(al)       # the cone's water face at level z_
+    Xa, Xb = min(R - 0.3, x_in(Za) - 0.05), g["bal_edge"] + 0.06    # the cone whole down to the window's foot
+    s = fit_scale(Xb - Xa, Zt - Za, 95, bh - 22)
+    k = 1000.0 / s
+    xd = x0 + 138                                      # the drawing's left edge
+    v = View(sh, xd, y0 + 18, s, Xa, Za)
+    # ---- concrete: the one outline cut to the window, the cut edges as break lines
+    cut = _clip(_container_outline(res), Xa, Za, Xb + 1.0, Zt)
+    on_cut = lambda q: abs(q[1] - Za) < 1e-6 or abs(q[1] - Zt) < 1e-6 or abs(q[0] - Xa) < 1e-6
+    for a_, b_ in zip(cut, cut[1:] + cut[:1]):
+        if math.dist(a_, b_) < 1e-6:
+            continue
+        if on_cut(a_) and on_cut(b_) and (abs(a_[1] - b_[1]) < 1e-6 or abs(a_[0] - b_[0]) < 1e-6):
+            _brk(sh, v.p(*a_), v.p(*b_))
+        else:
+            v.line(a_, b_)
+    # ---- bars
+    zfoot = lev["cone_top"] + cw + 0.03
+    zt_ = Zt - 0.03
+    tz = lambda z_: R + th["tw"] + (th["twb"] - th["tw"]) * max(0.0, 1.0 - (z_ - lev["B2_top"]) / max(th["taper"], 1e-6))
+    v.poly([(R + th["twb"] - cw, zfoot), (R + th["twb"] - cw, lev["B2_top"]), (tz(zt_) - cw, zt_)], "REBAR")    # wall, outer
+    v.poly([(R + cw, zfoot), (R + cw, zt_)], "REBAR")                                                            # wall, inner
+    xa, xb, za, zb_ = R + cw, g["bal_edge"] - cw, lev["cone_top"] + cw, lev["B2_top"] - cw
+    v.poly([(xa, za), (xb, za), (xb, zb_), (xa, zb_)], "REBAR", True)                                           # balcony
+    per = [(xa + 0.05, zb_ - 0.045), (xb - 0.05, zb_ - 0.045), (xb - 0.05, za + 0.045), (xa + 0.05, za + 0.045)]
+    Lp = sum(math.dist(p_, q_) for p_, q_ in zip(per, per[1:]))
+    v.dots(per, Lp / bl["n"], 0.6, first=Lp / bl["n"] / 2)
+    ends = {}
+    for j, off in enumerate((cw, t0 - cw)):            # the cone's two faces, from the window's foot
+        base = (r0 + nx * off, lev["LWL"] + nz * off)
+        at_s = lambda s_, base=base: (base[0] + s_ * ca_, base[1] + s_ * sa_)
+        p0 = at_s((Za + 0.03 - base[1]) / sa_)
+        if j == 0:                                     # water face: on up the wall's inner face, a lap of 450
+            p_w = at_s((R + cw + 0.03 - base[0]) / ca_)
+            path = [p0, p_w, (p_w[0], lev["B2_top"] + 0.45)]
+        else:                                          # outer face: into the balcony, along its bottom
+            p_hi = at_s((za + 0.03 - base[1]) / sa_)
+            path = [p0, p_hi, (xb - 0.05, p_hi[1])]
+        v.poly(path, "REBAR")
+        ends[j] = path
+        o2 = 0.035 if j == 0 else -0.035
+        sft = lambda q, o2=o2: (q[0] + nx * o2, q[1] + nz * o2)
+        a_ = sft(at_s((Za + 0.06 - base[1]) / sa_))
+        b_ = sft(at_s((g["h0"] - 0.06 - nz * off) / sa_))
+        v.dots([a_, b_], cn["hoop_up"][1] / 1e3, 0.5)
+    zone = min(w["zones"], key=lambda z_: lev["wall_top"] - z_["top"] - z_["len"])          # the lowest zone of hoops
+    for xf in (lambda z_: R + cw + 0.03, lambda z_: tz(z_) - cw - 0.03):
+        zz = lev["B2_top"] + 0.06
+        while zz < zt_ - 0.02:
+            sh.dot(v.p(xf(zz), zz), 0.5)
+            zz += zone["sp"] / 1e3
+    # ---- dimensions
+    xe_ = v.p(g["bal_edge"], 0)[0]
+    sh.dim_v(v.p(0, lev["cone_top"])[1], v.p(0, lev["B2_top"])[1], xe_ + 5, f"{th['bal_t'] * 1e3:.0f}", x_from=xe_)
+    sh.dim_h(v.p(R, 0)[0], xe_, v.p(0, Zt)[1] + 4, f"{(g['bal_edge'] - R) * 1e3:.0f}", y_from=v.p(0, lev["B2_top"])[1])
+    # (the wall's thickness at the base: in the note on the right - a dimension over the wall sat on its bars)
+    cm = (R + 0.05 - (lev["cone_top"] - Za) * 0.55 / math.tan(al), lev["cone_top"] - (lev["cone_top"] - Za) * 0.55)
+    sh.dim_across(v.p(*cm), v.p(cm[0] + t0 * sa_, cm[1] - t0 * ca_), f"{t0 * 1e3:.0f}")
+    # ---- notes: the water face on the left, the outer face on the right
+    xl, xr = xd - 6, xd + (Xb - Xa) * k + 6
+    nv = lambda dia_sp, dd: f"{math.ceil(math.pi * dd * 1e3 / dia_sp[1])} - {dia_sp[0]} # @ {dia_sp[1]} C/C"
+    # (the left notes low: the L-section of the bottom ring beam is over them)
+    sh.leader(v.p(R + cw, lev["B2_top"] + 0.5), (xl, y0 + 50),
+              [nv(w["vert"], 2 * R) + " VERTICAL,", f"EACH FACE; {zone['n']} - {zone['dia']} # HOOPS"], 1.6, right=False)
+    pw = ends[0][1]
+    sh.leader(v.p(pw[0], pw[1] + 0.25), (xl, y0 + 38),
+              [f"CONE'S WATER-FACE BARS ({at(cn['mer'])})", "ON UP THE WALL'S FACE, LAP 450"], 1.6, right=False)
+    q1 = ends[0][0]
+    sh.leader(v.p(q1[0] + (ends[0][1][0] - q1[0]) * 0.3, q1[1] + (ends[0][1][1] - q1[1]) * 0.3), (xl, y0 + 25),
+              [f"CONE {cn['t']} THICK,", f"{cn['hoop_up'][0]} # HOOPS @ {cn['hoop_up'][1]} EACH FACE"], 1.6, right=False)
+    sh.leader(v.p(xb - 0.05, (za + zb_) / 2), (xr, v.p(0, lev["B2_top"] + 0.15)[1]),
+              [f"BALCONY: {nb((bl['n'], bl['dia']))} HOOPS,", at(bl["rad"], "RADIALLY") + " TOP,", at(bl["dist"]) + " BOTTOM"], 1.6)
+    ph = ends[1][1]
+    sh.leader(v.p(ph[0] + 0.1, ph[1]), (xr, v.p(0, lev["cone_top"] - 0.3)[1]),
+              ["CONE'S OUTER BARS INTO THE", "BALCONY, ALONG ITS BOTTOM"], 1.6)
+    sh.leader(v.p(tz(lev["B2_top"] + 0.35) - cw, lev["B2_top"] + 0.35), (xr, v.p(0, Zt - 0.05)[1]),
+              [f"WALL {w['tb']} AT THE BASE,", f"{w['t']} ABOVE A {th['taper'] * 1e3:.0f} TAPER"], 1.6)
+    sh.heading("DETAIL OF THE JOINT OF WALL, BALCONY AND CONE", (x0 + bw / 2, y0 + 7), 2.4, f"SCALE 1:{s}")
+
+
 def _sheet_container(dw, res, info):
     sh = Sheet(dw, 1, "CONTAINER", 2)
     g, M, opt, th = res["geo"], res["members"], res["opt"], res["geo"]["th"]
@@ -1284,6 +1390,7 @@ def _sheet_container(dw, res, info):
     br, col = M["bottom_ring"], M["column"]
     # top ring beam: the joint's detail
     _ring_detail(sh, res, xr, 494, 150, 90)
+    _joint_detail(sh, res, xr, 200, SW - 10 - xr, 100)
     _dome_plan(sh, res, "top_dome", xr + 152, 498, SW - 10 - xr - 156, 84, "PART PLAN OF TOP DOME REINFORCEMENT")
     _dome_plan(sh, res, "bottom_dome", xr + 4, 404, SW - 10 - xr - 8, 88, "PART PLAN OF BOTTOM DOME REINFORCEMENT (EACH FACE)")
     s2 = fit_scale(g["Lb"] + g["dc"] + 1.3, th["d3"] + 1.8, 180, 95)
@@ -1299,6 +1406,170 @@ def _sheet_container(dw, res, info):
 
 
 # -------------------------------------------------------------------------------------------- sheet 3: the staircase
+def _brk(sh, p, q):
+    """A break line (zigzag) from p to q, paper mm."""
+    m1 = (p[0] + (q[0] - p[0]) * 0.4, p[1] + (q[1] - p[1]) * 0.4)
+    m2 = (p[0] + (q[0] - p[0]) * 0.6, p[1] + (q[1] - p[1]) * 0.6)
+    L = math.dist(p, q) or 1.0
+    nx, ny = -(q[1] - p[1]) / L * 1.2, (q[0] - p[0]) / L * 1.2
+    sh.poly([p, m1, (m1[0] + nx, m1[1] + ny), (m2[0] - nx, m2[1] - ny), m2, q], "THIN")
+
+
+def _clip(pts, xmin, zmin, xmax=None, zmax=None):
+    """The polygon pts cut to xmin <= X (<= xmax) and zmin <= Z (<= zmax) (Sutherland-Hodgman, the region is convex)."""
+    atx = lambda x_: (lambda a, b: (x_, a[1] + (b[1] - a[1]) * (x_ - a[0]) / (b[0] - a[0])))
+    atz = lambda z_: (lambda a, b: (a[0] + (b[0] - a[0]) * (z_ - a[1]) / (b[1] - a[1]), z_))
+    planes = [(lambda q: q[0] >= xmin, atx(xmin)), (lambda q: q[1] >= zmin, atz(zmin))]
+    if xmax is not None:
+        planes.append((lambda q: q[0] <= xmax, atx(xmax)))
+    if zmax is not None:
+        planes.append((lambda q: q[1] <= zmax, atz(zmax)))
+    for inside, cut in planes:
+        out = []
+        for i, b in enumerate(pts):
+            a = pts[i - 1]
+            if inside(b):
+                if not inside(a):
+                    out.append(cut(a, b))
+                out.append(b)
+            elif inside(a):
+                out.append(cut(a, b))
+        pts = out
+    return pts
+
+
+def _stirrups(v, x1, x2, z1, z2, skip=(), step=0.15):
+    x = x1
+    while x < x2 - 1e-6:
+        if not any(a < x < b for a, b in skip):
+            v.line((x, z1), (x, z2), "REBAR2")
+        x += step
+
+
+def _stair_beam(sh, res, kind, x0, y0, bw):
+    """Elevation of the landing beam B3 (from the outer face of the cone / balcony to the staircase column and on)
+    or B4 (a balanced cantilever on the staircase column alone, user 23-Nov-2026); fitted to the width bw from x0,
+    y0 the paper level of its soffit."""
+    st, g = res["members"]["stair"], res["geo"]
+    bm = st["beams"][kind]
+    lc, ds, d, c = st["lc"], st["col"]["d"] / 1e3, bm["d"] / 1e3, 0.04
+    L = bm["L"] if kind == "B3" else lc
+    ta = math.tan(g["alpha"])
+    tt = g["th"]["t0"] / math.sin(g["alpha"])          # the cone's thickness, level across
+    # B3 drawn at its longest span: on the cone, or at the balcony's level on the balcony's edge
+    lmax = max((x_ for x_ in st["landings"] if x_["type"] == kind), key=lambda x_: x_["L"])
+    on_bal = kind == "B3" and lmax["z"] - d / 2 >= res["levels"]["cone_top"] - 1e-6
+    bt = g["th"]["bal_t"]
+    ch = lambda r_: math.sqrt(max(r_ * r_ - (st["Lb"] / 2.0) ** 2, 0.0))      # a radius met on the beam's line
+    xcone = ch(g["R"] + g["th"]["t0"] / math.sin(g["alpha"])) - ch(g["bal_edge"])   # the cone under the balcony, from its edge
+    f = (lambda z: (z - d / 2) / ta) if kind == "B3" and not on_bal else (lambda z: 0.0)   # the left end at level z
+    xcol = L + ds / 2
+    xe = xcol + ds / 2 + lc
+    left = (-0.8 / ta - tt) if kind == "B3" and not on_bal else (xcone - tt - 0.8 / ta if on_bal else 0.0)
+    s = fit_scale(xe - left + 0.4, d + 1.6, bw, 70)
+    v = View(sh, x0 + (0.2 - left) * 1000 / s, y0, s)
+    if on_bal:                                         # the balcony's slab, the cone under it: one piece with the beam
+        zs = d - bt                                    # the balcony's soffit
+        xl = xcone - tt
+        v.poly([(xl, d), (xe, d), (xe, 0), (0, 0)] + ([(0, zs)] if zs > 1e-6 else []) + [(xcone, zs), (xcone - 0.8 / ta, zs - 0.8)])
+        v.line((xl, zs), (xl - 0.8 / ta, zs - 0.8))
+        _brk(sh, v.p(xl, zs), v.p(xl, d))
+        _brk(sh, v.p(xl - 0.8 / ta, zs - 0.8), v.p(xcone - 0.8 / ta, zs - 0.8))
+        sh.leader(v.p(xl / 2, d - bt / 2), v.p(xl / 2 + 0.2, d + 0.5), "BALCONY", 1.7, right=False)
+    else:
+        v.poly([(f(0), 0), (xe, 0), (xe, d), (f(d), d)] + ([] if kind == "B3" else [(f(0), 0)]))
+    for z1, z2, zb in ((-0.7, 0.0, -0.7), (d, d + 0.7, d + 0.7)):          # the staircase column below and above
+        v.line((xcol - ds / 2, z1), (xcol - ds / 2, z2))
+        v.line((xcol + ds / 2, z1), (xcol + ds / 2, z2))
+        _brk(sh, v.p(xcol - ds / 2 - 0.05, zb), v.p(xcol + ds / 2 + 0.05, zb))
+    if on_bal:                                         # the top bars on into the balcony, the bottom bars bent up at its edge
+        top = [(xcone - tt + 0.06, d - c), (xe - c, d - c), (xe - c, d / 2 + 0.03)]
+        bot = [(c, d - c - 0.06), (c, c), (xe - c - 0.04, c), (xe - c - 0.04, d / 2 - 0.03)]
+    elif kind == "B3":                                 # a piece of the cone: its outer face above and below the beam
+        zl, zh = -0.8, d + 0.8
+        v.line((f(zl), zl), (f(0), 0))
+        v.line((f(d), d), (f(zh), zh))
+        v.line((f(zl) - tt, zl), (f(zh) - tt, zh))
+        _brk(sh, v.p(f(zl) - tt, zl), v.p(f(zl), zl))
+        _brk(sh, v.p(f(zh) - tt, zh), v.p(f(zh), zh))
+        # top bars down the cone's middle, bottom bars up it: anchored in the cone
+        top = [(f(d - c - 0.45) - tt * 0.6, d - c - 0.45), (f(d - c) - tt * 0.6, d - c), (xe - c, d - c), (xe - c, d / 2 + 0.03)]
+        bot = [(f(c + 0.45) - tt * 0.35, c + 0.45), (f(c) - tt * 0.35, c), (xe - c - 0.04, c), (xe - c - 0.04, d / 2 - 0.03)]
+        sh.leader(v.p(f(-0.45) - tt / 2, -0.45), v.p(f(-0.45) + 0.45, -0.55), "CONE", 1.7)
+    else:
+        top = [(c, d / 2 + 0.03), (c, d - c), (xe - c, d - c), (xe - c, d / 2 + 0.03)]
+        bot = [(c + 0.04, d / 2 - 0.03), (c + 0.04, c), (xe - c - 0.04, c), (xe - c - 0.04, d / 2 - 0.03)]
+    v.poly(top, "REBAR")
+    v.poly(bot, "REBAR")
+    _stirrups(v, max(f(0), f(d)) + 0.05, xe - 0.05, c, d - c, skip=((xcol - ds / 2, xcol + ds / 2),))
+    qx, qz = v.p(xcol - ds / 2, d + 0.45)              # the note ends short of the column
+    sh.leader(v.p(xcol - ds / 2 - max(L * 0.35, 0.3), d - c), (qx - 2.0, qz), nb(bm["top"]), 1.8, right=False)
+    sh.leader(v.p(xe - lc * 0.5, c), v.p(xe - lc * 0.4, -0.5), nb(bm["bot"]), 1.8)
+    sh.text("8 # STR. @ 150 C/C", v.p(xe - lc / 2, d + 0.2), 1.7, TA.BOTTOM_CENTER)
+    yd = v.p(0, -0.7)[1] - 3
+    xf = f(d / 2)
+    sh.dim_h(v.p(xf, 0)[0], v.p(xcol - ds / 2, 0)[0], yd, f"{L * 1e3:.0f}", below=True)
+    sh.dim_h(v.p(xcol - ds / 2, 0)[0], v.p(xcol + ds / 2, 0)[0], yd, f"{ds * 1e3:.0f}", below=True)
+    sh.dim_h(v.p(xcol + ds / 2, 0)[0], v.p(xe, 0)[0], yd, f"{lc * 1e3:.0f}", below=True)
+    sh.dim_v(v.p(0, 0)[1], v.p(0, d)[1], v.p(xe, 0)[0] + 5, f"{bm['d']}", x_from=v.p(xe, 0)[0])
+    lv = ", ".join(f"{z * 1e3:.0f}" for z in bm["levels"])
+    sub = f"RL {lv};  SCALE 1:{s}"
+    if kind == "B3" and len(bm["levels"]) > 1:
+        sp = [xs_ for xs_ in st["landings"] if xs_["type"] == "B3"]
+        sub = "SPAN " + ", ".join(f"{x_['L'] * 1e3:.0f} AT RL {x_['z'] * 1e3:.0f}" for x_ in sp) + f";  SCALE 1:{s}"
+    sh.heading({"B3": "LANDING BEAM B3 (ON THE CONE / BALCONY)", "B4": "LANDING BEAM B4 (ON THE STAIRCASE COLUMN)"}[kind],
+               (x0 + bw / 2, yd - 9), 2.6, sub)
+
+
+def _roof_landing(sh, res, x0, y0, bw):
+    """Section 14-14 along B5 at the roof (user 23-Nov-2026): the landing at the top ring beam's level carried on flat
+    to it on B5, from the top ring beam to the staircase column and on; x0, y0 the paper point of the left end of the
+    view at its lowest level."""
+    st, g, lev = res["members"]["stair"], res["geo"], res["levels"]
+    bm, br = st["beams"]["B5"], st["bridge"]
+    # the section runs along B5, Lb / 2 off the tank's axis: the tank's round faces met there (ch)
+    ch = lambda r_: math.sqrt(max(r_ * r_ - (st["Lb"] / 2.0) ** 2, 0.0))
+    R, roof, xb1, xs = ch(g["R"]), st["roof"], st["xb1_line"], st["xs"]
+    lc, ds, d, c = st["lc"], st["col"]["d"] / 1e3, bm["d"] / 1e3, 0.04
+    xe = xs + ds / 2 + lc
+    Xa, Zb = R - 0.6, roof - 1.0
+    s = fit_scale(xe - Xa + 0.6, 2.4, bw, 80)
+    v = View(sh, x0, y0, s, Xa, Zb)
+    # the tank: the top ring beam, the wall's top and the top dome's edge, cut out of the one outline
+    cut = _clip([(ch(x_), z_) for x_, z_ in _container_outline(res)], Xa, Zb + 0.1)
+    v.poly(cut, "OUTLINE", True)
+    # B5 and the staircase column under it
+    v.poly([(xb1, roof - d), (xe, roof - d), (xe, roof), (xb1, roof)])
+    v.line((xb1, roof - d), (xb1, lev["wall_top"]))
+    for xx in (xs - ds / 2, xs + ds / 2):
+        v.line((xx, Zb + 0.1), (xx, roof - d))
+    _brk(sh, v.p(xs - ds / 2 - 0.05, Zb + 0.1), v.p(xs + ds / 2 + 0.05, Zb + 0.1))
+    # bars: the top bars carried 300 into the top ring beam, the bottom bars from the ring beam's face
+    v.poly([(max(xb1 - 0.3, R + 0.04), roof - c), (xe - c, roof - c), (xe - c, roof - d / 2 + 0.03)], "REBAR")
+    v.poly([(xb1 + c, roof - d / 2 - 0.03), (xb1 + c, roof - d + c), (xe - c - 0.04, roof - d + c), (xe - c - 0.04, roof - d / 2 - 0.03)], "REBAR")
+    _stirrups(v, xb1 + 0.06, xe - 0.05, roof - d + c, roof - c, skip=((xs - ds / 2, xs + ds / 2),))
+    # the railing at the landing's outer edge, seen beyond
+    for xx in (xb1 + 0.1, xs, xe - 0.08):
+        v.line((xx, roof), (xx, roof + 1.0), "THIN")
+    for zz in (0.35, 0.68, 1.0):                       # the three pipes
+        v.line((xb1 + 0.1, roof + zz), (xe - 0.08, roof + zz), "THIN")
+    L = xs - ds / 2 - xb1
+    sh.leader(v.p(xb1 + L * 0.55, roof - c), v.p(xb1 + L * 0.45, roof + 0.56), [nb(bm["top"]) + " (300 INTO THE", "TOP RING BEAM)"], 1.7)   # between the rails
+    sh.leader(v.p(xb1 + L * 0.5, roof - d + c), v.p(xb1 + L * 0.65, roof - d - 0.45), nb(bm["bot"]), 1.7)
+    sh.text("8 # STR. @ 150 C/C", v.p(xe - lc / 2, roof + 0.2), 1.7, TA.BOTTOM_CENTER)
+    sh.leader(v.p(R + 0.05, lev["wall_top"] - 0.4), v.p(R - 0.45, Zb + 0.35), "TANK WALL", 1.7, right=False)
+    sh.leader(v.p(xb1 - 0.12, roof - 0.1), v.p(xb1 - 0.5, roof + 0.75), "TOP RING BEAM", 1.7, right=False)
+    sh.leader(v.p(xe - 0.08, roof + 0.8), v.p(xe + 0.25, roof + 1.15), ["3 - 20 DIA G.I. PIPE RAILING", "ON ISA 50x50x6 POSTS"], 1.7)
+    sh.leader(v.p(xs + ds / 2, Zb + 0.45), v.p(xs + ds / 2 + 0.4, Zb + 0.3), "STAIRCASE COLUMN", 1.7)
+    sh.level(v.p(xe, roof)[0] + 2, v.p(xe, roof)[1], f"RL {roof * 1e3:.0f}")
+    yd = v.p(0, Zb)[1] - 3
+    sh.dim_h(v.p(xb1, 0)[0], v.p(xs - ds / 2, 0)[0], yd, f"{L * 1e3:.0f}", below=True)
+    sh.dim_h(v.p(xs - ds / 2, 0)[0], v.p(xs + ds / 2, 0)[0], yd, f"{ds * 1e3:.0f}", below=True)
+    sh.dim_h(v.p(xs + ds / 2, 0)[0], v.p(xe, 0)[0], yd, f"{lc * 1e3:.0f}", below=True)
+    sh.heading("SECTION 14 - 14 (BEAM B5 AT THE ROOF)", (x0 + bw / 2, yd - 9), 2.6,
+               f"THE LANDING CARRIED ON FLAT TO THE TOP RING BEAM: SLAB {br['t']} THICK, {at(br['main'])} AT TOP;  SCALE 1:{s}")
+
+
 def _sheet_stair(dw, res, info, index):
     sh = Sheet(dw, index, "STAIRCASE", index + 1)
     g, _lev, M, opt = res["geo"], res["levels"], res["members"], res["opt"]
@@ -1311,17 +1582,17 @@ def _sheet_stair(dw, res, info, index):
     s = fit_scale(ext_x, ext_y, 175, 150)
     k = 1000.0 / s
 
-    def plan(x0, y0, title, level, extra=None):
+    def plan(x0, y0, title, level, extra=None, ends=None, cols="OUTLINE"):
         P = lambda x, y: (x0 + (x - st["xc"] + 1.2) * k, y0 + 12 + (y + ext_y / 2) * k)
         for a in (math.pi / n, -math.pi / n):
-            sh.circle(P(r0 * math.cos(a), r0 * math.sin(a)), dc / 2 * k)
+            sh.circle(P(r0 * math.cos(a), r0 * math.sin(a)), dc / 2 * k, cols)
         for sg in (1, -1):                                         # the braces to the next columns
             a, b_ = sg * math.pi / n, sg * 3 * math.pi / n
             pa, pb = (r0 * math.cos(a), r0 * math.sin(a)), (r0 * math.cos(b_), r0 * math.sin(b_))
             t_ = 0.45
             sh.line(P(*pa), P(pa[0] + (pb[0] - pa[0]) * t_, pa[1] + (pb[1] - pa[1]) * t_), "HIDDEN")
         sh.line(P(st["xc"], -Lb / 2), P(st["xc"], Lb / 2), "HIDDEN")
-        _stair_plan(sh, P, res, k)
+        _stair_plan(sh, P, res, k, ends=ends)
         if extra:
             extra(P)
         sh.text(f"{dc * 1e3:.0f} DIA COLUMN", P(st["xc"] - 0.9, Lb / 2 + 0.75), 1.7)
@@ -1342,8 +1613,42 @@ def _sheet_stair(dw, res, info, index):
             a = math.asin(hy / r_)
             sh.poly([P(r_ * math.cos(-a + 2 * a * i / 20), r_ * math.sin(-a + 2 * a * i / 20)) for i in range(21)], layer)
         sh.text("BALCONY", P(g["bal_edge"] - 0.5, 0), 1.8, TA.MIDDLE_CENTER, rot=90)
-    plan(18, 215, "BALCONY LEVEL PLAN", f"RL {st['bal'] * 1e3:.0f}", balc)
-    plan(18, 30, "ROOF LEVEL PLAN", f"RL {st['roof'] * 1e3:.0f} (TOP RING BEAM)", balc)
+    # the landing beams seen in a plan: the landing at its level at one end, the one below at the other (user
+    # 23-Nov-2026: each on what it rests on - B1 the staging's column, B3 the cone / balcony, B4 the staircase column
+    # alone, B5 the top ring beam)
+    lands = st["landings"]
+
+    xbal = math.sqrt(max(g["bal_edge"] ** 2 - (Lb / 2) ** 2, 0.0))   # the balcony's edge on the beams' line
+
+    def seen(i, x_cut):
+        kind = lands[i]["type"]
+        return kind, {"B1": x_cut, "B3": max(x_cut, xs - lands[i]["L"] - st["col"]["d"] / 2e3),
+                      "B4": xs - lc, "B5": st["xb1_line"]}[kind]
+    ib = st["n1"]                                     # the balcony's landing; the roof's is the last
+    plan(18, 215, "BALCONY LEVEL PLAN", f"RL {st['bal'] * 1e3:.0f}", balc,
+         {stair_side(ib): seen(ib, xbal), -stair_side(ib): seen(ib - 1, xbal)}, "HIDDEN")
+    it = len(lands) - 1
+    sr = stair_side(it)
+    bb_ = st["beam"]["b"] / 1e3
+
+    def roof(P):
+        balc(P)
+        hy = min(Lb / 2 + rl, st["xb1"] * 0.9)
+        a = math.asin(hy / st["xb1"])
+        sh.poly([P(st["xb1"] * math.cos(-a + 2 * a * i / 20), st["xb1"] * math.sin(-a + 2 * a * i / 20)) for i in range(21)])
+        # the landing carried on flat to the top ring beam
+        y1, y2 = sr * (Lb / 2 - bb_ / 2), sr * (Lb / 2 + rl)
+        arc = lambda y_: math.sqrt(max(st["xb1"] ** 2 - y_ * y_, 0.0))      # its end on the ring beam's round face
+        sh.poly([P(arc(y1), y1), P(xs - rl, y1), P(xs - rl, y2), P(arc(y2), y2)])
+        sh.text("TOP RING BEAM", P(st["xb1"] - 0.25, -sr * Lb / 4), 1.6, TA.MIDDLE_CENTER, rot=90)
+        # the section 14-14 along B5
+        # its name beside the mark, on the side of the tank's axis: the ring beam's round face bends away there
+        for xm in (st["xb1_line"] - 0.35, xs + rl + 0.5):
+            p_ = P(xm, sr * Lb / 2)
+            sh.line((p_[0] - 2.2, p_[1]), (p_[0] + 2.2, p_[1]), "FRAME")
+            sh.text("14", (p_[0], p_[1] - sr * 1.5), 2.4, TA.TOP_CENTER if sr > 0 else TA.BOTTOM_CENTER, style=B)
+    plan(18, 30, "ROOF LEVEL PLAN", f"RL {st['roof'] * 1e3:.0f} (TOP RING BEAM)", roof,
+         {sr: seen(it, xbal), -sr: seen(it - 1, xbal)}, "HIDDEN")
     # typical flight
     x0, y0 = 230, 420
     go, rise = st["treads"] * st["tread"], st["risers"] * st["riser1"]
@@ -1435,7 +1740,9 @@ def _sheet_stair(dw, res, info, index):
     sh.dim_h(X(0), X(dc), Z(-0.7) - 3, f"{dc * 1e3:.0f}", below=True)
     sh.text("COLUMN OF THE STAGING", (X(dc / 2), Z(bd_ + 0.95)), 1.6, TA.MIDDLE_CENTER)
     sh.text("STAIRCASE COLUMN", (X(dc + L1 + ds / 2), Z(bd_ + 0.95)), 1.6, TA.MIDDLE_CENTER)
-    sh.heading("LANDING BEAM B1 (AT EVERY LANDING)", (236 + 125, min(300 + 3, Z(-0.7) - 10)), 2.6, f"SCALE 1:{s3}")   # under its dimensions
+    b1lv = st["beams"]["B1"]["levels"]
+    sh.heading("LANDING BEAM B1 (ON A COLUMN OF THE STAGING)", (236 + 125, min(300 + 3, Z(-0.7) - 10)), 2.6,
+               f"RL {b1lv[0] * 1e3:.0f} TO {b1lv[-1] * 1e3:.0f};  SCALE 1:{s3}")   # under its dimensions
     # the staircase's column and footing
     cs, ft = st["col"], st["footing"]
     s4 = fit_scale(ft["side"] + 0.4, ft["side"] + 0.4, 95, 95)
@@ -1479,6 +1786,16 @@ def _sheet_stair(dw, res, info, index):
     sh.dim_v(sy, sy + te_, sx + hs + 6, f"{ft['te']}")
     sh.text("100 P.C.C.", (sx + hs + 3, sy - 1.2), 1.6)
     sh.heading("SECTION OF THE FOOTING AND STAIRCASE COLUMN", (sx, sy - 16), 2.6, f"SCALE 1:{s4}")
+    # the landing beams on what each rests on, the roof's landing and the beams' sections (user 23-Nov-2026)
+    _roof_landing(sh, res, 505, 345, 175)
+    bms = st["beams"]
+    if "B3" in bms:
+        _stair_beam(sh, res, "B3", 500, 250, 190)
+    if "B4" in bms:
+        _stair_beam(sh, res, "B4", 705, 250, 115)
+    for i, (kind, b_) in enumerate(bms.items()):
+        _beam_xsec(sh, 515 + i * 62, 175, 15, b_["b"], b_["d"], b_["top"], b_["bot"], opt["cover_stair_mm"],
+                   f"SECTION OF {kind}", note="8 # STR. @ 150")
     # table of the flights
     tx, ty = 500, 575
     sh.heading("FLIGHTS", (tx + 60, ty), 2.8)
@@ -1510,7 +1827,9 @@ def _sheet_stair(dw, res, info, index):
     sh.lines([f"BALCONY RL {st['bal'] * 1e3:.0f};  ROOF (TOP RING BEAM) RL {st['roof'] * 1e3:.0f}.",
               f"TREADS {st['tread'] * 1e3:.0f} WIDE, {st['treads']} IN A FLIGHT; WIDTH OF STAIRCASE {w * 1e3:.0f}.",
               f"THE STAIRCASE IS CARRIED ON TWO SEPARATE COLUMNS OF {cs['d']} DIA AT {Lb * 1e3:.1f} C/C,",
-              f"{(xs - st['xc']) * 1e3:.0f} FROM THE COLUMNS OF THE STAGING; A LANDING BEAM B1 AT EVERY LANDING.",
+              f"{(xs - st['xc']) * 1e3:.0f} FROM THE COLUMNS OF THE STAGING. A LANDING BEAM AT EVERY LANDING:",
+              "B1 ON A COLUMN OF THE STAGING, B3 ON THE CONE / BALCONY, B4 ON THE STAIRCASE COLUMN ALONE",
+              "(NOT INTO THE TANK WALL), B5 AT THE ROOF ON THE TOP RING BEAM.",
               "LANDINGS: SLAB OF THE WAIST'S THICKNESS, 8 # @ 150 C/C BOTH WAYS.",
               "", "NOTES:  1. ALL DIMENSIONS ARE IN MILLIMETRE.   2. READ WITH SHEETS 1 AND 2."], tx, ty, 1.9, 3.6)
     sh.frame(info)
@@ -1521,7 +1840,7 @@ def _sheet_stair(dw, res, info, index):
 def _sheets_bbs(dw, res, info, start):
     rows = res["bbs"]
     conc, steel = intze.quantities(res)
-    per = 66
+    per = 76                    # rows of 7 mm from y 563 down to ~24: clear of the note at the frame's foot
     chunks = [rows[i:i + per] for i in range(0, len(rows), per)] or [[]]
     sheets = []
     cols = [("S.No", 12), ("Member", 40), ("Mark", 14), ("Description", 126), ("Dia", 12), ("Nos", 16),

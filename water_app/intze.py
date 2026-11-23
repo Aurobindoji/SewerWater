@@ -805,6 +805,13 @@ def design(cap_kl, staging_m, swd_m, opts=None):
     return res
 
 
+def beam_len(st, kind):
+    """The length of a staircase landing beam (m): its span to the staircase's column and the cantilever beyond; B4 the
+    cantilever on either side of the column."""
+    bm, lc, ds = st["beams"][kind], st["lc"], st["col"]["d"] / 1e3
+    return 2 * lc + ds if kind == "B4" else bm["L"] + ds + lc
+
+
 def _stair(g, lev, opt, mat, q_all):
     """The R.C.C. dog-legged staircase of the example (drawing OPG-3, report 6.0): two flights side by side between
     two columns of its own outside the balcony, beams from two columns of the staging to them at every landing."""
@@ -843,10 +850,70 @@ def _stair(g, lev, opt, mat, q_all):
     db_ = dbm - opt["cover_stair_mm"] - 8 - 6
     Asb = max(ast_flex(max(Mu_c, Mu_s), bbm, db_, fckf, fy) or 9e9, 0.85 * bbm * db_ / fy)
     nb, diab = _bars(Asb, (12, 16, 20), nmin=3, width=bbm, cover=opt["cover_stair_mm"])
-    # the staircase's column and its footing
-    per_level = 2.0 * (R_fl + R_land) * 0.75 + self_ * (L1 / 2.0 + lc)
+
+    def bars_for(Mu):
+        As = max(ast_flex(Mu, bbm, db_, fckf, fy) or 9e9, 0.85 * bbm * db_ / fy)
+        return _bars(As, (12, 16, 20), nmin=3, width=bbm, cover=opt["cover_stair_mm"])
+
+    # the landing beam at each landing, by what it can rest on (user 23-Nov-2026): B1 on a column of the staging while
+    # the landing is below the columns' top; above it up to the balcony B3 on the cone / balcony's outer face; above
+    # the balcony B4, a balanced cantilever on the staircase's column alone (never into the wall that holds the water);
+    # at the roof B5 on the top ring beam, the landing slab carried on flat to the ring beam
+    th = g["th"]
+
+    def face(z):                                       # the container's outer face at level z (beam's mid-depth)
+        r0b = r0 + th["b3"] / 2.0
+        if z >= lev["cone_top"]:
+            return g["bal_edge"]
+        xct = g["R"] + th["t0"] / math.sin(g["alpha"])
+        return max(r0b, xct - (lev["cone_top"] - z) / math.tan(g["alpha"]))
+    xb1 = g["R"] + max(th["b1"], th["tw"])             # the top ring beam's outer face
+    # a round face met on the line of the landing beam (Lb / 2 off the tank's axis), not at its radius
+    on_line = lambda r_: math.sqrt(max(r_ * r_ - (Lb / 2.0) ** 2, 0.0))
+    landings = []
+    for z in [0.0] + levels:
+        zm = z - dbm / 2e3
+        if z >= roof - 1e-6:
+            kind, L = "B5", xs - on_line(xb1) - ds / 2.0
+        elif z > bal + 1e-6:
+            kind, L = "B4", 0.0
+        elif zm <= lev["B3_bot"]:
+            kind, L = "B1", L1
+        else:
+            kind, L = "B3", xs - on_line(face(zm)) - ds / 2.0
+        landings.append({"z": z, "type": kind, "L": L})
+    rl = w + gap / 2.0
+    # the landing at the roof, carried on flat to the top ring beam: a slab cantilevered from B5 over the landing's width
+    t_br = tw_
+    w_br = GAMMA_C * t_br + 1.0 + 3.0
+    Mu_br = 1.5 * w_br * rl * rl / 2.0
+    br_main = _mesh(max(ast_flex(Mu_br, 1000.0, d, fckf, fy) or 9e9, 0.0012 * 1000.0 * t_br * 1e3), (8, 10, 12), smax=200, smin=80)
+    beams = {}
+    for kind in ("B1", "B3", "B4", "B5"):
+        Ls = [x["L"] for x in landings if x["type"] == kind]
+        if not Ls:
+            continue
+        L = max(Ls)
+        if kind == "B1":
+            Mu, R_col = max(Mu_c, Mu_s), 2.0 * (R_fl + R_land) * 0.75 + self_ * (L / 2.0 + lc)
+        elif kind == "B3":
+            Ms = 1.5 * (self_ * L * L / 8.0 + (R_fl + R_land) * (lc / 2.0) * max(0.0, 1.0 - lc / 2.0 / max(L, lc)))
+            Mu, R_col = max(Mu_c, Ms), 2.0 * (R_fl + R_land) * 0.75 + self_ * (L / 2.0 + lc)
+        elif kind == "B4":                             # the same cantilever on either side of the column
+            Mu, R_col = Mu_c, 2.0 * (R_fl + R_land) + self_ * 2.0 * lc
+        else:                                          # B5: the landing slab over its span, the top flight near the column
+            q = w_br * rl + self_
+            a_ = max(L - lc / 2.0, 0.0)                # the flight's end from the ring beam
+            Ms = 1.5 * (q * L * L / 8.0 + R_fl * a_ * (L - a_) / max(L, 1e-6))
+            Mu, R_col = max(Mu_c, Ms), q * L / 2.0 + R_fl * a_ / max(L, 1e-6) + (R_land + self_ * lc)
+        nb_, dia_ = bars_for(Mu)
+        beams[kind] = {"b": bbm, "d": dbm, "top": (nb_, dia_), "bot": (nb_, dia_) if kind != "B4" else (3, 12),
+                       "stir": (8, 150), "Mu": Mu, "L": L, "R": R_col, "n": len(Ls),
+                       "levels": [x["z"] for x in landings if x["type"] == kind]}
+    # the staircase's column and its footing: the landings alternate between the two columns
     H_col = roof + float(opt["founding_depth_m"]) - 0.6
-    P = math.ceil(len(levels) / 2.0) * per_level + GAMMA_C * area(ds) * H_col
+    loads = [beams[x["type"]]["R"] for x in landings]
+    P = max(sum(loads[0::2]), sum(loads[1::2])) + GAMMA_C * area(ds) * H_col
     ncol, dcol = 6, 16
     Pcap = (0.4 * fckf * (area(ds * 1e3) - ncol * area(dcol)) + 0.67 * fy * ncol * area(dcol)) / 1e3
     side = up(math.sqrt(1.1 * P / q_all), 0.1)
@@ -859,7 +926,8 @@ def _stair(g, lev, opt, mat, q_all):
                                                                         "bot": (nb, diab), "stir": (8, 150), "Mu": max(Mu_c, Mu_s)},
             "col": {"d": int(ds * 1e3), "n": ncol, "dia": dcol, "tie": (8, 200), "P": P, "Pcap": Pcap, "H": H_col},
             "footing": {"side": side, "t": int(tf * 1e3), "te": 150, "bars": _mesh(Asf, (10, 12, 16), smax=200)},
-            "bal": bal, "roof": roof}
+            "bal": bal, "roof": roof, "landings": landings, "beams": beams, "xb1": xb1, "xb1_line": on_line(xb1),
+            "bridge": {"t": int(round(t_br * 1e3)), "span": xs - rl - on_line(xb1), "cant": rl, "Mu": Mu_br, "main": br_main}}
 
 
 def _rows(r, res, f, mat, C, cb3, cbr, raft, W_tot, W_live, Mw, Mlev, Mo, tve3):
@@ -990,7 +1058,16 @@ def _rows(r, res, f, mat, C, cb3, cbr, raft, W_tot, W_live, Mw, Mlev, Mo, tve3):
         r(s, "Treads / risers in a flight", f"{st['treads']} x {st['tread'] * 1e3:.0f} / {st['risers']} x {st['riser1'] * 1e3:.0f} ({st['riser2'] * 1e3:.0f} above the balcony)", "mm", "the report 11 x 262 / 12 x 180")
         r(s, "Waist slab / span / factored load", f"{st['waist']} / {st['Lb']:.2f} / {st['wu']:.1f}", "mm / m / kN/m2", "live load 3 kN/m2")
         r(s, "Moment / main bars / distribution", f"{st['Mu']:.1f} / {b(st['main'])} / {b(st['dist'])}", "kNm/m / mm", "w L2 / 8")
-        r(s, "Landing beam: size / span / bars top and bottom", f"{st['beam']['b']} x {st['beam']['d']} / {st['L1']:.2f} / {st['beam']['top'][0]}-{st['beam']['top'][1]}", "mm / m", f"Mu {st['beam']['Mu']:.0f} kNm; stirrups 8 @ 150")
+        for kind, bm in st["beams"].items():
+            sup = {"B1": "column of the staging", "B3": "outer face of the cone / balcony", "B4": "staircase column only",
+                   "B5": "top ring beam"}[kind]
+            span = f"{bm['L']:.2f} + {st['lc']:.2f}" if kind != "B4" else f"{st['lc']:.2f} + {st['lc']:.2f}"
+            r(s, f"Landing beam {kind} ({bm['n']} nos): size / span / bars top, bottom",
+              f"{bm['b']} x {bm['d']} / {span} / {bm['top'][0]}-{bm['top'][1]}, {bm['bot'][0]}-{bm['bot'][1]}", "mm / m",
+              f"on the {sup}; Mu {bm['Mu']:.0f} kNm; stirrups 8 @ 150")
+        br = st["bridge"]
+        r(s, "Roof landing carried on to the top ring beam: slab / bars", f"{br['t']} / {br['main'][0]} @ {br['main'][1]}",
+          "mm", f"cantilever {br['cant']:.2f} m from B5, Mu {br['Mu']:.1f} kNm/m")
         r(s, "Staircase column (2 nos): dia / bars / load", f"{st['col']['d']} / {st['col']['n']}-{st['col']['dia']} / {st['col']['P']:.0f}", "mm / kN", f"1.5 P <= {st['col']['Pcap']:.0f} kN (IS 456 39.3)")
         r(s, "Footing of each", f"{st['footing']['side']:.1f} x {st['footing']['side']:.1f} m, {st['footing']['t']} to {st['footing']['te']} mm, {b(st['footing']['bars'])} both ways", "", "on the net bearing capacity")
 
@@ -1124,10 +1201,15 @@ def bbs(res):
         Lfl = math.hypot(st["treads"] * st["tread"], st["risers"] * st["riser1"]) + 1.2
         add("Staircase", "S1", f"flights: main bars @ {st['main'][1]} ({nf} flights)", st["main"][0], st["w"] * 1000 / st["main"][1] * nf, Lfl, "cranked")
         add("Staircase", "S2", f"flights: distribution @ {st['dist'][1]}", st["dist"][0], Lfl * 1000 / st["dist"][1] * nf, st["w"] - 0.05, "straight")
-        Lbeam = st["L1"] + st["lc"] + 0.8
-        add("Staircase", "S3", "landing beams: top and bottom bars", st["beam"]["top"][1], 2 * st["beam"]["top"][0] * nf, Lbeam, "anchored")
-        add("Staircase", "S4", "landing beams: stirrups 8 @ 150", 8, (st["L1"] + st["lc"]) * 1000 / 150 * nf,
-            2 * (st["beam"]["b"] + st["beam"]["d"] - 4 * opt["cover_stair_mm"]) / 1e3 + 0.2, "closed stirrup")
+        for kind, bm in st["beams"].items():           # B1 / B3 / B4 / B5 (each of its landings)
+            Lb_ = beam_len(st, kind)
+            add("Staircase", f"S3-{kind}", f"landing beams {kind} ({bm['n']} nos): top bars", bm["top"][1], bm["top"][0] * bm["n"], Lb_ + 0.8, "anchored")
+            add("Staircase", f"S3-{kind}b", f"landing beams {kind}: bottom bars", bm["bot"][1], bm["bot"][0] * bm["n"], Lb_ + 0.6, "anchored")
+            add("Staircase", f"S4-{kind}", f"landing beams {kind}: stirrups 8 @ 150", 8, Lb_ * 1000 / 150 * bm["n"],
+                2 * (bm["b"] + bm["d"] - 4 * opt["cover_stair_mm"]) / 1e3 + 0.2, "closed stirrup")
+        br = st["bridge"]
+        add("Staircase", "S9", f"roof landing to the top ring beam: top bars {br['main'][0]} @ {br['main'][1]}", br["main"][0],
+            (br["span"] + 0.3) * 1000 / br["main"][1], br["cant"] + 0.5, "anchored in B5")
         add("Staircase", "S5", "landings: mesh 8 @ 150 both ways", 8, nf * 2 * 2.3 * 1000 / 150, 1.6, "straight")
         add("Staircase", "S6", "columns: longitudinal bars (2 columns)", st["col"]["dia"], 2 * st["col"]["n"], lapped(st["col"]["H"] + 0.8, st["col"]["dia"]), "L at the footing")
         add("Staircase", "S7", "columns: rings 8 @ 200", 8, 2 * st["col"]["H"] * 1000 / 200, math.pi * (st["col"]["d"] - 60) / 1e3 + 0.2, "circular tie")
@@ -1156,8 +1238,10 @@ def quantities(res):
         nf = st["n1"] + st["n2"]
         fl = st["w"] * st["Lb"] * (st["waist"] / 1e3 * 1.25 + st["riser1"] / 2.0)
         land = math.pi * (st["w"] + st["gap"] / 2.0) ** 2 / 2.0 * st["waist"] / 1e3
-        beam = st["beam"]["b"] * st["beam"]["d"] / 1e6 * (st["L1"] + st["lc"])
-        conc["Staircase"] = (nf * (fl + land + beam) + 2 * area(st["col"]["d"] / 1e3) * st["col"]["H"]
+        beams = sum(bm["b"] * bm["d"] / 1e6 * beam_len(st, k) * bm["n"] for k, bm in st["beams"].items())
+        br = st["bridge"]
+        conc["Staircase"] = (nf * (fl + land) + beams + br["t"] / 1e3 * br["span"] * br["cant"]
+                             + 2 * area(st["col"]["d"] / 1e3) * st["col"]["H"]
                              + 2 * st["footing"]["side"] ** 2 * (st["footing"]["t"] + st["footing"]["te"]) / 2e3)
     steel = {}
     for r in res["bbs"]:

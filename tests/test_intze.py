@@ -225,3 +225,29 @@ def test_top_ring_nominal_rest_in_the_wall_top():
     water = intze.GAMMA_W * max(0.0, z0["len"] - r["geo"]["fb"]) * r["geo"]["R"]
     steel = 2 * z0["n"] * intze.area(z0["dia"]) / z0["len"]                  # both faces, mm2 per m
     assert steel * float(r["opt"]["sst_water"]) / 1e3 >= water + tr_["P_band"] / z0["len"] - 1e-6
+
+
+@pytest.mark.parametrize("cap,stg", [(2500, 24), (150, 12), (1000, 18)])
+def test_stair_landing_beams_rest_on_what_is_there(cap, stg):
+    """Each landing beam on what it can rest on (user 23-Nov-2026): B1 on a column of the staging only below the
+    columns' top, B3 on the cone / balcony up to the balcony, B4 above it on the staircase column alone (never
+    through the wall that holds the water), B5 at the roof from the top ring beam; the roof's landing carried on
+    flat to the ring beam."""
+    r = intze.design(cap, stg, 4)
+    st, lev, g = r["members"]["stair"], r["levels"], r["geo"]
+    kinds = [x["type"] for x in st["landings"]]
+    assert kinds[0] == "B1" and kinds[-1] == "B5" and kinds.count("B5") == 1
+    for x in st["landings"]:
+        if x["type"] == "B1":
+            assert x["z"] - st["beams"]["B1"]["d"] / 2e3 <= lev["B3_bot"]
+        if x["type"] == "B4":
+            assert st["bal"] < x["z"] < st["roof"]
+            assert st["xs"] - st["lc"] > g["R"] + g["th"]["tw"]          # its inner end short of the wall
+        if x["type"] == "B3":
+            assert lev["B3_bot"] < x["z"] <= st["bal"] + 1e-6 and 0 < x["L"] < st["L1"] + 1e-6
+    assert st["beams"]["B5"]["L"] > 0 and st["bridge"]["span"] > 0
+    assert kinds == sorted(kinds, key="B1B3B4B5".index)                    # in that order up the staircase
+    # every beam in the bar schedule, and the column carries the heavier side
+    marks = {row["mark"] for row in r["bbs"]}
+    assert all(f"S3-{k}" in marks for k in st["beams"]) and "S9" in marks
+    assert st["col"]["P"] < st["col"]["Pcap"] / 1.5

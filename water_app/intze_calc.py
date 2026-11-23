@@ -391,11 +391,25 @@ def report(res):
         r.f("Factored load", "1.5 (self weight + finish + live load)", None, n_(sc["wu"], 2), "kN/m²")
         r.f("Mu", "wu L² / 8", f"{n_(sc['wu'], 2)} x {n_(sc['Lb'], 3)}² / 8", n_(sc["Mu"], 2), "kNm/m")
         r.p(f"Provide {sc['main'][0]} φ @ {sc['main'][1]} c/c as main bars and {sc['dist'][0]} φ @ {sc['dist'][1]} c/c as distribution.")
-        r.h2("Landing Beam B1")
-        bm = sc["beam"]
-        r.t(f"Span from the column of the staging to the staircase column = {sc['L1'] * 1e3:.0f} mm, cantilever {sc['lc'] * 1e3:.0f} mm beyond it.")
-        r.f("Mu", "1.5 x (flight + landing reactions and self weight)", None, n_(bm["Mu"], 1), "kNm")
-        r.p(f"Provide a {bm['b']} x {bm['d']} mm beam with {bm['top'][0]} - {bm['top'][1]} φ at top and bottom and 8 φ stirrups @ 150 c/c.")
+        r.h2("Landing Beams B1, B3, B4, B5")
+        r.t("B1: below the top of the staging's columns, from a column of the staging to the staircase column;  B3: above it up to"
+            " the balcony, from the outer face of the cone / balcony;  B4: above the balcony, a balanced cantilever on the staircase"
+            " column alone (the wall that holds the water is not loaded);  B5: at the roof, from the top ring beam.")
+        for kind, bm in sc["beams"].items():
+            lv = ", ".join(f"{z * 1e3:.0f}" for z in bm["levels"])
+            if kind == "B4":
+                r.t(f"{kind} (RL {lv}): cantilever {sc['lc'] * 1e3:.0f} mm on either side of the staircase column.")
+            else:
+                r.t(f"{kind} (RL {lv}): span {bm['L'] * 1e3:.0f} mm to the staircase column, cantilever {sc['lc'] * 1e3:.0f} mm beyond it.")
+            r.f(f"Mu ({kind})", "1.5 x (flight + landing reactions and self weight)", None, n_(bm["Mu"], 1), "kNm")
+            r.p(f"Provide a {bm['b']} x {bm['d']} mm beam with {bm['top'][0]} - {bm['top'][1]} φ at top, {bm['bot'][0]} - {bm['bot'][1]} φ"
+                f" at bottom and 8 φ stirrups @ 150 c/c.")
+        br = sc["bridge"]
+        r.h2("Roof Landing carried on to the Top Ring Beam")
+        r.t(f"The landing at the roof is carried on flat over {br['span'] * 1e3:.0f} mm to the top ring beam, {br['t']} mm thick,"
+            f" cantilevered {br['cant'] * 1e3:.0f} mm from B5;  load = self + finish 1.0 + live 3.0 kN/m².")
+        r.f("Mu", "1.5 w l² / 2", None, n_(br["Mu"], 2), "kNm/m")
+        r.p(f"Provide {br['main'][0]} φ @ {br['main'][1]} c/c at top, anchored into B5, and 8 φ @ 200 c/c as distribution.")
         r.h2("Staircase Columns and Footings")
         cs, ft = sc["col"], sc["footing"]
         r.f("Load on a staircase column P", "reactions of the landings it carries + self weight", None, n_(cs["P"], 0), "kN")

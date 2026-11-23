@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.9.38 (beta) - 2026-11-23
+
+Sewer:
+- "DXF network…": a "Show network" button, as on the water page - the whole network of the ticked layers on the
+  map, nothing saved: the largest part blue, other parts orange, open ends red, with the counts of manholes,
+  sewers, parts, loops, open ends and manholes without GL, and the drawing's problems.
+
+Water supply - Intze OHT:
+- Staircase: each landing beam rests on what is there - B1 on a column of the staging below the columns' top, B3
+  on the cone or the balcony's edge up to the balcony, B4 above the balcony as a balanced cantilever on the
+  staircase column alone (no longer through the tank wall), B5 at the roof from the top ring beam, the landing
+  carried on flat to the ring beam. Design, calculation report, bar schedule and quantities by beam.
+- Sheet 3: the plans show each beam and the roof landing; new section 14-14 along B5, elevations of B3 and B4 and
+  sections of all four beams.
+- Sheet 2: a large detail of the joint of wall, balcony and cone with its bars.
+- "Show network" now reads in English on the English water page too.
+
 ## 0.9.37 (beta) - 2026-11-22
 
 - DPR (water and sewer): the department's name is entered once in sheet Project ("Department / implementing

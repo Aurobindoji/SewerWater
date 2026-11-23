@@ -269,7 +269,7 @@ function wtFit() {
   return out;
 }
 function wtBelow(fo) { return ["init", "mid", "ult"].map((t, j) => fo.below.includes(t) ? `${[tr("आधार", "base"), "+15", "+30"][j]} = ${fo.factors[j].toFixed(4)}` : "").filter(Boolean).join(", "); }
-// the factors of each character (Riverside DPR p76; example technical.xlsx 'T'): yellow, on the population of the
+// the factors of each character (Riverside DPR p76; example technical.xlsx 'T'): boxes, on the population of the
 // table's year (= 1); shown with the table
 function wtGrowthRender() {
   const used = new Set(WT.rows.map(r => r.char).filter(Boolean)), fo = pjFar();
@@ -277,32 +277,32 @@ function wtGrowthRender() {
   wtSyncGrowth();
   const fcell = (k, j) => fo && k === CH[3]
     ? `<td title="${tr("चुनी विधि से balance - अपने-आप", "balanced to the adopted method - by itself")}"><b>${fo.factors[j].toFixed(4)}</b></td>`
-    : `<td><input data-g="${k}" data-j="${j}" type="number" step="0.0001" min="0.01" value="${WT.growth[k][j]}" style="width:66px;background:#fff9c4"></td>`;
+    : `<td><input data-g="${k}" data-j="${j}" type="number" step="0.0001" min="0.01" value="${WT.growth[k][j]}" style="width:66px"></td>`;
   const tot = Object.keys(WARD_TOWN_DEF).reduce((a, k) => a + (+WT.city[k] || 0), 0);
   $("wtgrowth").innerHTML = `<details${used.size ? " open" : ""}><summary>${tr("वार्ड के चरित्र के गुणक", "Factors of the ward's character")} (${WT.year || ""} = 1)</summary>` +
     `<table class="wz"><tr><th>${tr("चरित्र", "Character")}</th><th title="${tr("वार्ड की density (आबादी ÷ ha) इससे ज़्यादा हो तो यह चरित्र", "the ward's density (population / ha) above this: this character")}">${tr("density >", "density >")} (/ha)</th><th>${tr("आधार वर्ष", "Base year")}</th><th>+15</th><th>+30</th><th title="${tr("इस चरित्र का जो वार्ड आज इस density (/ha) से घना है, वह Design वर्ष में saturation density पार करेगा = saturation ÷ +30 गुणक", "a ward of this character denser than this (/ha) today passes the saturation density in the design year = saturation / the +30 factor")}">${tr("saturation पार: density >", "passes saturation: density >")}</th><th>${tr("वार्ड", "Wards")}</th><th title="${tr("पूरे शहर के सब वार्डों की इस वर्ष की आबादी, चरित्र-वार - Far-open का गुणक इन्हीं से balance होता है", "the whole town's wards' population of this year by character - Far-open's factor balances them")}">${tr("पूरे शहर में आबादी", "Whole town's population")} ${WT.year || ""}</th></tr>` +
-    Object.keys(WARD_GROWTH_DEF).map(k => `<tr><td>${k}</td><td>${k === CH[3] ? tr("बाकी", "the rest") : `<input data-d="${k}" type="number" step="1" min="0" value="${WT.dens[k]}" style="width:60px;background:#fff9c4">`}</td>` +
+    Object.keys(WARD_GROWTH_DEF).map(k => `<tr><td>${k}</td><td>${k === CH[3] ? tr("बाकी", "the rest") : `<input data-d="${k}" type="number" step="1" min="0" value="${WT.dens[k]}" style="width:60px">`}</td>` +
       `${[0, 1, 2].map(j => fcell(k, j)).join("")}<td data-sx="${k}">-</td>` +
       `<td>${WT.rows.filter(r => r.char === k).length || "-"}</td>` +
-      `<td><input data-c="${k}" type="number" step="1" min="0" value="${WT.city[k] ?? ""}" style="width:90px;background:#fff9c4"></td></tr>`).join("") +
+      `<td><input data-c="${k}" type="number" step="1" min="0" value="${WT.city[k] ?? ""}" style="width:90px"></td></tr>`).join("") +
     (fo ? `<tr><td colspan="2"><b>${tr("शहर, चुनी विधि से", "The town, adopted method")}</b></td>${["init", "mid", "ult"].map(t => `<td>${fmt(fo.target[t])}</td>`).join("")}<td></td><td></td><td><b>${fmt(tot)}</b></td></tr>` : "") +
     `</table><div class="row"><button id="wtdensall" title="${tr("आपके बदले चरित्र भी density से फिर भरें", "fill the characters you changed too by the density again")}">↺ ${tr("सब चरित्र density से", "All characters by the density")}</button>` +
-    (wtFitR() ? `<button id="wtfit" title="${tr("चारों चरित्रों की बढ़त (गुणक − 1) default गुणकों के अनुपात में, हर stage पर एक गुणांक से - ताकि शहर के सब वार्डों का जोड़ चुनी विधि की projection के बराबर हो; geometrical जैसी तेज़ विधि पर default गुणक, धीमी पर सब कम। पीले गुणक बदलते हैं (पहले पूछकर)",
-      "the four characters' growth (factor − 1) in the proportion of the default factors, one multiplier a stage - so the town's wards add up to the adopted projection; a fast method like the geometrical: the default factors, a slower one: all lower. Changes the yellow factors (asked first)")}">⇅ ${tr("गुणक projection से मिलाएँ", "Factors to the projection")}</button>` : "") + `</div>` +
+    (wtFitR() ? `<button id="wtfit" title="${tr("चारों चरित्रों की बढ़त (गुणक − 1) default गुणकों के अनुपात में, हर stage पर एक गुणांक से - ताकि शहर के सब वार्डों का जोड़ चुनी विधि की projection के बराबर हो; geometrical जैसी तेज़ विधि पर default गुणक, धीमी पर सब कम। गुणक बदलते हैं (पहले पूछकर)",
+      "the four characters' growth (factor − 1) in the proportion of the default factors, one multiplier a stage - so the town's wards add up to the adopted projection; a fast method like the geometrical: the default factors, a slower one: all lower. Changes the factors (asked first)")}">⇅ ${tr("गुणक projection से मिलाएँ", "Factors to the projection")}</button>` : "") + `</div>` +
     `<div class="row"><span title="${tr("CPHEEO Water Manual Part A, Annexure 2.7: विकसित core की density लगभग saturation पर है - saturation density उसकी आज की density के बहुत पास रखें; कोई वार्ड भविष्य में इससे घना नहीं। Default: 1,710 x 1.10; हर शहर का अपना। खाली = जाँच नहीं", "CPHEEO Water Manual Part A, Annexure 2.7: the developed core's density is practically at saturation - keep the saturation density very close to its present density; no ward denser than it in future. Default: 1,710 x 1.10; each town its own. Empty = no check")}">${tr("Saturation density (/ha)", "Saturation density (/ha)")}</span>` +
-    `<input id="wtsat" type="number" step="1" min="0" value="${WT.sat ?? ""}" style="width:70px;background:#fff9c4"><span class="hint">${tr("ऊपर जाने वाले वार्ड सिर्फ़ चेताए जाते हैं", "a ward above it is only warned of")}</span></div><div id="wtsatwarn"></div><div id="wtcph"></div>` +
+    `<input id="wtsat" type="number" step="1" min="0" value="${WT.sat ?? ""}" style="width:70px"><span class="hint">${tr("ऊपर जाने वाले वार्ड सिर्फ़ चेताए जाते हैं", "a ward above it is only warned of")}</span></div><div id="wtsatwarn"></div><div id="wtcph"></div>` +
     `<details><summary>${tr("CPHEEO के निर्देश (Manual on Water Supply 2024, Part A)", "CPHEEO's directions (Manual on Water Supply 2024, Part A)")}</summary><table class="wz">` +
     CPHEEO_WARD.map(c => `<tr><td style="white-space:nowrap"><b>${c[0]}</b></td><td>${tr(c[1], c[2])}</td></tr>`).join("") +
     `</table><div class="hint">${tr("ध्यान दें: density की सीमाएँ 585 / 310 / 170, चरित्रों के गुणक और saturation का default 1,880 CPHEEO के नहीं, default हैं; CPHEEO तरीका और सिद्धांत देता है, संख्याएँ शहर के हिसाब से तय करें।",
-      "Note: the density limits 585 / 310 / 170, the characters' factors and the saturation's default 1,880 are not CPHEEO's - they are defaults; CPHEEO gives the method and principles, the numbers are the town's.")}</div></details>` + (err ? `<div class="wflag warn">⚠ ${esc(err)} - ${tr("पीले Far-open गुणक लगे; \"गुणक projection से मिलाएँ\" दबाएँ", "the yellow Far-open factors used; press \"Factors to the projection\"")}</div>` : "") +
+      "Note: the density limits 585 / 310 / 170, the characters' factors and the saturation's default 1,880 are not CPHEEO's - they are defaults; CPHEEO gives the method and principles, the numbers are the town's.")}</div></details>` + (err ? `<div class="wflag warn">⚠ ${esc(err)} - ${tr("खानों के Far-open गुणक लगे; \"गुणक projection से मिलाएँ\" दबाएँ", "the Far-open factors in the boxes used; press \"Factors to the projection\"")}</div>` : "") +
     (fo && fo.below && fo.below.length ? `<div class="wflag warn">⚠ ${tr(`Far-open का गुणक 1 से कम (${wtBelow(fo)}): उसके वार्डों की आबादी घटती दिखती है - बाकी चरित्रों के गुणक इस शहर की projection के लिए ज़्यादा; "गुणक projection से मिलाएँ" दबाएँ`,
       `Far-open's factor below 1 (${wtBelow(fo)}): its wards' population falls - the other characters' factors too high for this town's projection; press "Factors to the projection"`)}</div>`
     : fo && fo.low ? `<div class="wflag warn">⚠ ${tr("Far-open किसी घने चरित्र से धीमा बढ़ रहा है - इस शहर की बढ़त के लिए बाकी चरित्रों के गुणक ज़्यादा लगते हैं", "Far-open grows slower than a denser character - the other characters' factors seem high for this town's growth")}</div>` : "") +
     `<div class="hint">${fo
-      ? tr("Far-open = (चुनी विधि से शहर − बाकी तीन चरित्रों की आबादी × उनके गुणक) ÷ Far-open की आबादी: विधि बदलें तो यह बदलता है, ताकि शहर के सब वार्डों का जोड़ projection के बराबर रहे। पीले: बदले जा सकते हैं; शहर की आबादी: हर शहर की अपनी भरें।",
-           "Far-open = (the town by the adopted method − the other three characters x their factors) / Far-open's population: it changes with the method, so the town's wards add up to the projection. Yellow: can be changed; the town's population: fill each town's own.")
-      : tr("पीले: बदले जा सकते हैं। Far-open: census भरकर projection निकालें तो चुनी विधि से अपने-आप balance; तब तक default (1.0932 / 1.9183 / 3.3282)।",
-           "Yellow: can be changed. Far-open: with the census and the projection, balanced to the adopted method by itself; till then the default (1.0932 / 1.9183 / 3.3282).")}</div></details>`;
+      ? tr("Far-open = (चुनी विधि से शहर − बाकी तीन चरित्रों की आबादी × उनके गुणक) ÷ Far-open की आबादी: विधि बदलें तो यह बदलता है, ताकि शहर के सब वार्डों का जोड़ projection के बराबर रहे। खानों के अंक बदले जा सकते हैं; शहर की आबादी: हर शहर की अपनी भरें।",
+           "Far-open = (the town by the adopted method − the other three characters x their factors) / Far-open's population: it changes with the method, so the town's wards add up to the projection. The boxes can be changed; the town's population: fill each town's own.")
+      : tr("खानों के अंक बदले जा सकते हैं। Far-open: census भरकर projection निकालें तो चुनी विधि से अपने-आप balance; तब तक default (1.0932 / 1.9183 / 3.3282)।",
+           "The boxes can be changed. Far-open: with the census and the projection, balanced to the adopted method by itself; till then the default (1.0932 / 1.9183 / 3.3282).")}</div></details>`;
   document.querySelectorAll("#wtgrowth input[data-d]").forEach(inp => inp.onchange = () => {
     const v = +inp.value;
     if (v >= 0 && inp.value !== "") WT.dens[inp.dataset.d] = v; else inp.value = WT.dens[inp.dataset.d];

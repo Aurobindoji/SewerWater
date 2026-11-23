@@ -28,6 +28,7 @@ const I18N_EN = {
   "UTM 43N (EPSG 32643) - पश्चिमी UP": "UTM 43N (EPSG 32643) - western UP",
   "Local (नक्शा नहीं, केवल drawing)": "Local (no map, drawing only)",
   "Network निकालें": "Extract network",
+  "Network देखें": "Show network",
   "DXF network - जाँच और सुधार": "DXF network - check and correct",
   "नक्शे पर खींचें": "Draw on the map",
   "आबादी - वार्ड और projection": "Population - wards and projection",

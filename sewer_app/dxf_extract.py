@@ -123,11 +123,14 @@ def split_at_midline_manholes(lines, points, tol, snap):
     return out, log
 
 
-def _network(path, pipe_layers, mh_layers, tol, level_radius, mid_snap, midline):
+def _network(path, pipe_layers, mh_layers, tol, level_radius, mid_snap, midline, inv=None):
     """The drawing read and its network built (the first part of extract): (layers, texts, inserts, points, pipe
-    layers, mh layers, nodes, edges, network checks, used nodes, mid-line log)."""
-    doc, _ = di.load(path)
-    layers, lines, texts, inserts, points = di.inventory(doc.modelspace())
+    layers, mh layers, nodes, edges, network checks, used nodes, mid-line log). inv: the drawing already read -
+    dxf_inspect.inventory(...) - not read again (the page's network preview); it is not changed here."""
+    if inv is None:
+        doc, _ = di.load(path)
+        inv = di.inventory(doc.modelspace())
+    layers, lines, texts, inserts, points = inv
     pipe_layers = [s.strip() for s in pipe_layers if s.strip()]
     missing = [l for l in pipe_layers if l not in layers]
     if missing:
@@ -308,7 +311,7 @@ def gl_options(path, pipe_layers, mh_layers=(), tol=0.5, level_radius=10.0, mid_
 
 
 def extract(path, pipe_layers, mh_layers=(), level_layers=(), tol=0.5, level_radius=10.0, mid_snap=1.5,
-            midline=True, z_mode="auto", il_layers=(), node_prefix=None, pipe_prefix=None):
+            midline=True, z_mode="auto", il_layers=(), node_prefix=None, pipe_prefix=None, inv=None):
     """The body of the original scripts dxf_extract.main() up to the tables. Returns {"mh_rows", "co_rows", "problems",
     "summary" (text lines), "lvl_layers", "path"}. Raises ValueError for layers not in the drawing. The texts that are
     the lengths of their pipes (length_texts) are not used as GL. z_mode: Z of the line ends "auto" / "first" / "off"
@@ -319,7 +322,7 @@ def extract(path, pipe_layers, mh_layers=(), level_layers=(), tol=0.5, level_rad
     npre = f"{node_prefix}G" if node_prefix else NODE_PREFIX
     ppre = pipe_prefix or PIPE_PREFIX
     layers, texts, inserts, points, pipe_layers, mh_lay, nodes, edges, chk, used, mid_log = _network(
-        path, pipe_layers, mh_layers, tol, level_radius, mid_snap, midline)
+        path, pipe_layers, mh_layers, tol, level_radius, mid_snap, midline, inv)
 
     # ---- manhole labels
     adj = collections.defaultdict(set)

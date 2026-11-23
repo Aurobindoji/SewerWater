@@ -83,6 +83,51 @@ def _inventory(path):
     return _INV[key]
 
 
+def dxf_net_preview(path, pipe_layers, mh_layers=(), level_layers=(), epsg=32644, z_mode="auto",
+                    node_prefix=None, pipe_prefix=None):
+    """The network the import would make from these layers - for the map only, nothing saved (as the water page's,
+    23-Nov-2026). The drawing is not read again (_inventory); the invert levels are left out (not shown). ->
+    {nodes [[lat, lon, name, ground, sewers]], pipes [[part, [[lat, lon], ...]]], summary, problems {kind: count},
+    lines (the extraction's summary), local}; part 1 = the largest connected part."""
+    from . import dxf_extract, network
+    ex = dxf_extract.extract(path, list(pipe_layers), list(mh_layers), list(level_layers), z_mode=z_mode,
+                             node_prefix=node_prefix, pipe_prefix=pipe_prefix, inv=_inventory(path))
+    net = _net_json(network.from_extract(ex))
+    st = {"epsg": int(epsg) if epsg else None}
+    xy = [v["xy"] for v in net["nodes"].values() if v.get("xy")]
+    if st["epsg"] is None:                                       # local drawing: around the middle, as the import
+        st["origin"] = [sum(p[0] for p in xy) / len(xy), sum(p[1] for p in xy) / len(xy)] if xy else [0.0, 0.0]
+    to_ll = converters(st)[0]
+    part = repair._parts(_tuples(net))
+    deg = collections.Counter()
+    for k in net["conduits"]:
+        deg[k["start_node"]] += 1
+        deg[k["stop_node"]] += 1
+    names = [n for n in net["nodes"] if net["nodes"][n].get("xy")]
+    pts = to_ll([net["nodes"][n]["xy"] for n in names])
+    nodes = [[p[0], p[1], n, net["nodes"][n].get("ground"), deg[n]] for n, p in zip(names, pts)]
+    flat, cut = [], []
+    for k in net["conduits"]:
+        q = k.get("vertices") or [net["nodes"][n]["xy"] for n in (k["start_node"], k["stop_node"])
+                                  if net["nodes"].get(n, {}).get("xy")]
+        flat += q
+        cut.append(len(q))
+    ll, pipes, i = to_ll(flat) if flat else [], [], 0
+    for k, c in zip(net["conduits"], cut):
+        pipes.append([part.get(k["start_node"], 0), [[round(a, 7), round(b, 7)] for a, b in ll[i:i + c]]])
+        i += c
+    joined = {n for n in net["nodes"] if deg[n]}
+    n_parts = len({part[n] for n in joined if n in part})
+    summ = {"manholes": len(net["nodes"]), "sewers": len(net["conduits"]),
+            "length": round(sum(k["length_m"] or 0 for k in net["conduits"]), 1),
+            "parts": n_parts, "ends": sum(1 for n in net["nodes"] if deg[n] == 1),
+            # a sewer is a tree: pipes - manholes + parts = the loops to cut
+            "loops": max(0, sum(1 for k in net["conduits"] if k["start_node"] != k["stop_node"]) - len(joined) + n_parts),
+            "no_gl": sum(1 for v in net["nodes"].values() if v.get("ground") is None)}
+    return {"ok": True, "nodes": nodes, "pipes": pipes, "summary": summ, "lines": ex["summary"],
+            "problems": dict(collections.Counter(p["Problem"] for p in ex["problems"])), "local": not st["epsg"]}
+
+
 def dxf_preview(path, layer, epsg=None, max_lines=4000, max_pts=3000):
     """What one layer holds, for the map: {types (entity kind -> count), lines [[lat, lon], ...], points
     [[lat, lon, text / block name, kind]], line_m, n_lines, avg_line_m, samples (commonest texts), blocks (block

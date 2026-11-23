@@ -46,8 +46,8 @@ var GUIDE_DOC = {
       steps: [
         T("(A) नक्शे पर: सड़कें (centreline), Project boundary, वार्ड + population, Spot level (GL), STP / outfall खींचें → \"Layout बनाएँ\": सड़कों के साथ sewers और manholes।",
           "(A) On the map: draw the roads (centreline), project boundary, wards + population, spot levels (GL), STP / outfall → \"Make layout\": sewers and manholes along the roads."),
-        T("(B) DXF: \"📂 चुनें…\" → \"Layers पढ़ें\" → sewer / manhole / GL layers → Coordinates → \"Network निकालें\" → गड़बड़ियाँ सुधारें (या \"अपने-आप सुधार\")।",
-          "(B) DXF: \"📂 Choose…\" → \"Read layers\" → sewer / manhole / GL layers → coordinates → \"Extract network\" → correct the problems (or \"Auto repair\")."),
+        T("(B) DXF: \"📂 चुनें…\" → \"Layers पढ़ें\" → sewer / manhole / GL layers (tick करते ही layer नक्शे पर) → Coordinates → \"Network देखें\" (पूरा network, बिना सहेजे) → \"Network निकालें\" → गड़बड़ियाँ सुधारें (या \"अपने-आप सुधार\")।",
+          "(B) DXF: \"📂 Choose…\" → \"Read layers\" → sewer / manhole / GL layers (a tick shows the layer on the map) → coordinates → \"Show network\" (the whole network, not saved) → \"Extract network\" → correct the problems (or \"Auto repair\")."),
         T("रुकावट रेखा (नदी, रेल, highway), crossing, zone लूप से zoning को दिशा दें।", "Guide the zoning by barrier lines (river, railway, highway), crossings and zone loops."),
       ],
       fields: [

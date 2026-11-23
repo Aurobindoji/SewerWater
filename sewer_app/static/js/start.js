@@ -188,6 +188,8 @@ const TIPS = [
   ["#dxfname", "नए project का नाम", "Name of the new project"],
   ["#dxfepsg", "Drawing के coordinates किस UTM zone के हैं: पूर्वी UP 44N, पश्चिमी UP 43N; Local = नक्शे के बिना, केवल drawing",
                "UTM zone of the drawing's coordinates: eastern UP 44N, western UP 43N; Local = no map, drawing only"],
+  ["#dxfnetprev", "चुनी layers से जो network बनेगा, वह नक्शे पर (सहेजा नहीं): टुकड़े, loops, खुले सिरे, बिना GL, गड़बड़ियाँ - ठीक लगे तो Network निकालें",
+                  "The network the ticked layers would make, on the map (not saved): parts, loops, open ends, no GL, problems - if fine, Extract network"],
   ["#dxfimport", "चुनी layers से network बनाएँ: manholes, sewers, labels, GL - गड़बड़ियाँ नीचे की सूची में",
                  "Make the network from the chosen layers: manholes, sewers, labels, GL - the problems in the list below"],
   // DXF network tools

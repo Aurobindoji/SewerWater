@@ -294,10 +294,76 @@ $("dxfimport").onclick = async () => {
       epsg: $("dxfepsg").value });
     $("log").hidden = !r.log; $("log").textContent = r.log || "";
     if (!r.ok) { $("dxfstatus").className = "status err"; $("dxfstatus").textContent = "Network नहीं निकला - नीचे का संदेश देखें।"; return; }
-    $("dxfpanel").hidden = true; $("dxfstatus").textContent = ""; clearPreview(); $("glbox").hidden = true;
+    $("dxfpanel").hidden = true; $("dxfstatus").textContent = ""; clearPreview(); clearNetPrev(); $("glbox").hidden = true;
     showNet(r, true); refreshList();
     status(`DXF network: ${r.summary.manholes} manholes, ${r.summary.conduits} sewers - गड़बड़ियाँ नीचे`, "ok");
   } finally { $("dxfimport").disabled = false; loading(false); }
+};
+
+// ---- the whole network of the ticked layers on the map, nothing saved (as the water page's, 23-Nov-2026): what the
+// import would make - the largest part blue, other parts orange, open ends red - with the counts (a sewer is a tree:
+// its loops counted too); a tick changed afterwards marks it as old (not made again by itself: a big drawing takes a while)
+// the drawing's problems (dxf_extract's English texts, by their start) in Hindi on a Hindi page
+const PROB_HI = [
+  [/^no MH label in the drawing/, () => "Drawing में manhole का नाम नहीं (नाम बनाया गया)"],
+  [/^MH label used by more than one node/, () => "एक ही नाम कई manholes पर"],
+  [/^no GL$/, () => "GL नहीं"],
+  [/^near-miss gap/, () => "सिरे पास-पास, पर जुड़े नहीं"],
+  [/^line ends on another line without a node/, () => "Line दूसरी line पर ख़त्म, वहाँ manhole नहीं"],
+  [/^manhole on a continuous line/, () => "लगातार line पर manhole - line वहाँ काटी गई (CAD में जाँचें)"],
+  [/^GL matched in pass 2 - within 1 m/, () => "GL दूसरे दौर में मिला - पड़ोसियों से 1 m के भीतर (कम जोखिम)"],
+  [/^GL matched in pass 2 \(nearest free text\)/, () => "GL दूसरे दौर में मिला (सबसे पास का text) - CAD में जाँचें"],
+  [/^label matched in pass 2 - number fits/, () => "नाम दूसरे दौर में मिला - पड़ोसी से मेल (कम जोखिम)"],
+  [/^label matched in pass 2 \(nearest free text\)/, () => "नाम दूसरे दौर में मिला (सबसे पास का text) - CAD में जाँचें"],
+  [/^(\d+) loop\(s\) in the network/, m => `Network में ${m[1]} loop - sewer पेड़ जैसा हो, हर loop की एक line हटाएँ / काटें`],
+  [/^(\d+) separate parts/, m => `${m[1]} अलग टुकड़े - हर टुकड़े का एक outfall, या उन्हें जोड़ें`],
+];
+const probText = k => { for (const [re, f] of PROB_HI) { const m = k.match(re); if (m) return tr(f(m), k); } return k; };
+const netPrev = L.layerGroup().addTo(map);
+const netPrevJn = L.layerGroup();                 // the manholes that are no open end: only zoomed in (PREV_TEXT_ZOOM)
+const netPrevZoom = () => { const on = netPrev.getLayers().length && map.getZoom() >= PREV_TEXT_ZOOM;
+  if (on && !map.hasLayer(netPrevJn)) netPrevJn.addTo(map); else if (!on && map.hasLayer(netPrevJn)) map.removeLayer(netPrevJn); };
+map.on("zoomend", netPrevZoom);
+function clearNetPrev() { netPrev.clearLayers(); netPrevJn.clearLayers(); netPrevZoom(); $("netprevbox").hidden = true; $("netprevbox").innerHTML = ""; }
+$("dxfclose").addEventListener("click", clearNetPrev);
+$("laybox").addEventListener("change", e => {
+  if (e.target.dataset.k && !$("netprevbox").hidden && !$("netprevold")) $("netprevbox").insertAdjacentHTML("afterbegin",
+    `<div id="netprevold" class="warn">${tr("Layers बदलीं - यह पुराना network है; \"Network देखें\" फिर दबाएँ", "The layers changed - this is the old network; press \"Show network\" again")}</div>`);
+});
+$("dxfnetprev").onclick = async () => {
+  const sel = k => Array.from(document.querySelectorAll(`#laybox input[data-k="${k}"]:checked`)).map(i => i.value);
+  if (!sel("pipe").length) { $("dxfstatus").className = "status err"; $("dxfstatus").textContent = tr("कम से कम एक Sewer layer चुनें।", "Tick at least one Sewer layer."); return; }
+  const r = await withLoading(tr("Network बना रहे हैं (सहेजा नहीं जाएगा) …", "Making the network (not saved) …"),
+    () => api("/api/dxf_netpreview", { path: $("dxfpath").value, pipe_layers: sel("pipe"), mh_layers: sel("mh"), level_layers: sel("gl"),
+      epsg: $("dxfepsg").value, node_prefix: $("dnpre").value.trim(), pipe_prefix: $("dppre").value.trim() }));
+  if (!r.ok) { $("dxfstatus").className = "status err"; $("dxfstatus").textContent = r.log; return; }
+  $("dxfstatus").textContent = "";
+  clearPreview();                         // the layers' own 👁 look shown no more: its red would read as open ends
+  netPrev.clearLayers(); netPrevJn.clearLayers();
+  for (const [part, pts] of r.pipes)
+    L.polyline(pts, { color: part === 1 ? "#1565c0" : "#ef6c00", weight: part === 1 ? 3 : 4, opacity: .9, renderer: netRenderer, interactive: false }).addTo(netPrev);
+  for (const [lat, lon, name, gl, deg] of r.nodes) {
+    const end = deg === 1;
+    L.circleMarker([lat, lon], { radius: end ? 4 : 2.5, color: end ? "#fff" : "#37474f", weight: end ? 1.5 : 1,
+      fillColor: end ? "#d32f2f" : "#37474f", fillOpacity: 1, renderer: netRenderer })
+      .bindTooltip(`${esc(name)} - ${deg} sewer${deg === 1 ? "" : "s"}, GL ${gl === null || gl === undefined ? "-" : fmt(gl, 2)}`, { direction: "top" }).addTo(end ? netPrev : netPrevJn);
+  }
+  const s = r.summary, bad = (v, t) => v ? `<b style="color:var(--danger)">${t}</b>` : t;
+  const probs = Object.entries(r.problems).sort((a, b) => b[1] - a[1]);
+  $("netprevbox").innerHTML = `<div class="box" style="margin-top:6px"><b>${tr("Network का पूर्वावलोकन (सहेजा नहीं)", "Network preview (not saved)")}</b><br>` +
+    `${s.manholes.toLocaleString("en-IN")} manholes, ${s.sewers.toLocaleString("en-IN")} sewers, ${fmt(s.length / 1000, 2)} km; ` +
+    bad(s.parts > 1, tr(`${s.parts} अलग टुकड़े`, `${s.parts} separate parts`)) + ` (<span style="color:#1565c0">■</span> ${tr("सबसे बड़ा", "largest")}, <span style="color:#ef6c00">■</span> ${tr("बाकी", "others")}); ` +
+    bad(s.loops, tr(`${s.loops} loop`, `${s.loops} loop${s.loops === 1 ? "" : "s"}`)) + "; " +
+    `<span style="color:#d32f2f">●</span> ${tr(`${s.ends} खुले सिरे (बाकी manholes पास zoom पर)`, `${s.ends} open ends (the other manholes when zoomed in)`)}; ` + bad(s.no_gl, tr(`${s.no_gl} बिना GL`, `${s.no_gl} without GL`)) +
+    (probs.length ? `<details style="margin-top:4px"><summary style="cursor:pointer">${tr("Drawing की गड़बड़ियाँ", "problems of the drawing")}: ${probs.reduce((a, p) => a + p[1], 0).toLocaleString("en-IN")}</summary>` +
+      probs.map(([k, v]) => `<div>${/^\d/.test(k) && v === 1 ? "" : `${v.toLocaleString("en-IN")} x `}${esc(probText(k))}</div>`).join("") + `</details>` : "") +
+    `<div class="row" style="margin-top:4px"><button id="netprevclear">${tr("हटाएँ", "Remove")}</button>` +
+    `<span class="hint" style="min-width:0">${tr("ठीक लगे तो \"Network निकालें\"; नहीं तो layers बदलकर फिर देखें", "fine: \"Extract network\"; else change the layers and look again")}</span></div></div>`;
+  $("netprevbox").hidden = false;
+  $("netprevclear").onclick = clearNetPrev;
+  const b = L.featureGroup(netPrev.getLayers()).getBounds();
+  if (b.isValid()) map.fitBounds(b, { padding: [30, 30], maxZoom: 19 });
+  netPrevZoom();
 };
 
 function remember(name, kind) {        // the project open now: opened again after a page reload (F5)

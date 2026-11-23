@@ -114,6 +114,31 @@ def call(url, body=None):
         return json.loads(r.read())
 
 
+def test_network_preview_is_what_the_import_makes(server, tmp_path):
+    """The page's network preview (sewer, as the water page's): the same manholes and sewers as the import, a piece
+    apart as a second part, a loop counted, open ends counted - and nothing saved."""
+    import ezdxf
+    path = str(tmp_path / "small.dxf")
+    make_dxf(path)
+    doc = ezdxf.readfile(path)
+    doc.modelspace().add_line((0.0, 0.0), (0.0, 60.0), dxfattribs={"layer": "PIPE"})        # MH-1 - MH-5: a loop
+    doc.modelspace().add_line((500.0, 0.0), (530.0, 0.0), dxfattribs={"layer": "PIPE"})     # a piece apart
+    doc.saveas(path)
+    r = netedit.dxf_net_preview(path, ["PIPE"], ["MH"], ["GL"], epsg=None)
+    st = netedit.import_dxf(str(tmp_path / "out"), "small", path, ["PIPE"], ["MH"], ["GL"], None, log=lambda s: None)
+    s = r["summary"]
+    assert (s["manholes"], s["sewers"]) == (len(st["net"]["nodes"]), len(st["net"]["conduits"])) == (8, 7)
+    assert s["parts"] == 2 and s["loops"] == 1 and s["ends"] == 3 and s["no_gl"] == 2
+    assert sorted({part for part, _ in r["pipes"]}) == [1, 2] and r["local"]
+    assert {n[2] for n in r["nodes"]} == set(st["net"]["nodes"])
+    assert any("loop" in k for k in r["problems"])
+    out = call(server + "/api/dxf_netpreview", {"path": path, "pipe_layers": ["PIPE"], "mh_layers": ["MH"],
+                                                "level_layers": ["GL"], "epsg": "local"})
+    assert out["ok"] and out["summary"] == s
+    assert not call(server + "/api/dxf_netpreview", {"path": path, "pipe_layers": []})["ok"]
+    assert call(server + "/api/projects")["projects"] == []
+
+
 def test_dxf_project_from_page(server, tmp_path):
     path = str(tmp_path / "small.dxf")
     make_dxf(path)

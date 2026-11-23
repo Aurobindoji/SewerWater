@@ -83,7 +83,9 @@
           <option value="32643">UTM 43N (EPSG 32643) - पश्चिमी UP</option>
           <option value="32645">UTM 45N (EPSG 32645)</option>
           <option value="local">Local (नक्शा नहीं, केवल drawing)</option></select></div>
-        <div class="row"><button id="dxfimport" class="primary">Network निकालें</button></div>
+        <div class="row"><button id="dxfnetprev" title="चुनी (ticked) layers से जो network बनेगा, वह नक्शे पर - manholes, sewers, अलग टुकड़े, loops, खुले सिरे और गड़बड़ियों की गिनती। कुछ सहेजा नहीं जाता; ठीक लगे तो &quot;Network निकालें&quot;।">Network देखें</button>
+          <button id="dxfimport" class="primary">Network निकालें</button></div>
+        <div id="netprevbox" class="hint" hidden></div>
         <div id="glbox" hidden></div>
       </div>
       <div class="status" id="dxfstatus"></div>

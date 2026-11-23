@@ -79,6 +79,45 @@ function uiTab(key) {
   document.getElementById("side").scrollTop = 0;
   document.dispatchEvent(new CustomEvent("uitab", { detail: key }));       // the Outputs tab reads its list then
 }
+// ---- the guide inside the page (user 23-Nov-2026): a panel over the page with the guide in a frame; closed by its
+// own labelled button, Esc (on the page or in the guide) or a click on the dimmed edge
+function helpClose() {
+  const w = document.getElementById("helpwin");
+  if (w) w.hidden = true;
+}
+function helpOpen() {
+  let w = document.getElementById("helpwin");
+  if (!w) {
+    const st = document.createElement("style");
+    st.textContent =
+      "#helpwin { position: fixed; inset: 0; z-index: 4100; background: rgba(0,0,0,.4); display: flex; align-items: center; justify-content: center; }" +
+      "#helpwin[hidden] { display: none; }" +
+      "#helpwin .hbox { width: min(1100px, 94vw); height: 90vh; display: flex; flex-direction: column; background: var(--panel, #fff);" +
+      " color: var(--text); border: 1px solid var(--line, #ccc); border-radius: 10px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,.35); }" +
+      "#helpwin .hhead { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid var(--line, #ccc); }" +
+      "#helpwin .hhead b { flex: 1; font-size: 15px; }" +
+      "#helpwin iframe { flex: 1; width: 100%; border: 0; background: var(--panel, #fff); }";
+    document.head.append(st);
+    w = document.createElement("div");
+    w.id = "helpwin";
+    w.innerHTML = `<div class="hbox" role="dialog" aria-modal="true"><div class="hhead"><b>❓ ${tr("मदद - मार्गदर्शिका", "Help - the guide")}</b>` +
+      `<button type="button" id="helpclose" title="${tr("मदद बंद करें (Esc) - app चलता रहेगा", "Close the help (Esc) - the app goes on")}">` +
+      `← ${tr("Page पर लौटें", "Back to the page")}</button></div><iframe id="helpframe" title="guide"></iframe></div>`;
+    document.body.append(w);
+    w.querySelector("#helpclose").onclick = helpClose;
+    w.onclick = e => { if (e.target === w) helpClose(); };            // the dimmed edge
+    const fr = w.querySelector("#helpframe");
+    fr.onload = () => {                                                  // Esc inside the guide too (same origin)
+      try { fr.contentWindow.addEventListener("keydown", e => { if (e.key === "Escape") helpClose(); }); } catch (e) { }
+    };
+    document.addEventListener("keydown", e => { if (e.key === "Escape" && !w.hidden) helpClose(); });
+  }
+  const src = `/guide?lang=${LANG}#${UI.tab}`;
+  const fr = w.querySelector("#helpframe");
+  if (fr.getAttribute("src") !== src) fr.setAttribute("src", src);       // the chapter of the tab shown now
+  w.hidden = false;
+  w.querySelector("#helpclose").focus();
+}
 function uiBuild() {
   const side = document.getElementById("side");
   const sub = side.querySelector(":scope > .sub");
@@ -120,8 +159,9 @@ function uiBuild() {
     UI.theme = document.documentElement.dataset.theme === "dark" ? "light" : "dark"; uiApply(); uiSave();
   };
   bar.querySelector("#uitabs").onclick = e => { const b = e.target.closest("button"); if (b) uiTab(b.dataset.t); };
-  // the guide (guide.html, its chapter of the tab shown) in a window of its own; the tour (tour.js)
-  tools.querySelector("#uiguide").onclick = () => window.open(`/guide?lang=${LANG}#${UI.tab}`, "sw_guide");
+  // the guide (guide.html, its chapter of the tab shown) inside this window (user 23-Nov-2026: a window of its own
+  // had a close X like the app's - closing it looked like closing the app); the tour (tour.js)
+  tools.querySelector("#uiguide").onclick = () => helpOpen();
   tools.querySelector("#uitour").onclick = () => { if (window.tourStart) tourStart(); };
   let t0 = null;
   try { t0 = localStorage.getItem(uiTabKey); } catch (e) { }

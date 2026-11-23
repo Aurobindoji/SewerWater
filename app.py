@@ -243,11 +243,41 @@ def style_window_menu(window):
                 look.apply(strip, dark)
                 look.apply(top.DropDown, dark)
             restyle()
+            keep = [restyle]
             if top is not None:
                 strip.MenuActivate += restyle
                 top.DropDownOpening += restyle
+                # a click outside the open menu closes it (user 23-Nov-2026: a click on the page left it open - the
+                # page's WebView2 is a window of another process, whose clicks the menu never sees): while it is
+                # open, a mouse button down anywhere but on the menu or its bar closes it
+                timer = WF.Timer()
+                timer.Interval = 60
+                no_button = getattr(WF.MouseButtons, "None")         # "None": a word of Python's
+
+                def tick(*_):
+                    dd = top.DropDown
+                    if not dd.Visible:
+                        timer.Stop()
+                        return
+                    if WF.Control.MouseButtons == no_button:
+                        return
+                    at = WF.Cursor.Position
+                    if not dd.Bounds.Contains(at) and not strip.RectangleToScreen(strip.ClientRectangle).Contains(at):
+                        top.HideDropDown()
+                        timer.Stop()
+
+                def opened(*_):
+                    timer.Start()
+
+                def closed(*_):
+                    timer.Stop()
+                timer.Tick += tick
+                top.DropDownOpened += opened
+                top.DropDownClosed += closed
+                keep += [timer, tick, opened, closed]
             form.Activated += restyle
             window._menu_restyle = restyle                    # kept with the window
+            window._menu_keep = keep                          # the handlers and the timer: not collected
         window.native.Invoke(Action(find))
     except Exception as e:                                    # the menu as pywebview made it
         print(f"menu look not set: {type(e).__name__}: {e}")

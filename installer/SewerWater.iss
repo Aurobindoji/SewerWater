@@ -10,7 +10,7 @@
 #define AppExe "SewerWater.exe"
 #ifndef AppVersion
   ; build_setup.bat passes launcher\about.py APP_VERSION (/DAppVersion=...); this only when ISCC runs alone
-  #define AppVersion "0.9.39"
+  #define AppVersion "0.9.40"
 #endif
 
 [Setup]

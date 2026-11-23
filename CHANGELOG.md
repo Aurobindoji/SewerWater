@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.9.40 (beta) - 2026-11-23
+
+- Water DPR: an existing OHT short of its operation zone's need is kept, and a new OHT makes up the shortfall,
+  rounded up (sheet T14 S.7; 0 when the existing one is enough) - before, any existing capacity made the new one 0.
+  The new OHT's estimate, campus, boundary wall and gate follow; the CWR and the "OHT capacity" of the other sheets
+  take both tanks together.
+- Water, population: the ward characters' boxes (factors, densities, the town's population, saturation density)
+  look like every other field - their figures could not be read in the dark theme.
+- Help: its button reads "बंद करें" (Close).
+
 ## 0.9.39 (beta) - 2026-11-23
 
 - Help (sewer and water) opens inside the page, in a panel over it, at the chapter of the step shown - no longer

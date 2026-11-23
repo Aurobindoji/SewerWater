@@ -17,7 +17,11 @@ def dpr_info(zones, pipes, outlets, dmas, closed, stages, crit, title):
                    "capacity_kl": z.get("capacity_kl"), "required_kl": z["required_kl"],
                    "cwr_kl": z.get("cwr_kl"), "tubewells": z.get("tubewells") or 0, "rebore": z.get("rebore") or 0,
                    "dmas": z.get("dma_count") or 1,
-                   "existing": bool(z.get("capacity_kl")), "proposed": bool(o.get("proposed") or z.get("proposed")),
+                   "existing": bool(z.get("capacity_kl")),
+                   # a new OHT too where an existing one is short of the OZ's need (user 23-Nov-2026: the existing one
+                   # kept, the new one makes up the rest)
+                   "new_oht": not z.get("capacity_kl") or float(z["capacity_kl"]) < float(z["required_kl"] or 0) - 1e-6,
+                   "proposed": bool(o.get("proposed") or z.get("proposed")),
                    "staging_m": o.get("staging_m"), "vfd_head_m": o.get("vfd_head_m"), "vfd_kw": o.get("vfd_kw"),
                    "flow_lps": o.get("flow"),
                    "outlet": o.get("size"), "elev_min": z.get("elev_min"), "elev_max": z.get("elev_max")})

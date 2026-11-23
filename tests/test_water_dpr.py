@@ -105,7 +105,9 @@ def test_dpr_sheets_and_formulas(design):
     # storage: the larger of 33 % / mass balance on the demand without fire + a third of the fire (S.No.13)
     assert t3["OLD-1"]["F30"].value.endswith("*Project!$C$" + t3["OLD-1"]["F30"].value.rsplit("$", 1)[1])
     assert t3["OLD-1"]["F31"].value == "=MAX(F28,F29)+F30"
-    assert t3["OLD-1"]["F32"].value == 300 and "IF(F32>0,0," in t3["OLD-1"]["F33"].value
+    # an existing OHT kept; a new one makes up only the shortfall, rounded up (user 23-Nov-2026)
+    assert t3["OLD-1"]["F32"].value == 300
+    assert t3["OLD-1"]["F33"].value.startswith("=IF(F32>=F31,0,CEILING(F31-F32,Project!$C$")
     # CWR by the UPJN rule on the NEW tube wells only, the proposed of sheet TW (user decision 27-Oct-2026: the
     # existing ones - 4 given on the page - stay with the existing structures)
     k_old = int(t3["OLD-1"].title[4:6])                                   # "T14-01 OLD-1"

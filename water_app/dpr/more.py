@@ -692,7 +692,7 @@ def checklist(B):
     ex = [z for z in info["zones"] if z.get("existing")]
     pj = info.get("projection")
     method = (pj["names"][pj["adopted"]][0] if pj else "as given on the page (the design population)")
-    new = [t for t in B.T3 if not t["zone"]["existing"]]
+    new = [t for t in B.T3 if t["zone"]["new_oht"]]
     oht = "&\", \"&".join(f"{q(t['sheet'])}!F{t['ref']['new']}&\" KL\"" for t in new) if new else '"-"'
     rows = [
         ("1.1", "Name and designation of competent authority giving technical and financial sanction",

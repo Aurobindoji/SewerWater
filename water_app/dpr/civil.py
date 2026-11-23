@@ -126,13 +126,13 @@ def site(B):
     for i, z, r in _zones(B):
         E.title("", f"Zone {z['name']}")
         y0 = E.x
-        if not z["existing"]:
+        if z["new_oht"]:
             E.row("For water works", no=2, L=cl, inp=(4, 5))
             E.row("", no=2, L=cb, inp=(4, 5))
         E.row("For tube well sites (new tube wells, the standby ones too)", no=f"=2*TW!O{r}", L=tl, inp=(5,))
         E.row("", no=f"=2*TW!O{r}", L=tb, inp=(5,))
         walls.append(E.sub(list(range(y0, E.x)), None, None))
-        sites.append(f"{0 if z['existing'] else 1}+TW!O{r}")
+        sites.append(f"{1 if z['new_oht'] else 0}+TW!O{r}")
     gates = "+".join(sites) or "0"
     E.row("Deduct for 3.6 m wide gate", no=f"={gates}", L=-C["gate_m"], inp=(5,))
     walls.append(E.x - 1)
@@ -151,7 +151,7 @@ def site(B):
                "road - approach road of each water works")
     ys = [E.row("For water works", no=n, L=l_, b=w_, inp=(4, 5, 6)) for l_, w_ in C["approach_road"]]
     road = E.sub(ys, f"={U['interlocking']}", "Sqm", label="Total")
-    new_oht = sum(1 for t in B.T3 if not t["zone"]["existing"])
+    new_oht = sum(1 for t in B.T3 if t["zone"]["new_oht"])
     E.title(5, "Provide all materials, labour, T&P etc. required for proper completion of works including levelling, "
                "dressing, excavation and filling of earth where necessary for development of water works site including "
                "carriage of earth from distant of about 8 km - each new OHT campus (user decision 6-Nov-2026)")
@@ -171,7 +171,7 @@ def buildings(B):
     """Staff quarters, ground water recharge, MCS building, HT / LT panel and booster rooms. B.CIV keys."""
     U = B.S["civil"]["units"]
     n = len(B.T3)
-    new_oht = sum(1 for t in B.T3 if not t["zone"]["existing"])
+    new_oht = sum(1 for t in B.T3 if t["zone"]["new_oht"])
     out = {}
     for key, name, heading, text, cnt, unit_key, note in (
             ("sq", "SQ", "ESTIMATE OF STAFF QUARTER",

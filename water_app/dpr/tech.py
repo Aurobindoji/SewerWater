@@ -435,7 +435,7 @@ def static_head(B):
                 B.cell(ws, L(k), c, v, fmt="0" if k == 15 else "#,##0.00", bold=k in (10, 12, 13))
         n = len(lines)
         B.cell(ws, L(n), 2, "OHT capacity (KL)")
-        B.cell(ws, L(n), 3, f"=MAX({s}!F{rf['exist']},{s}!F{rf['new']})", fmt="#,##0")
+        B.cell(ws, L(n), 3, f"={s}!F{rf['exist']}+{s}!F{rf['new']}", fmt="#,##0")
         B.cell(ws, L(n + 1), 2, "CWR capacity (KL)")
         B.cell(ws, L(n + 1), 3, f"={s}!F{rf['cwr']}" if cwr else "Not required", fmt="#,##0")
         r = L(n + 1) + 3
@@ -472,7 +472,7 @@ def pipe_table(B):
         B.cell(ws, r, 1, f"Distribution design of operation zone {z['name']}", bold=True)
         head = [("Residual head at consumer tapping point not less than (m)", rh),
                 ("Population covered (ultimate)", f"=T1!F{x2}"), ("OHT", z["name"]),
-                ("OHT capacity (KL)", f"=MAX({s}!F{rf['exist']},{s}!F{rf['new']})"),
+                ("OHT capacity (KL)", f"={s}!F{rf['exist']}+{s}!F{rf['new']}"),
                 ("Staging (m)", f"={s}!F{rf['head'] - 5}"), ("Hours of operation", 24),
                 ("Lowest ground level (m)", z.get("elev_min")), ("Highest ground level (m)", z.get("elev_max")),
                 ("Minimum residual head (m) / junction", f"{pr['min'][0]:.2f} / {pr['min'][1]}" if pr else "-"),

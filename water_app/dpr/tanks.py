@@ -9,7 +9,7 @@ def ohts(B):
     made = []
     for k, t in enumerate(B.T3, 1):
         z = t["zone"]
-        if z["existing"]:
+        if not z["new_oht"]:                            # an estimate for each new OHT (also beside a short existing one)
             continue
         s, rf = q(t["sheet"]), t["ref"]
         name = f"OHT ({len(made) + 1})"

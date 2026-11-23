@@ -673,8 +673,8 @@ def t3(B, k, z):
             ("Capacity required = the larger of A.1 / A.2 + B", f"=MAX(F{r + 1},F{r + 2})+F{r + 3}", "KL", None),
             ("Existing capacity of OHT", z["capacity_kl"] or 0, "KL", "page (OHT on the map)"),
             ("Capacity of new OHT proposed",
-             f"=IF(F{r + 5}>0,0,CEILING(F{r + 4},{PR['round_kl']}))", "KL",
-             "an existing OHT keeps the OZ its capacity serves (zoning); a new one rounded up")]
+             f"=IF(F{r + 5}>=F{r + 4},0,CEILING(F{r + 4}-F{r + 5},{PR['round_kl']}))", "KL",
+             "the shortfall, rounded up: an existing OHT is kept, a new one makes up the rest (user 23-Nov-2026)")]
     for i, (lab, v, unit, note) in enumerate(rows):
         x = st0 + i
         B.cell(ws, x, 1, f"S.{i + 1}")
@@ -685,8 +685,8 @@ def t3(B, k, z):
             ws.cell(x, 8, note)
     ref["need"], ref["exist"], ref["new"] = st0 + 4, st0 + 5, st0 + 6
     x = st0 + len(rows)
-    ws.cell(x, 2, f'=IF(AND(F{ref["exist"]}>0,F{ref["exist"]}<F{ref["need"]}),"existing capacity less than required - '
-                  f'its OZ is too big (zoning flags it)","")').font = B.red
+    ws.cell(x, 2, f'=IF(AND(F{ref["exist"]}>0,F{ref["new"]}>0),"the existing OHT kept; the new one makes up the rest - '
+                  f'both fill the OZ","")')
     ws.cell(x + 1, 8, f"zoning: {z['required_kl']:,.0f} KL required ({'existing' if z['existing'] else 'new'} OHT)")
     r = x + 3
 
@@ -695,17 +695,19 @@ def t3(B, k, z):
                   "p127: 25 % of the ESR)").font = B.bold
     r += 1
     cw0 = r
-    cap = f"MAX(F{ref['exist']},F{ref['new']})"
+    cap = f"(F{ref['exist']}+F{ref['new']})"          # the OZ's storage: the existing and the new OHT together
+    cap1 = f"IF(F{ref['new']}>0,F{ref['new']},F{ref['exist']})"   # the tank the pumps fill: the new one where there is
     sw = B.S["swd"]
 
     def _cone_of(zz):          # the cone of a new Intze OHT below its wall's SWD (user decision 10-Nov-2026)
-        if zz.get("existing") or not zz.get("required_kl"):
+        if not zz.get("new_oht") or not zz.get("required_kl"):
             return 0.0
         from .. import intze
-        kl = float(zz["required_kl"])            # the zoning's capacity, already rounded (criteria)
+        kl = float(zz["required_kl"]) - float(zz.get("capacity_kl") or 0)   # the new one: the zoning's need less the
+        kl = max(kl, 1.0)                                                    # existing (already rounded, criteria)
         return round(intze.cone_depth(kl, next(d for c, d in sw if c is None or kl <= c)), 3)
     swd_of = lambda kl: f"IF({kl}<={sw[0][0]},{sw[0][1]},IF({kl}<={sw[1][0]},{sw[1][1]},{sw[2][1]}))"
-    swd = swd_of(cap)
+    swd = swd_of(cap1)
     stg = z["staging_m"] if z["staging_m"] is not None else 0
     tw = 5 + k                     # this OZ's row of sheet TW: the proposed (L) tube wells
     rows = [("New tube wells filling the OHT (proposed)", f"=TW!L{tw}", "nos",
@@ -750,7 +752,7 @@ def t3(B, k, z):
             ("Depression during pumping", P["depression_m"], "m", None),
             ("Staging of OHT", stg, "m", "the design" + (f" (+{z['vfd_head_m']:g} m VFD pump at the outlet)"
                                                         if z.get("vfd_head_m") else "")),
-            ("Depth of water in OHT", f"={swd}" + (f"+IF(F{ref['exist']}>0,0,{_cone_of(z)})" if _cone_of(z) else ""), "m",
+            ("Depth of water in OHT", f"={swd}" + (f"+IF(F{ref['new']}>0,{_cone_of(z)},0)" if _cone_of(z) else ""), "m",
              "CPHEEO Table 2.7 S.No.12 p175 (side water depth at the wall)" + (
                  f" + {_cone_of(z):.2f} m cone below it of a new Intze OHT (intze.py, user decision 10-Nov-2026)"
                  if _cone_of(z) else "")),

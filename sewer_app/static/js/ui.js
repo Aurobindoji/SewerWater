@@ -101,7 +101,7 @@ function helpOpen() {
     w.id = "helpwin";
     w.innerHTML = `<div class="hbox" role="dialog" aria-modal="true"><div class="hhead"><b>❓ ${tr("मदद - मार्गदर्शिका", "Help - the guide")}</b>` +
       `<button type="button" id="helpclose" title="${tr("मदद बंद करें (Esc) - app चलता रहेगा", "Close the help (Esc) - the app goes on")}">` +
-      `← ${tr("Page पर लौटें", "Back to the page")}</button></div><iframe id="helpframe" title="guide"></iframe></div>`;
+      `${tr("बंद करें", "Close")}</button></div><iframe id="helpframe" title="guide"></iframe></div>`;
     document.body.append(w);
     w.querySelector("#helpclose").onclick = helpClose;
     w.onclick = e => { if (e.target === w) helpClose(); };            // the dimmed edge

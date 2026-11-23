@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.39 (beta) - 2026-11-23
+
+- Help (sewer and water) opens inside the page, in a panel over it, at the chapter of the step shown - no longer
+  in a window of its own, whose close button looked like the app's. Closed by "Back to the page", Esc or a click
+  on the dimmed edge.
+- Desktop app: the menu "App" closes when you click anywhere outside it.
+- The project's buttons read "Save करें" and "Saved Projects".
+
 ## 0.9.38 (beta) - 2026-11-23
 
 Sewer:

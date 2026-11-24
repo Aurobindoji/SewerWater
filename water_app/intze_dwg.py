@@ -773,8 +773,21 @@ def _lsec(sh, x0, y0, s, span, col_w, beam_d, up, down, stir, legs, top, bot, ri
     sh.dim_v(Z(0), Z(beam_d), X(span + col_w / 2 + ov) + 6, f"{beam_d * 1e3:.0f}", x_from=X(span + col_w / 2 + ov))
     # the notes of the top / bottom bars in the clear span between the columns, not across a column (checked: no text
     # over a line, 21-Nov-2026): the top one from the left column's face to the right, the bottom one from the right
-    # column's face to the left
-    sh.leader((X(span * 0.5), Z(beam_d - c)), (X(col_w / 2) + 3, Z(beam_d + max(up, 0.5) * 0.75)), top, 1.8)
+    # column's face to the left; a note wider than the clear span in two rows, its bracket below (24-Nov-2026: a small
+    # tank's "3 - 20 # HOOPS (OVERLAP ...)" ran over the other column's bars)
+    room = (span - col_w) * k - 6.2 - 1.0
+
+    def fit(note):
+        rows = list(note) if isinstance(note, (list, tuple)) else [note]
+        if max(tw(r_, 1.8) for r_ in rows) <= room:
+            return note
+        out = []
+        for r_ in rows:
+            out += r_.split(" (", 1) if " (" in r_ and tw(r_, 1.8) > room else [r_]
+        return [out[0]] + ["(" + r_ if r_.endswith(")") and not r_.startswith("(") else r_ for r_ in out[1:]]
+    two = fit(top) != top                      # the top note in two rows: its line straight down, clear of the second
+    top, bot = fit(top), fit(bot)
+    sh.leader((X(col_w / 2) + 3 if two else X(span * 0.5), Z(beam_d - c)), (X(col_w / 2) + 3, Z(beam_d + max(up, 0.5) * 0.75)), top, 1.8)
     sh.leader((X(span * 0.42), Z(c)), (X(span - col_w / 2) - 3, Z(-max(down, 0.6) * 0.55) if down else Z(0) - 4), bot, 1.8, right=False)
     sh.text(f"({n_e} + {n_mid} + {n_e}) - {stir[0]} # {legs}-LEGGED STIRRUPS @ {stir[1]} / {stir[2]} C/C", (X(span / 2), Z(beam_d / 2)), 1.7, TA.MIDDLE_CENTER)
     yt = Z(beam_d + up * 0.55) if up else Z(-down * 0.5)
@@ -1104,7 +1117,11 @@ def _tank_section(sh, res, x0, y0, bw, bh):
             sh.text(f"{z['n']} - {z['dia']} # HOOPS ON EACH FACE (LOWEST {z['len'] * 1e3:.0f})", (v.p(R - 0.3, 0)[0], v.p(0, (za + zb_) / 2 + 0.25)[1]), 1.8, TA.MIDDLE_RIGHT)
     nv = lambda dia_sp, dd: f"{math.ceil(math.pi * dd * 1e3 / dia_sp[1])} - {dia_sp[0]} # @ {dia_sp[1]} C/C"
     zm = (lev["wall_top"] + lev["B2_top"]) / 2 + 0.6
-    sh.leader(v.p(R + cw, zm), v.p(R - 1.2, zm + 0.5), [f"WALL {w['t']} THICK, {w['tb']} AT THE BASE", nv(w["vert"], 2 * R), "VERTICAL, EACH FACE"], 1.8, right=False)
+    qw = v.p(R - 1.2, zm + 0.5)
+    yR = v.p(0, lev["FSL"] - 0.8)[1]                # the "R = ..." dimension's line: the note's rows clear of it
+    if qw[1] - 2 * 1.8 * 1.5 - 1.5 < yR < qw[1] + 1.5:
+        qw = (qw[0], yR - 2.0)
+    sh.leader(v.p(R + cw, zm), qw, [f"WALL {w['t']} THICK, {w['tb']} AT THE BASE", nv(w["vert"], 2 * R), "VERTICAL, EACH FACE"], 1.8, right=False)
     sh.leader(v.p(R + cw, lev["B2_top"] + 0.35), v.p(R - 1.2, lev["B2_top"] + 0.95), [nv(w["base_in"], 2 * R), f"VERTICAL AT THE BASE, WATER FACE, {w['base_len'] * 1e3:.0f} LONG"], 1.8, right=False)
     sh.leader_bar(v.p(g["bal_edge"] - 0.3, lev["cone_top"] + cw), v.p(R - 0.1, lev["cone_top"] - 0.9),
               [f"BALCONY {bl['w'] * 1e3:.0f} WIDE, {bl['t']} THICK", f"{nb((bl['n'], bl['dia']))} HOOPS", at(bl["rad"], "RADIALLY") + " AT TOP", at(bl["dist"], "RADIALLY") + " AT BOTTOM"], 1.8)
@@ -1118,7 +1135,7 @@ def _tank_section(sh, res, x0, y0, bw, bh):
               f"{cn['n_up']} - {cn['hoop_up'][0]} # HOOPS @ {cn['hoop_up'][1]} (UPPER HALF) ON EACH FACE",
               f"{math.ceil(math.pi * (R + r0) * 1e3 / cn['mer'][1])} - {at(cn['mer'], 'RADIALLY')} ON EACH FACE"], 1.8, right=False)
     pb = ((R2 - cw) * math.sin(a2 * 0.45), zc2 + (R2 - cw) * math.cos(a2 * 0.45))
-    sh.leader_bar(v.p(*pb), v.p(pb[0] - 0.3, pb[1] - 1.0), [f"BOTTOM DOME {bd['t']} THICK ({bd['te']} AT THE EDGE)", at(bd["rad"], "RADIALLY") + " AND", at(bd["hoop"], "HOOPS") + " ON EACH FACE"], 1.9, right=False)
+    sh.leader_bar(v.p(*pb), v.p(pb[0] - 0.3, pb[1] - 1.25), [f"BOTTOM DOME {bd['t']} THICK ({bd['te']} AT THE EDGE)", at(bd["rad"], "RADIALLY") + " AND", at(bd["hoop"], "HOOPS") + " ON EACH FACE"], 1.9, right=False)
     pe2 = ((R2 - cw) * math.sin(a2 * 0.93), zc2 + (R2 - cw) * math.cos(a2 * 0.93))
     sh.leader_bar(v.p(*pe2), v.p(pe2[0] - 3.2, pe2[1] - 1.1), [f"{math.ceil(bd['edge'] * 1e3 / bd['edge_hoop'][1])} - {bd['edge_hoop'][0]} # HOOPS AND",
               f"{math.ceil(2 * math.pi * r0 * 1e3 / bd['edge_rad'][1])} - {at(bd['edge_rad'], 'RADIALLY')}", f"AT TOP, IN {bd['edge'] * 1e3:.0f} FROM THE EDGE"], 1.8, right=False)
@@ -1212,7 +1229,7 @@ def _small_details(sh, res, x0, y0):
     sh.heading("STEEL LADDER (INSIDE THE TANK)", (x2 + 40, y2), 2.4)
     sh.poly([(x2 + 8, y2 + 18), (x2 + 8, y2 + 12), (x2 + 72, y2 + 12), (x2 + 72, y2 + 18)])
     sh.leader((x2 + 30, y2 + 12), (x2 + 34, y2 + 22), "20 DIA M.S. BARS @ 250 C/C", 1.6)
-    sh.leader((x2 + 8, y2 + 14), (x2 + 3, y2 + 21), "ISA 50x50x6", 1.6, right=False)
+    sh.leader((x2 + 72, y2 + 14), (x2 + 77, y2 + 21), "ISA 50x50x6", 1.6)   # right: the section's dims on the left
     sh.dim_h(x2 + 8, x2 + 72, y2 + 8, "600", below=True)
     # pipe fixing
     x3 = x0 + 122

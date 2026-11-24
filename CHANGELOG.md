@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.9.41 (beta) - 2026-11-24
+
+- Water supply - Intze OHT: an existing OHT short of its operation zone's need gets a new Intze tank designed for
+  the shortfall (rounded up), beside it - before, only zones without an OHT got one. The tanks list marks such a
+  capacity with *.
+- Intze drawings: four notes kept clear of the lines (the ladder's angle, the section notes wider than their span,
+  the bottom dome, the wall's vertical bars).
+- Water DPR (xlsx): texts fitted to their cells - no text cut on the printed page; long texts wrapped and their
+  rows made tall enough, formula texts too; notes under a table run over its width. Title pages before the civil,
+  E&M, unit-estimate and SOR parts; the district and programme lines on each sheet's head; one operation zone a
+  page in the requirement, mass balance, static head and pipe sheets; the OHT estimate with its full
+  specifications and its C.I. pipes; signature places at the foot of the sheets.
+- Water DPR, E&M: the E&M office at the head of every E&M sheet; new zone-wise sheets for the tube-well estimate,
+  the power connection and the trial run (E5b, E8b, E9b) - each operation zone a block on its own page, down the
+  page, with live formulas on the zone grids (rates and amounts unchanged).
+
 ## 0.9.40 (beta) - 2026-11-23
 
 - Water DPR: an existing OHT short of its operation zone's need is kept, and a new OHT makes up the shortfall,

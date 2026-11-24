@@ -138,6 +138,9 @@ def write_dpr(info, path, previous=None):
     texts are kept. Returns path."""
     from . import em as em
     from . import more as more
+    for z in info["zones"]:                          # data kept by a design before 0.9.40: the new OHT flag
+        if "new_oht" not in z:
+            z["new_oht"] = not z.get("capacity_kl") or float(z["capacity_kl"]) < float(z.get("required_kl") or 0) - 1e-6
     B = Book(info)
     B.T3 = []
     project(B, previous)
@@ -175,6 +178,12 @@ def write_dpr(info, path, previous=None):
     names = sheet_names(B, units)                          # the technical sheets and after: in this order
     order = [n for n in ORDER if n in by] + [o for o in names if o in by and o not in ORDER]
     order += [n for n in by if n not in order]
+    # the title pages of the approved DPR before its estimates (p202 civil, p318 E&M, p381 unit estimates, p440 SOR)
+    for title, first in (("Title - Civil", "RC"), ("Title - E&M", "EM TS"), ("Title - Unit", units[0] if units else None),
+                         ("Title - SOR", "sor")):
+        if title in order and first in order:
+            order.remove(title)
+            order.insert(order.index(first), title)
     B.wb._sheets = [by[n] for n in order]
     B.wb.active = 0
     B.wb.calculation.fullCalcOnLoad = True
@@ -186,5 +195,6 @@ def write_dpr(info, path, previous=None):
         projection_charts(B, B.wb[TECH["T"]])
     from . import clean
     clean.workbook(B.wb)                              # no source of a figure named in the DPR (user 22-Nov-2026)
+    style.fit(B.wb)                                   # long texts wrapped, their rows tall enough (24-Nov-2026)
     B.wb.save(path)
     return path

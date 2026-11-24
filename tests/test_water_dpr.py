@@ -72,7 +72,12 @@ def test_dpr_sheets_and_formulas(design):
     # the title pages ECONOMICS and TECHNICAL STATEMENT (Riverside water DPR p59, p67; user 7-Nov-2026)
     assert wb.sheetnames.index("Title - Economics") == wb.sheetnames.index("Economics") - 1
     assert wb.sheetnames.index("Title - Technical") == wb.sheetnames.index("Cess") + 1
-    tech = wb.sheetnames[wb.sheetnames.index("Title - Technical") + 1:]
+    tech = [s for s in wb.sheetnames[wb.sheetnames.index("Title - Technical") + 1:] if not s.startswith("Title - ")]
+    # the title pages before the estimates, as the approved DPR (p202, p318, p381, p440; 24-Nov-2026)
+    after = {t: wb.sheetnames[wb.sheetnames.index(t) + 1] for t in ("Title - Civil", "Title - E&M", "Title - Unit",
+                                                                    "Title - SOR")}
+    assert after == {"Title - Civil": "D1 Pipe & Road", "Title - E&M": "E1 EM Tech Stmt",
+                     "Title - Unit": "U01 SV Rate", "Title - SOR": "R SOR 2025-26"}, after
     # the technical statement starts with the population projection (p68), made with no census given too
     # the example technical.xlsx's order first (user decision 9-Nov-2026): T1 Population, its T2-T9, then T10-T21
     nums = [int(re.match(r"T(\d+)", s).group(1)) for s in tech if s[0] == "T"]

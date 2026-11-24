@@ -516,6 +516,10 @@ def unit_estimates(B):
         for k, dim in src.row_dimensions.items():
             if dim.height:
                 ws.row_dimensions[k].height = dim.height
+        for col in {c.column_letter for row in ws.iter_rows() for c in row
+                    if isinstance(c.value, str) and c.value.startswith("=SUM(")}:     # a total: wide enough, not ###
+            d = ws.column_dimensions[col]
+            d.width = max(d.width or 8.43, 16.0)              # (their Bookman Old Style is wide)
         if ws.title.startswith("Thrust") and ws.title != "Thrust (2)":     # another project's name in the Elmwood copies
             ws["A1"], ws["A2"], ws["A3"], ws["A4"] = "ESTIMATE FOR", B.title, f'=""&{B.PR["under"]}', None
         elif ws.title in ("HT", "LT", "booster room"):

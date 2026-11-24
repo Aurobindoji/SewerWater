@@ -29,6 +29,14 @@ DPR = "Riverside water DPR (U.P. Jal Nigam 2026)"
 YEARS = (("init", "base_year"), ("mid", "mid_year"), ("ult", "design_year"))
 
 
+def _zone_page(ws, r):
+    """Each operation zone on a page of its own under the page head, as the approved DPR (p92-128, 24-Nov-2026)."""
+    from openpyxl.worksheet.pagebreak import Break
+    ws.print_title_rows = "1:3"
+    if r > 5:
+        ws.row_breaks.append(Break(id=r - 1))
+
+
 def _heads(B, ws, r, first, extra=()):
     """A block's header row: first column titles, the three years, extra titles."""
     B.header(ws, r, list(first) + [f'=""&{B.PR[k]}' for _, k in YEARS] + list(extra))
@@ -267,6 +275,7 @@ def requirement(B):
         z, s, rf = t["zone"], q(t["sheet"]), t["ref"]
         x2, tw = T1["rows"][z["name"]], 6 + i
         hrs = rf["q_pump"] - 3
+        _zone_page(ws, r)
         B.cell(ws, r, 2, f"Operation zone {z['name']}", bold=True)
         _heads(B, ws, r + 1, ["S.NO", "PARTICULARS"], ["Unit"])
         rows = []                                    # (no, label, [3 formulas] or one for all, unit)
@@ -335,8 +344,9 @@ def mass_balance(B):
     r = 5
     for i, t in enumerate(B.T3):
         z, s, rf = t["zone"], q(t["sheet"]), t["ref"]
+        _zone_page(ws, r)
         B.cell(ws, r, 1, f"Operation zone {z['name']}", bold=True)
-        lines = [("Considering rate of pumping (hours of filling, sheet Storage)", "=Storage!$C$31", "Hours"),
+        lines = [("Considering rate of pumping (hours of filling, sheet Storage)", "=Storage!$G$31", "Hours"),
                  ("Demand for ultimate stage (without fire - its third is stored on top, T14 S.4)",
                   f"={s}!F{rf['need'] - 4}", "KLD"),
                  ("Ultimate demand in the hours of filling", f"=F{r + 2}/F{r + 1}", "m3/hr"),
@@ -404,6 +414,7 @@ def static_head(B):
         pp0 = rf["head"] - 8
         dest = "CWR" if cwr else "OHT"
         cols = [(f"{t['name']} to {dest}", t) for t in mine] + ([("CWR to OHT", None)] if cwr else [])
+        _zone_page(ws, r)
         B.cell(ws, r, 2, f"Operation zone {z['name']}", bold=True)
         B.header(ws, r + 1, ["S.NO", "DESCRIPTION"] + [c[0] for c in cols])
         ws.row_dimensions[r + 1].height = 30
@@ -469,6 +480,7 @@ def pipe_table(B):
             continue
         x2 = T1["rows"][z["name"]]
         pr = (T.get("press") or {}).get(z["name"]) or {}
+        _zone_page(ws, r)
         B.cell(ws, r, 1, f"Distribution design of operation zone {z['name']}", bold=True)
         head = [("Residual head at consumer tapping point not less than (m)", rh),
                 ("Population covered (ultimate)", f"=T1!F{x2}"), ("OHT", z["name"]),

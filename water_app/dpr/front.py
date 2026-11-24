@@ -27,7 +27,9 @@ from .base import size_key
 
 TITLES = [("Title - Index", "INDEX"), ("Title - Salient", "SALIENT FEATURES"),
           ("Title - Project Report", "PROJECT REPORT"), ("Title - Financial", "FINANCIAL STATEMENT"),
-          ("Title - Economics", "ECONOMICS"), ("Title - Technical", "TECHNICAL STATEMENT")]     # p59, p67
+          ("Title - Economics", "ECONOMICS"), ("Title - Technical", "TECHNICAL STATEMENT"),     # p59, p67
+          ("Title - Civil", "ESTIMATES\n(CIVIL WORKS)"), ("Title - E&M", "ESTIMATES\n(E&M WORKS)"),  # p202, p318
+          ("Title - Unit", "UNIT\nESTIMATE"), ("Title - SOR", "SOR")]                               # p381, p440
 PIPE_HEADS = {"HDPE": "HDPE (PE-100) PN-6", "DI": "D.I. K-7 Pipe", "DI K9": "D.I. K-9 Pipe"}    # p40
 FONT = "Times New Roman"
 THIN, THICK, DOUBLE = Side(style="thin"), Side(style="thick"), Side(style="double")

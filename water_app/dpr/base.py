@@ -194,13 +194,20 @@ class Book:
         self.PR = {}
 
     def sheet(self, name, heading, ncols):
+        from openpyxl.styles import Alignment, Font
         ws = self.wb.create_sheet(name)
         ws.cell(1, 1, self.title).font = self.big
-        ws.cell(2, 1, f'=""&{self.PR["office"]}' if "office" in self.PR else "").font = self.bold
-        ws.cell(3, 1, heading).font = self.bold
+        # the DPR's page head (24-Nov-2026, as every page of the approved DPR): DISTRICT- ... and UNDER ... PROGRAMME
+        # under the scheme, the sheet's title underlined
+        PR = self.PR
+        ws.cell(2, 1, (f'="DISTRICT- "&UPPER(""&{PR["district"]})&IF(""&{PR["under"]}="","",CHAR(10)&"UNDER "&'
+                       f'UPPER({PR["under"]})&" PROGRAMME")') if "district" in PR else "").font = self.bold
+        ws.cell(3, 1, heading).font = Font(bold=True, underline="single")
         for r in (1, 2, 3):
             ws.merge_cells(start_row=r, start_column=1, end_row=r, end_column=ncols)
             ws.cell(r, 1).alignment = self.hcenter
+        ws.cell(2, 1).alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+        ws.row_dimensions[2].height = 31
         return ws
 
     def header(self, ws, r, names, widths=None):

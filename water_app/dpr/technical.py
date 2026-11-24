@@ -123,7 +123,7 @@ def t_projection(B):
     adopted = f["adopted"] if f else "geometrical"
     safe = (lambda v: v) if f else (lambda v: f"IFERROR({v},0)")          # blank census: no #DIV/0
     ws = B.wb.create_sheet("T")
-    for c, w in zip("ABCDEFGHIJKL", (6, 30, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12)):
+    for c, w in zip("ABCDEFGHIJKL", (6, 30, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14)):   # 31,66,826.43 shows
         ws.column_dimensions[c].width = w
     N = 12
 
@@ -575,18 +575,18 @@ def storage(B):
     rows = [("Hours of filling", f"=SUM(C{first}:C{last})", "0.0"),
             ("Maximum excess (x average hourly demand)", f"=MAX(0,MAX(H{first}:H{last}))", "0.00"),
             ("Maximum deficit (x average hourly demand)", f"=MIN(0,MIN(H{first}:H{last}))", "0.00"),
-            ("Balancing capacity = excess - deficit (hours of average demand)", f"=C{r + 1}-C{r + 2}", "0.00"),
-            ("Mass balance: share of the daily demand", f"=C{r + 3}/24", "0.0%"),
+            ("Balancing capacity = excess - deficit (hours of average demand)", f"=G{r + 1}-G{r + 2}", "0.00"),
+            ("Mass balance: share of the daily demand", f"=G{r + 3}/24", "0.0%"),
             ("Minimum (33 % of the ultimate demand)", f"={PR['min_share']}", "0.0%"),
-            ("Adopted share (the larger)", f"=MAX(C{r + 4},C{r + 5})", "0.0%")]
+            ("Adopted share (the larger)", f"=MAX(G{r + 4},G{r + 5})", "0.0%")]
     for i, (lab, f, fmt) in enumerate(rows):
         ws.cell(r + i, 1, lab)
-        ws.merge_cells(start_row=r + i, start_column=1, end_row=r + i, end_column=2)
-        B.cell(ws, r + i, 3, f, fmt=fmt, bold=i == len(rows) - 1)
+        ws.merge_cells(start_row=r + i, start_column=1, end_row=r + i, end_column=6)   # the label over A:F, one line
+        B.cell(ws, r + i, 7, f, fmt=fmt, bold=i == len(rows) - 1)
     ws.cell(r + len(rows) + 1, 1, crit["esr_capacity_share"]["ref"]).font = B.italic
     ws.cell(r + len(rows) + 2, 1, crit["oht_inflow_hours"]["ref"] + "; " + crit["draw_off_pattern"]["ref"]).font = B.italic
-    B.share = f"Storage!$C${r + 6}"
-    B.mass = f"Storage!$C${r + 4}"
+    B.share = f"Storage!$G${r + 6}"
+    B.mass = f"Storage!$G${r + 4}"
     return B.share
 
 

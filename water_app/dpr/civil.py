@@ -22,7 +22,7 @@ STAGE_NOTE = "Riverside water DPR (U.P. Jal Nigam 2026)"
 
 def _cols(B, ws):
     B.header(ws, 5, ["Sl No", "SOR Ref.", "Item of work", "No.", "L", "B", "H/D", "Qty", "Rate", "Unit", "Amount"],
-             [6, 9, 52, 8, 8, 8, 7, 11, 12, 7, 15])
+             [6, 9, 50, 8, 8, 8, 7, 11, 14, 7, 15])        # rate 14: Rs 14,85,000.00 shows, not ###
 
 
 class _Sheet:

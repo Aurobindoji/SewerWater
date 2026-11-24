@@ -210,6 +210,16 @@ class Book:
         ws.row_dimensions[2].height = 31
         return ws
 
+    def em_head(self, ws):
+        """The page head of the E&M sheets, as the approved DPR's E&M pages (p319-361, 24-Nov-2026): the office of the
+        E&M division over the scheme and district, the sheet's title (row 3) kept."""
+        PR = self.PR
+        if "office_em" not in PR:
+            return
+        ws.cell(1, 1, f'=UPPER("OFFICE OF THE EXECUTIVE ENGINEER, "&_xlfn.TEXTJOIN(", ",TRUE,{PR["office_em"]},'
+                      f'{PR["agency"]},{PR["place"]}))')
+        ws.cell(2, 1, f'=UPPER(""&{self.title[1:]}&IF(""&{PR["district"]}="",""," IN DISTT-"&{PR["district"]}))')
+
     def header(self, ws, r, names, widths=None):
         for c, h in enumerate(names, 1):
             x = ws.cell(r, c, h)

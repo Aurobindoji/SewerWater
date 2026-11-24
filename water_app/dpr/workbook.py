@@ -31,6 +31,8 @@ TECH = {"T": "T1 Population", "Town Wards": "T2 Town Wards", "Ward Proj": "T3 Wa
         # E4-E9: the E&M design sheets of the Riverside water DPR (emd.py, user decision 6-Nov-2026)
         "EMD TW": "E4 TW Design", "EMD TW Est": "E5 TW Estimate", "EMD HP": "E6 HP & Transformer",
         "EMD CWR": "E7 CWR Electrical", "EMD PC": "E8 Power Connection", "EMD TR": "E9 Trial Run",
+        "EMD TW Est Z": "E5b TW Estimate Zone-wise", "EMD PC Z": "E8b Power Conn. Zone-wise",
+        "EMD TR Z": "E9b Trial Run Zone-wise",
         "sor": "R SOR 2025-26", "Shif. HC": "D6 Shift HC",
         # C: the other civil works of the Riverside water DPR (civil.py, user decision 6-Nov-2026)
         "PH": "C1 Pump House", "BW": "C2 Site Development", "SQ": "C3 Staff Quarters", "GWR": "C4 GW Recharge",
@@ -90,7 +92,7 @@ def sheet_names(B, units):
     for i, (s, zn) in enumerate(zip(B.OHT.get("repair_sheets", []), B.OHT.get("repair_zones", [])), 1):
         m[s] = _title(f"S4-{i:02d} Rep {zn}")
     for old in ("PH", "BW", "SQ", "GWR", "MCS", "HT,LT", "EM TS", "EM", "EM O&M", "EM rates W", "EMD TW",
-                "EMD TW Est", "EMD HP", "EMD CWR", "EMD PC", "EMD TR"):
+                "EMD TW Est", "EMD TW Est Z", "EMD HP", "EMD CWR", "EMD PC", "EMD PC Z", "EMD TR", "EMD TR Z"):
         m[old] = TECH[old]
     for i, u in enumerate(units, 1):
         m[u] = _title(f"U{i:02d} {UNIT_NAMES.get(u, u)}")
@@ -175,6 +177,10 @@ def write_dpr(info, path, previous=None):
     front.write(B)
     sor_sheet(B)
     by = {ws.title: ws for ws in B.wb.worksheets}
+    for old in ("EM", "EM TS", "EM O&M", "EM rates W", "EMD TW", "EMD TW Est", "EMD TW Est Z", "EMD HP", "EMD CWR", "EMD PC",
+                "EMD PC Z", "EMD TR", "EMD TR Z"):              # the E&M office over them, as the DPR (p319-361)
+        if old in by:
+            B.em_head(by[old])
     names = sheet_names(B, units)                          # the technical sheets and after: in this order
     order = [n for n in ORDER if n in by] + [o for o in names if o in by and o not in ORDER]
     order += [n for n in by if n not in order]

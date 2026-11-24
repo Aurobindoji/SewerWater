@@ -89,7 +89,8 @@ def _page(ws, head):
         cols = [ws.column_dimensions[get_column_letter(c)] for c in range(1, last_col + 1)]
         pt = sum(((d.width or 8.43) * 7 + 5) * 0.75 for d in cols if not d.hidden)
         ws.sheet_properties.pageSetUpPr.fitToPage = False
-        ps.scale = max(10, min(100, int(page * 72 * 0.88 / max(pt, 1.0) * 100)))   # (a margin for the fonts)
+        ps.scale = max(10, min(100, int(page * 72 * 0.88 / max(pt, 1.0) * 100 *            # (a margin for the fonts)
+                                        getattr(ws, "print_shrink", 1.0))))
     if head and head <= 8:
         ws.print_title_rows = f"1:{head}"
 

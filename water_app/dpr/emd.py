@@ -90,6 +90,57 @@ def _f(s):
     return "=" + s
 
 
+def zone_view(B, g, name, heading):
+    """The estimate of grid g as the approved DPR prints its E&M estimates (p319-349, 24-Nov-2026): each operation
+    zone a block on a page of its own - S.No., description, unit, qty, rate, amount down the page - every figure a
+    formula on g (its rates the yellow of g, column D)."""
+    from openpyxl.worksheet.pagebreak import Break
+    src, ws = g.ws, B.sheet(name, heading, 6)
+    B.header(ws, 5, ["S.No.", "Description", "Unit", "Qty.", "Rate (Rs)", "Amount (Rs)"], [7, 62, 9, 12, 13, 15])
+    ws.print_title_rows = "1:5"
+    ws.print_shrink = 0.9                                # a zone's block on its page with its signature
+    q_ = lambda c: f"'{src.title}'!{c}"
+    x = 6
+    for i, t in enumerate(B.T3):
+        col = g.cols[i]
+        if i:
+            ws.row_breaks.append(Break(id=x - 1))
+        B.cell(ws, x, 1, chr(65 + i % 26))
+        B.cell(ws, x, 2, f"Operation zone {t['zone']['name']}", bold=True)
+        for c in range(3, 7):
+            B.cell(ws, x, c, None)
+        x += 1
+        for r in range(6, g.r):
+            label = src.cell(r, 2).value
+            if label in (None, "") or src.cell(r, 2).font.i:
+                continue                                     # (the grid's notes: not in the estimate)
+            no, unit, rate = src.cell(r, 1).value, src.cell(r, 3).value, src.cell(r, 4).value
+            val = src.cell(r, g.c0 + i).value
+            bold = bool(src.cell(r, 2).font.b)
+            B.cell(ws, x, 1, no)
+            B.cell(ws, x, 2, label, bold=bold).alignment = B.wrap
+            B.cell(ws, x, 3, unit)
+            for c in (4, 5, 6):
+                B.cell(ws, x, c, None)
+            fmt = src.cell(r, g.c0 + i).number_format
+            if val is None and rate is not None:            # a norm of all the zones
+                B.cell(ws, x, 5, "=" + q_(f"$D${r}"), fmt=src.cell(r, 4).number_format)
+            elif val is None:
+                pass                                         # a heading
+            elif rate is not None and unit not in ("Rs", "lakh"):
+                B.cell(ws, x, 4, "=" + q_(f"${col}${r}"), fmt=fmt)
+                B.cell(ws, x, 5, "=" + q_(f"$D${r}"), fmt="#,##0.00")
+                B.cell(ws, x, 6, f"=D{x}*E{x}", fmt="#,##0.00")
+            elif unit in ("Rs", "lakh"):                     # a total
+                B.cell(ws, x, 6, "=" + q_(f"${col}${r}"), fmt=fmt, bold=True)
+            else:                                            # a design figure of the zone
+                B.cell(ws, x, 4, "=" + q_(f"${col}${r}"), fmt=fmt)
+            x += 1
+        B.sign(ws, x + 1, 6)                                 # each zone signed, as the DPR's pages
+        x += 3
+    return ws
+
+
 def tw_design(B, T, E):
     D = E["tw"]
     g = Grid(B, "EMD TW", "DESIGN OF DRILLING AND SIZE OF PIPES FOR CONSTRUCTION OF TUBE WELL, PEA GRAVEL "
@@ -518,6 +569,7 @@ def power(B, T, E, hp, cw):
            "line, Rs 17.57-18.83 lakh) and p346-349 (CWR 119-140 kVA, 560-720 m, Rs 20.59-24.53 lakh). The length of "
            "the line is of the site: yellow, fill in.")
     B.sign(g.ws, g.r + 2, 4 + len(B.T3))
+    B.EMD_PC_GRID = g
     return out
 
 
@@ -596,6 +648,7 @@ def trial(B, T, E, hp, cw):
            "a month), CWR pumping plant Rs 9.37 lakh (82.74 kW, operator Rs 36000 a month), booster Rs 0.80 lakh "
            "(7.46 + 0.5 kW, 12 h, no operator).")
     B.sign(g.ws, g.r + 2, 4 + len(B.T3))
+    B.EMD_TR_GRID = g
     return out
 
 
@@ -608,6 +661,11 @@ def write(B, T):
     cw = cwr(B, T, E, hp)
     pc = power(B, T, E, hp, cw)
     tr = trial(B, T, E, hp, cw)
+    # the estimates as the approved DPR prints them: zone by zone, down the page (24-Nov-2026)
+    zone_view(B, est, "EMD TW Est Z", "UNIT ESTIMATE FOR TUBE WELL CONSTRUCTION & DEVELOPMENT - ZONE-WISE")
+    zone_view(B, B.EMD_PC_GRID, "EMD PC Z", "ESTIMATE FOR POWER CONNECTION TRANSMISSION LINE - "
+              "ZONE-WISE")
+    zone_view(B, B.EMD_TR_GRID, "EMD TR Z", "THREE MONTH TRIAL & RUN COST - ZONE-WISE")
     n = range(len(B.T3))
     return {"tw": [est.cell("lakh", i) for i in n], "pc_tw": pc["t"], "pc_b": pc["b"], "pc_c": pc["c"],
             "tr_tw": tr["tw"], "tr_c": tr["c"], "tr_b": tr["b"], "tf_kva": [cw.cell("kva", i) for i in n],

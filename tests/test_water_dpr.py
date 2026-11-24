@@ -261,8 +261,10 @@ def test_dpr_sheets_and_formulas(design):
     assert any(isinstance(c.value, str) and "'E3 EM Rates'!" in c.value and "MATCH(" in c.value for c in wb["ABS E&M"]["E"])
     # the E&M design sheets of the Riverside water DPR p319-361 give the cost (user decision 6-Nov-2026): the tube
     # well, the CWR's transformers, the trial runs and the power connections of sheet ABS E&M from them
-    e_sheets = ["E4 TW Design", "E5 TW Estimate", "E6 HP & Transformer", "E7 CWR Electrical", "E8 Power Connection",
-                "E9 Trial Run"]
+    # and the estimates zone by zone down the page, as the DPR prints them (24-Nov-2026)
+    e_sheets = ["E4 TW Design", "E5 TW Estimate", "E5b TW Estimate Zone-wise", "E6 HP & Transformer",
+                "E7 CWR Electrical", "E8 Power Connection", "E8b Power Conn. Zone-wise", "E9 Trial Run",
+                "E9b Trial Run Zone-wise"]
     assert [s for s in wb.sheetnames if s[:1] == "E" and s[1:2].isdigit()][3:] == e_sheets
     assert all(s in ix["ESTIMATES OF E&M WORKS"] for s in e_sheets)
     col = 5 + k                                                        # OZ OLD-1's column of the design sheets

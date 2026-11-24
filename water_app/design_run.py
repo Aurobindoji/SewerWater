@@ -3,6 +3,7 @@ where no size helps, the stage-wise check, the PRVs, the rising mains of the new
 15-Nov-2026: out of ui_api.py)."""
 import math
 from . import hindi
+from . import intze
 from . import project as ui
 from . import demand as dm
 from . import design as wd
@@ -174,7 +175,7 @@ def _tanks(res, z, wnet, hnet, crit):
     city = sum(v["pop"] for v in wnet["nodes"].values())
     tanks = []
     for o in res["outlets"]:
-        kl = o.get("capacity_kl") or o.get("required_kl")
+        kl = (o.get("capacity_kl") or 0) + (o.get("new_kl") or 0) or o.get("required_kl")   # both tanks together
         if not kl:
             continue
         mem = [n for n, k in z["oz"].items() if k == o["name"] and n in wnet["nodes"]]
@@ -362,10 +363,11 @@ def _rising(stem, req, wnet, z, ohts, res, crit):
     swd = lambda kl: next(d for c, d in S["swd"] if c is None or (kl or 0) <= c)
 
     def _cone(o):              # a new OHT is an Intze tank: its cone below the wall's SWD (user 10-Nov-2026)
-        if o.get("existing") or not o.get("required_kl"):
-            return 0.0
-        from . import intze
-        return intze.cone_depth(o["required_kl"], swd(o["required_kl"]))
+        kl = _fill(o)
+        return intze.cone_depth(kl, swd(kl)) if kl and kl == o.get("new_kl") else 0.0
+
+    def _fill(o):              # the tank the tube wells fill: the new one where there is one (as the DPR's T3)
+        return o.get("new_kl") or o.get("capacity_kl") or o.get("required_kl")
     # an OZ with a CWR (more than 3 new tube wells, UPJN rule): its tube wells fill the CWR - a ground reservoir at the
     # OHT, the tube wells lifting to the ground level (Riverside water DPR p136-195: TW to CWR staging 0, depth of water
     # 0 - user decision 6-Nov-2026) - and its pumps the OHT (R3 'H P Calculation pp': the tube wells of its CWR zones
@@ -378,7 +380,7 @@ def _rising(stem, req, wnet, z, ohts, res, crit):
         gls[o["name"]] = gl
         if gl is not None and o.get("staging_m") is not None:
             top[o["name"]] = gl + (S["pump"]["cwr_water_above_gl_m"] if o["name"] in cwr else
-                                   o["staging_m"] + swd(o.get("capacity_kl") or o.get("required_kl")) +
+                                   o["staging_m"] + swd(_fill(o)) +
                                    _cone(o))
     need = {zn["name"]: int(zn.get("tubewells_new") or 0) + int(zn.get("tubewells_standby") or 0)
             for zn in z["zones"] if zn["name"] in top}          # standby tube wells too: each its own main
@@ -750,6 +752,9 @@ def _design_once(stem, req, folder, net, wnet, ohts, crit, z, lines):
                         "staging_auto": o["name"] in staging_note, "proposed": bool(o.get("proposed")),
                         "existing": o.get("capacity_kl") is not None, "capacity_kl": o.get("capacity_kl"),
                         "required_kl": zr.get("required_kl"), "cwr_kl": zr.get("cwr_kl"),
+                        # the new OHT of the OZ: its need, or the shortfall beside a short existing one (24-Nov-2026)
+                        "new_kl": intze.new_kl(zr.get("required_kl"), o.get("capacity_kl"),
+                                               crit["oht_capacity_round_kl"]["value"]) or None,
                         "population": zr.get("population"), "dmas": zr.get("dma_count"),
                         "flow": round(res_h["flow"].get(lab, 0.0), 2), "size": s["name"] if s else None,
                         "lowest_p": round(lowest, 2) if lowest is not None else None,

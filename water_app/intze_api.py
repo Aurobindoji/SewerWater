@@ -67,12 +67,12 @@ def swd_of(kl):
 
 
 def targets(design):
-    """The new OHTs of a design result: (name, capacity KL, staging m)."""
+    """The new OHTs of a design result: (name, capacity KL, staging m) - also the one beside an existing OHT short of
+    its OZ's need, of the shortfall rounded up (24-Nov-2026, as the water DPR); a design from before then without
+    "new_kl" rounds to 50 KL."""
     out = []
     for o in design.get("outlets") or []:
-        if o.get("existing"):
-            continue
-        cap = o.get("required_kl") or o.get("capacity_kl")
+        cap = o["new_kl"] if "new_kl" in o else intze.new_kl(o.get("required_kl"), o.get("capacity_kl"))
         if cap and o.get("staging_m"):
             out.append((o["name"], float(cap), float(o["staging_m"])))
     return out
@@ -100,12 +100,14 @@ def tanks(stem):
     folder, design, t_design = _last_design(stem)
     out = os.path.join(folder, "intze")
     rows = []
+    beside = {o["name"]: o["capacity_kl"] for o in design.get("outlets") or [] if o.get("capacity_kl")}
     for name, cap, stg in targets(design):
         st = f"{stem}_{_safe(name)}_intze"
         files = {k: st + ext for k, ext in (("dxf", ".dxf"), ("pdf", ".pdf"), ("calc", "_calc.pdf"), ("xlsx", "_design.xlsx"))
                  if os.path.isfile(os.path.join(out, st + ext))}
         t = os.path.getmtime(os.path.join(out, st + ".dxf")) if "dxf" in files else None
         rows.append({"name": name, "capacity_kl": cap, "staging_m": stg, "files": files,
+                     "existing_kl": beside.get(name),        # the short existing OHT it stands beside
                      "made": time.strftime("%d-%m-%Y %H:%M", time.localtime(t)) if t else "",
                      "stale": bool(t and t < t_design)})
     return {"ok": True, "folder": out, "ohts": rows}

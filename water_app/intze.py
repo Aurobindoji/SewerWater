@@ -230,6 +230,18 @@ def proportion(cap_kl, swd_m, opt):
             "slant": h0 / math.sin(alpha)}
 
 
+def new_kl(required_kl, existing_kl=None, step=50):
+    """Capacity of the new OHT of an OZ (KL): its whole need where it has no OHT, the shortfall rounded up to `step`
+    where an existing one is short of the need (user 23/24-Nov-2026: the existing one kept, the new one makes up the
+    rest - as the water DPR T14 S.7), 0 where the existing one is enough."""
+    need, have = float(required_kl or 0), float(existing_kl or 0)
+    if need <= 0 or have >= need - 1e-6:
+        return 0.0
+    if have <= 0:
+        return need
+    return float(math.ceil((need - have) / step - 1e-9) * step) if step else need - have
+
+
 def cone_depth(cap_kl, swd_m, opts=None):
     """Height of the cone below the wall of a new Intze OHT of this capacity (m): its depth of water from the LWL is
     swd + this (user decision 10-Nov-2026: SWD at the wall, the cone below - the pump head of the DPR uses both)."""

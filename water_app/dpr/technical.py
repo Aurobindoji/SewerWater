@@ -700,11 +700,11 @@ def t3(B, k, z):
     sw = B.S["swd"]
 
     def _cone_of(zz):          # the cone of a new Intze OHT below its wall's SWD (user decision 10-Nov-2026)
-        if not zz.get("new_oht") or not zz.get("required_kl"):
-            return 0.0
         from .. import intze
-        kl = float(zz["required_kl"]) - float(zz.get("capacity_kl") or 0)   # the new one: the zoning's need less the
-        kl = max(kl, 1.0)                                                    # existing (already rounded, criteria)
+        kl = intze.new_kl(zz.get("required_kl"), zz.get("capacity_kl"),
+                           B.crit["oht_capacity_round_kl"]["value"])   # the need, or the
+        if not kl:                                     # shortfall rounded up (as S.7)
+            return 0.0
         return round(intze.cone_depth(kl, next(d for c, d in sw if c is None or kl <= c)), 3)
     swd_of = lambda kl: f"IF({kl}<={sw[0][0]},{sw[0][1]},IF({kl}<={sw[1][0]},{sw[1][1]},{sw[2][1]}))"
     swd = swd_of(cap1)

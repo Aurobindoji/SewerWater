@@ -72,6 +72,19 @@ def test_targets_are_new_ohts_only():
     assert intze_api.targets(d) == [("B", 750.0, 21.5)]
 
 
+def test_a_short_existing_oht_gets_a_new_one_for_the_shortfall():
+    """An existing OHT short of its OZ's need is kept; the Intze package designs the new one beside it for the
+    shortfall rounded up (as the water DPR T14 S.7, 24-Nov-2026), none where the existing one is enough."""
+    assert intze.new_kl(750, None) == 750 and intze.new_kl(750, 300) == 450 and intze.new_kl(750, 320) == 450
+    assert intze.new_kl(750, 750) == 0 and intze.new_kl(750, 900) == 0 and intze.new_kl(None, 300) == 0
+    assert intze.new_kl(700, 320, 100) == 400
+    d = {"outlets": [{"name": "A", "existing": True, "capacity_kl": 320, "required_kl": 750, "staging_m": 18},
+                     {"name": "B", "existing": True, "capacity_kl": 800, "required_kl": 750, "staging_m": 20},
+                     {"name": "C", "existing": True, "capacity_kl": 320, "required_kl": 700, "new_kl": 400,
+                      "staging_m": 19}]}
+    assert intze_api.targets(d) == [("A", 450.0, 18.0), ("C", 400.0, 19.0)]
+
+
 def test_one_tank_at_a_time(tmp_path, monkeypatch):
     """The page's Design button of each tank (user decision 10-Nov-2026): the list of the new OHTs with their
     drawings' state, and only the tank asked drawn."""

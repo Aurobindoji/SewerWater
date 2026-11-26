@@ -731,7 +731,8 @@ def write_outputs(z, base, source="", network_dxf="all", mh_text_height=None, so
         if mh_text_height:
             h_mh = mh_text_height
         elif source_dxf:
-            h_mh = cad.source_text_height(source_dxf)[0] * 0.67
+            keep = os.path.join(os.path.dirname(os.path.abspath(base)), "dxf_text_height.json")   # read once per drawing
+            h_mh = cad.source_text_height(source_dxf, keep)[0] * 0.67
         else:
             h_mh = min(3.0, max(0.5, round(Ls[len(Ls) // 2] / 25, 2))) if Ls else 1.0
         for ev in (rank if network_dxf == "all" else rank[:1]):

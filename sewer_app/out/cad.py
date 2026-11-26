@@ -27,6 +27,7 @@ SEW_OUTFALL, SEW_FLOW_ARROW. Same coordinates as the original drawing: XREF / IN
 """
 import functools
 import math
+import os
 import re
 import statistics
 
@@ -92,11 +93,49 @@ def pipe_text(label, D, s, length, chord, h, r_mh):
     return [(top, 1), (bottom, -1)], max(PIPE_TEXT_MIN * h, min(h, room / two if room > 0 else 0.0))
 
 
-def source_text_height(path):
+# The texts' height of an original drawing, remembered for each version of the file (rewrite stage 7, 26-Nov-2026: the
+# DXF export read the whole drawing again for it every time - 3/4 of its time on a large drawing): in memory, and in
+# a small file when the caller gives one (it outlives the server).
+_TEXT_H = {}
+
+
+def _version(path):
+    st = os.stat(path)
+    return [os.path.abspath(path), st.st_size, st.st_mtime_ns]
+
+
+def source_text_height(path, cache_file=None):
     """Median height of the manhole-label texts of the original drawing (all texts if none match).
-    Returns (height, how many texts it is based on, what). DXF, or DWG through the ODA File Converter."""
+    Returns (height, how many texts it is based on, what). DXF, or DWG through the ODA File Converter. Read once per
+    version of the file (cache_file: a JSON kept for it between runs)."""
+    import json
+    ver = _version(path)
+    if tuple(ver) in _TEXT_H:
+        return _TEXT_H[tuple(ver)]
+    if cache_file:
+        try:
+            with open(cache_file, encoding="utf-8") as fh:
+                kept = json.load(fh)
+            if kept.get("version") == ver:
+                _TEXT_H[tuple(ver)] = tuple(kept["height"])
+                return _TEXT_H[tuple(ver)]
+        except (OSError, ValueError, KeyError, TypeError):
+            pass
     from sewer_app.net.dxf_inspect import load
     doc, _ = load(path)
+    out = text_height_of(doc, path)
+    _TEXT_H[tuple(ver)] = out
+    if cache_file:
+        from sewer_app.core import store
+        try:
+            store.write_json(cache_file, {"version": ver, "height": list(out)})
+        except OSError:
+            pass
+    return out
+
+
+def text_height_of(doc, path=""):
+    """source_text_height of a drawing already read."""
     mh, allh = [], []
     for e in doc.modelspace().query("TEXT MTEXT"):
         try:

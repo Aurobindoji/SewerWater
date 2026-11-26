@@ -7,6 +7,7 @@ import json
 import os
 import re
 from . import HOME
+from . import store
 
 
 PROJECTS = os.path.join(HOME, "projects")
@@ -38,15 +39,20 @@ def safe_name(name):
     import unicodedata
     s = "".join(c if c.isalnum() or c in "_-" or unicodedata.category(c).startswith("M") else " "
                 for c in str(name or "").strip())
-    s = re.sub(r"\s+", "_", s.strip())
-    return s[:80] or "project"
+    s = re.sub(r"\s+", "_", s.strip())[:80] or "project"
+    # names Windows keeps for its devices (con.kml would be the console, not a file)
+    if s.split(".")[0].upper() in _DEVICES:
+        s = "_" + s
+    return s
+
+
+_DEVICES = {"CON", "PRN", "AUX", "NUL", *(f"COM{i}" for i in range(10)), *(f"LPT{i}" for i in range(10))}
 
 
 def save_project(name, kml):
     os.makedirs(proj_dir(), exist_ok=True)
     path = os.path.join(proj_dir(), safe_name(name) + ".kml")
-    with open(path, "w", encoding="utf-8") as fh:
-        fh.write(kml)
+    store.write_text(path, kml)
     return path
 
 
@@ -266,9 +272,7 @@ def read_list(name, kind):
 
 
 def write_list(name, kind, items):
-    os.makedirs(proj_dir(), exist_ok=True)
-    with open(list_file(name, kind), "w", encoding="utf-8") as fh:
-        json.dump(items or [], fh, ensure_ascii=False)
+    store.write_json(list_file(name, kind), items or [])
 
 
 # ---- the Outputs tab (user request 16-Nov-2026): the project's output files, each opened from the page
@@ -305,6 +309,8 @@ def open_output(stem, rel="", folder=False):
     p = os.path.realpath(os.path.join(base, rel or ""))
     if os.path.commonpath([base, p]) != base or not os.path.exists(p):
         raise ValueError("file नहीं मिली / file not found: " + (rel or stem))
+    if os.path.isfile(p) and not p.lower().endswith(OUTPUT_EXT):   # never a program (.bat, .exe ...) put there
+        raise ValueError("यह file यहाँ से नहीं खुलती / this kind of file is not opened: " + (rel or stem))
     if not hasattr(os, "startfile"):
         raise ValueError("यहाँ file नहीं खुल सकती (Windows नहीं) / cannot open files here")
     if folder and os.path.isfile(p):

@@ -29,7 +29,7 @@ def base(request, tmp_path, monkeypatch):
 
 
 def post(url, body, origin=None, token=True):
-    """A POST; with water's run token unless token=False (the sewer server has none yet - rewrite stage 2)."""
+    """A POST, with the run token (tests/conftest.py: one value for both servers) unless token=False."""
     req = urllib.request.Request(url, data=json.dumps(body).encode("utf-8"),
                                  headers={"Content-Type": "text/plain", **({"Origin": origin} if origin else {}),
                                           **({wserver.TOKEN_HEADER: wserver.TOKEN} if token else {})})

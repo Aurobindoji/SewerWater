@@ -3,6 +3,7 @@ stage 6, 15-Nov-2026: out of ui.py)."""
 import json
 import os
 import time
+from . import store
 from .project import has_network, is_dxf, net_rev, net_state, network_current, out_root, paths, proj_dir
 from .inputs import FIELDS
 
@@ -14,8 +15,7 @@ def _keep(stem, kind, res, req):
     os.makedirs(folder, exist_ok=True)
     keep = dict(res, req={k: req.get(k) for k in FIELDS + ("option",)}, time=time.strftime("%d-%m-%Y %H:%M"),
                 net_rev=net_rev(stem))
-    with open(os.path.join(folder, f"{stem}_{kind}_ui.json"), "w", encoding="utf-8") as fh:
-        json.dump(keep, fh, ensure_ascii=False, separators=(",", ":"))
+    store.write_json(os.path.join(folder, f"{stem}_{kind}_ui.json"), keep)
     if kind == "zoning":                                # a new zoning: the design of the old one is not shown again
         try:
             os.remove(os.path.join(folder, f"{stem}_design_ui.json"))

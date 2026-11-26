@@ -370,6 +370,9 @@ def snap(out):
     os.makedirs(out)
     from sewer_app import ui as sui
     from water_app import server as wsrv
+    # the run tokens (rewrite stages 1-2): one value for both servers here, as the calls go through one helper
+    if hasattr(sui, "TOKEN"):
+        sui.TOKEN = getattr(wsrv, "TOKEN", sui.TOKEN)
     AUTH.update({getattr(wsrv, "TOKEN_HEADER", "X-App-Token"): getattr(wsrv, "TOKEN", "")})
     R = Run(out, tmp)
     wsv, wurl = serve(wsrv.Handler)

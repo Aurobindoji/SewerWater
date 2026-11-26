@@ -109,7 +109,7 @@ def server(tmp_path, monkeypatch):
 
 def call(url, body=None):
     req = urllib.request.Request(url, data=None if body is None else json.dumps(body).encode("utf-8"),
-                                 headers={"Content-Type": "application/json"})
+                                 headers={"Content-Type": "application/json", ui.TOKEN_HEADER: ui.TOKEN})
     with urllib.request.urlopen(req, timeout=300) as r:
         return json.loads(r.read())
 
@@ -279,7 +279,7 @@ def test_dxf_picked_on_the_page_is_uploaded(server, tmp_path):
 
     def up(name, body):
         req = urllib.request.Request(server + "/api/dxf_upload?file=" + urllib.parse.quote(name), data=body,
-                                     headers={"Content-Type": "application/octet-stream"})
+                                     headers={"Content-Type": "application/octet-stream", ui.TOKEN_HEADER: ui.TOKEN})
         try:
             with urllib.request.urlopen(req, timeout=60) as r:
                 return json.loads(r.read())

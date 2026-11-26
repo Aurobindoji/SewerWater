@@ -52,7 +52,7 @@ def server(tmp_path, monkeypatch):
 
 def call(url, body=None):
     req = urllib.request.Request(url, data=None if body is None else json.dumps(body).encode("utf-8"),
-                                 headers={"Content-Type": "application/json"})
+                                 headers={"Content-Type": "application/json", ui.TOKEN_HEADER: ui.TOKEN})
     with urllib.request.urlopen(req, timeout=180) as r:
         return json.loads(r.read())
 

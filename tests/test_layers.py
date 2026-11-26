@@ -24,7 +24,7 @@ LAYERS = {
     },
     "sewer_app": {
         "core": "barriers check criteria design edits flows geo hindi hydraulics network pipeline population pumping "
-                "quantities rising_main spacing zoning",
+                "quantities rising_main spacing store zoning",
         "net": "dxf_extract dxf_inspect layout netedit repair",
         "project": "inputs project results",
         "output": "cad dpr dpr_clean dpr_em dpr_format dpr_front dpr_more lsection report zone_export zoning_out",

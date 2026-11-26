@@ -3,6 +3,7 @@ catalogues, the design inputs and their defaults, the CPHEEO criteria with the p
 import csv
 import json
 import os
+from . import store
 from .project import STAGE_KEYS, is_dxf, paths, stage_inputs
 
 
@@ -73,8 +74,9 @@ def design_inputs(stem, req):
         inp["pop_scale"] = inp["pop_total"] / wards          # the wards' population shares the design population out
     if not inp.get("pop_total"):
         raise ValueError("आबादी नहीं है: आधार वर्ष की आबादी दें (या वार्ड में population भरकर Layout दोबारा बनाएँ)")
-    with open(os.path.join(folder, f"{stem}_inputs.json"), "w", encoding="utf-8") as fh:
-        json.dump(dict(inp, _readme="written by the map UI (python -m sewer_app ui)"), fh, ensure_ascii=False, indent=2)
+    store.write_text(os.path.join(folder, f"{stem}_inputs.json"),
+                     json.dumps(dict(inp, _readme="written by the map UI (python -m sewer_app ui)"), ensure_ascii=False,
+                                indent=2))
     return inp
 
 

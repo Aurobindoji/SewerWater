@@ -2,8 +2,10 @@
 // Restructure stage 4 (15-Nov-2026): the page's one script split into files run in this order, sharing one global scope.
 // ---------------------------------------------------------------- server calls, saving
 function status(msg, cls) { const s = $("status"); s.textContent = msg; s.className = "status " + (cls || ""); }
+// the run's token the server wrote into this page (rewrite stage 2, 26-Nov-2026): every POST carries it
+const APP_TOKEN = (document.querySelector('meta[name="app-token"]') || {}).content || "";
 async function api(path, body) {
-  const r = await fetch(path, body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {});
+  const r = await fetch(path, body ? { method: "POST", headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN }, body: JSON.stringify(body) } : {});
   return r.json();
 }
 async function refreshList() {

@@ -33,7 +33,8 @@ def server(tmp_path, monkeypatch):
 
 def call(url, body=None, host=None):
     req = urllib.request.Request(url, data=None if body is None else json.dumps(body).encode("utf-8"),
-                                 headers={"Content-Type": "application/json", **({"Host": host} if host else {})})
+                                 headers={"Content-Type": "application/json", ui.TOKEN_HEADER: ui.TOKEN,
+                                          **({"Host": host} if host else {})})
     with urllib.request.urlopen(req, timeout=120) as r:
         data = r.read()
     return json.loads(data) if r.headers.get_content_type() == "application/json" else data.decode("utf-8")
@@ -45,7 +46,7 @@ def test_page_and_projects(server):
     for src in re.findall(r'<script src="(js/[a-z_]+\.js)"></script>', page):     # its scripts (stage 8, 15-Nov-2026)
         page += call(server + "/" + src)
     assert call(server + "/map.css").startswith("/*")
-    assert "leaflet@1.9.4" in page and "leaflet-draw@1.0.4" in page and "i18n.js" in page
+    assert "vendor/leaflet/leaflet.js" in page and "vendor/leaflet-draw/leaflet.draw.js" in page and "i18n.js" in page
     assert "I18N_EN" in call(server + "/i18n.js")
     # nothing of the water module or the start page here (user decision 10-Nov-2026): "/" is the sewer page itself,
     # /water is not known; the page's button opens the water app through the launcher

@@ -3,7 +3,7 @@
 dxf_inspect.py - reading a CAD drawing (DXF / DWG) for the water network import (dxf_extract, netedit): entities,
 text kinds, joining lines into a network, its checks, ground levels per junction.
 The command-line check of a drawing (console + Excel report) is in the sewer copy only - python -m
-sewer_app.dxf_inspect (17-Nov-2026: the water copy of it was not reachable from the water app and was removed).
+sewer_app.net.dxf_inspect (17-Nov-2026: the water copy of it was not reachable from the water app and was removed).
 A DWG is read through the free ODA File Converter when it is installed; nothing is written into the drawing.
 """
 # dxf_inspect in parts (rewrite stage 3b, 26-Nov-2026) - each name is still dxf_inspect.<name>

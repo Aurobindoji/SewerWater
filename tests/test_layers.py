@@ -41,7 +41,7 @@ KNOWN = {
     "water_app": set(),
     "sewer_app": set(),
 }
-UNITS = {"water_app": {"out.dpr", "net.netedit", "net.dxf_inspect"}, "sewer_app": {"out.dpr", "net.netedit", "net.dxf_inspect"}}   # subpackages counted as one module
+UNITS = {"water_app": {"out.dpr", "net.netedit", "net.dxf_inspect", "intze.design", "intze.drawing"}, "sewer_app": {"out.dpr", "net.netedit", "net.dxf_inspect"}}   # subpackages counted as one module
 
 
 def _modules(pkg):

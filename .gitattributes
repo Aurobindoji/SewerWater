@@ -1,0 +1,3 @@
+# the map libraries shipped with the app: kept byte for byte (their hashes are checked against the published ones)
+sewer_app/static/vendor/** -text
+water_app/static/vendor/** -text

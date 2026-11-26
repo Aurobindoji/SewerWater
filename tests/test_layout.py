@@ -7,7 +7,9 @@ import json
 import math
 import os
 
-from sewer_app import layout, network, pipeline
+from sewer_app.net import layout
+from sewer_app.core import network
+from sewer_app.engine import pipeline
 from sewer_app.__main__ import main
 
 from synthetic import INP
@@ -68,7 +70,7 @@ def test_sample_kml(tmp_path, capsys):
 
     # the road grid has loops: a zoning option cuts them, and the new head manholes <MH>-C<n> (not in the population
     # file) get their share of their manhole's population - no cut sewer without flow, total unchanged
-    from sewer_app import flows, zoning
+    from sewer_app.engine import flows, zoning
     f_pop = os.path.join(out, "sample_area_layout_population.csv")
     inp = dict(INP, pop_dist="csv", pop_csv=f_pop, pop_total=9000)
     z = zoning.run(net, inp, log=lambda s: None)
@@ -163,7 +165,7 @@ def test_wards_together_as_the_boundary():
 
 def test_population_from_a_description_table(tmp_path):
     """GIS exports (ArcGIS ...) keep the fields in a description table: W_POP is read as the population."""
-    from sewer_app import geo
+    from sewer_app.core import geo
     desc = ("<html><body><table><tr><td>Sarsouli</td></tr><tr><td><table><tr><td>W_Name</td><td>Sarsouli</td></tr>"
             "<tr bgcolor='#D4E4F3'><td>W_POP</td><td>12508</td></tr></table></td></tr></table></body></html>")
     p = tmp_path / "w.kml"

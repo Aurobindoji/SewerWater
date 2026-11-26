@@ -1,9 +1,10 @@
 """Trunk sewers marked on the page (user request 21-Oct-2026, CPHEEO 3.71.2 Table 3.31 p3-127): a sewer with no house
 connections gets its manholes at 60 / 90 / 120 / 150 m by the designed diameter instead of 30 m - so it is not cut at
 30 m before the design (spacing.presplit), and its pieces cut at bends are trunk too."""
-from sewer_app import check, edits, spacing
-from sewer_app import inputs as sinputs
-from sewer_app.criteria import load_criteria
+from sewer_app.engine import check, edits
+from sewer_app.core import spacing
+from sewer_app.data import inputs as sinputs
+from sewer_app.engine.criteria import load_criteria
 
 from test_bends import net_of
 from test_stages import call, kml, server  # noqa: F401  (the fixture)

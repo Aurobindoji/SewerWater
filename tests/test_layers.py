@@ -26,13 +26,14 @@ LAYERS = {
         "web": "web.server __main__",
     },
     "sewer_app": {
-        "core": "barriers check criteria design edits flows geo hindi hydraulics network pipeline population pumping "
-                "quantities rising_main spacing store zoning",
-        "net": "dxf_extract dxf_inspect layout netedit repair",
-        "project": "inputs project results",
-        "output": "cad dpr dpr_clean dpr_em dpr_format dpr_front dpr_more lsection report zone_export zoning_out",
-        "service": "design_run layout_cmd zoning_run",
-        "web": "ui __main__",
+        "core": "core.geo core.hindi core.network core.spacing core.store "
+                "engine.barriers engine.check engine.criteria engine.design engine.edits engine.flows engine.hydraulics "
+                "engine.pipeline engine.population engine.pumping engine.quantities engine.rising_main engine.zoning",
+        "net": "net.dxf_extract net.dxf_inspect net.layout net.netedit net.repair",
+        "project": "data.inputs data.project data.results",
+        "output": "out.cad out.dpr out.lsection out.report out.zone_export out.zoning_out",
+        "service": "run.design_run run.layout_cmd run.zoning_run",
+        "web": "web.server __main__",
     },
 }
 # the breaks of today, each to go in a stage of the restructure
@@ -40,7 +41,7 @@ KNOWN = {
     "water_app": set(),
     "sewer_app": set(),
 }
-UNITS = {"water_app": {"out.dpr", "net.netedit", "net.dxf_inspect"}, "sewer_app": set()}   # subpackages counted as one module
+UNITS = {"water_app": {"out.dpr", "net.netedit", "net.dxf_inspect"}, "sewer_app": {"out.dpr"}}   # subpackages counted as one module
 
 
 def _modules(pkg):
@@ -113,11 +114,12 @@ def test_layers(pkg):
     assert not KNOWN[pkg] - breaks, f"fixed - take out of KNOWN: {sorted(KNOWN[pkg] - breaks)}"
 
 
-def test_every_water_folder_holds_one_kind_of_work():
-    """Rewrite stage 3: the folders of water_app keep to their layers - core/ and engine/ calculations, net/ the
+@pytest.mark.parametrize("pkg", sorted(LAYERS))
+def test_every_folder_holds_one_kind_of_work(pkg):
+    """Rewrite stages 3-4: the folders of each module keep to their layers - core/ and engine/ calculations, net/ the
     network, data/ the project's files, out/ what the app gives out, run/ the page calls' work, web/ the server."""
     allowed = {"core": {"core"}, "engine": {"core"}, "net": {"net"}, "data": {"project"}, "out": {"output", "service"},
                "run": {"service"}, "web": {"web"}, "intze": {"core", "output", "service"}}
-    layer = {m: k for k, ms in LAYERS["water_app"].items() for m in ms.split()}
+    layer = {m: k for k, ms in LAYERS[pkg].items() for m in ms.split()}
     bad = [m for m in layer if "." in m and layer[m] not in allowed[m.split(".")[0]]]
     assert not bad, bad

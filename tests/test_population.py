@@ -2,7 +2,7 @@
 the floating population and the default rate without census (user decision 22-Oct-2026)."""
 import pytest
 
-from sewer_app import population as P
+from sewer_app.engine import population as P
 
 RIVERSIDE = [(1951, 376834), (1961, 498567), (1971, 672634), (1981, 825717), (1991, 1139236), (2001, 1374963),
              (2011, 1636569), (2025, 2679842)]

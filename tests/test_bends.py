@@ -2,8 +2,8 @@
 changes of directions', 3.71.1 p3-126 30 m): a manhole at every bend of 20 deg or more, then the straight stretches
 divided for the spacing - put into the network before zoning and design (spacing.presplit), so that the design takes
 every manhole."""
-from sewer_app import spacing
-from sewer_app.criteria import Rules, load_criteria
+from sewer_app.core import spacing
+from sewer_app.engine.criteria import Rules, load_criteria
 
 
 def test_bends_of_a_polyline():
@@ -90,7 +90,7 @@ def test_planned_after_the_design():
 def test_bend_angle_from_the_page():
     """The page's 'मोड़ पर manhole (इतने ° या ज़्यादा)' (default 20) reaches presplit; outside 1 - 90 deg: refused."""
     import pytest
-    from sewer_app import inputs as sinputs
+    from sewer_app.data import inputs as sinputs
     assert sinputs.criteria_for()["sewer"]["bend_manhole_min_angle_deg"]["value"] == 20
     c45 = sinputs.criteria_for(bend_angle=45)
     assert c45["sewer"]["bend_manhole_min_angle_deg"]["value"] == 45.0

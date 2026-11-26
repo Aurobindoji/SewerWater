@@ -10,11 +10,11 @@ from http.server import ThreadingHTTPServer
 
 import pytest
 
-from sewer_app import ui
+from sewer_app.web import server as ui
 
-from sewer_app import inputs as sinputs
+from sewer_app.data import inputs as sinputs
 
-from sewer_app import project as sproject
+from sewer_app.data import project as sproject
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SAMPLE = os.path.join(HERE, "samples", "sample_area.kml")
@@ -215,7 +215,7 @@ def test_zoning_export(server, tmp_path):
     import xml.etree.ElementTree as ET
     import ezdxf
     import openpyxl
-    from sewer_app import zone_export
+    from sewer_app.out import zone_export
     with open(SAMPLE, encoding="utf-8") as fh:
         kml = fh.read()
     assert call(server + "/api/layout", {"name": "s", "kml": kml})["ok"]

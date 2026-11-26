@@ -4,8 +4,8 @@ import json
 
 from test_water_ui import SAMPLE, call, server  # noqa: F401  (the fixture)
 from test_dxf_extract import make_dxf
-from sewer_app import ui
-from sewer_app import project as sproject
+from sewer_app.web import server as ui
+from sewer_app.data import project as sproject
 from water_app.net import netedit
 from water_app.web import server as wserver
 

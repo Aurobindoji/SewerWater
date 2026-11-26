@@ -5,9 +5,9 @@ import copy
 
 import openpyxl
 
-from sewer_app import pumping, rising_main, zoning
+from sewer_app.engine import pumping, rising_main, zoning
 
-from sewer_app import zoning_out
+from sewer_app.out import zoning_out
 
 from synthetic import INP, synth
 
@@ -47,7 +47,7 @@ def test_rising_main():
 
 def test_zoning_costs_include_pumping_stations_and_rising_mains(tmp_path):
     """A 3 m depth limit makes the flat main sewer need pumping stations; with the STP given they get rising mains."""
-    from sewer_app.criteria import load_criteria
+    from sewer_app.engine.criteria import load_criteria
     crit = copy.deepcopy(load_criteria())
     crit["sewer"]["lift_stations_allowed"]["value"] = False
     crit["sewer"]["max_depth_project_m"]["value"] = 3.0

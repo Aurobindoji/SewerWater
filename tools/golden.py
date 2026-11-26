@@ -368,7 +368,7 @@ def snap(out):
     sys.path.insert(0, ROOT)
     shutil.rmtree(out, ignore_errors=True)
     os.makedirs(out)
-    from sewer_app import ui as sui
+    from sewer_app.web import server as sui
     from water_app.web import server as wsrv
     # the run tokens (rewrite stages 1-2): one value for both servers here, as the calls go through one helper
     if hasattr(sui, "TOKEN"):

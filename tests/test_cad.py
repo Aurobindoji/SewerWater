@@ -5,9 +5,10 @@ import os
 
 import ezdxf
 
-from sewer_app import cad, pipeline, zoning
+from sewer_app.out import cad
+from sewer_app.engine import pipeline, zoning
 
-from sewer_app import zoning_out
+from sewer_app.out import zoning_out
 
 from synthetic import INP, synth
 

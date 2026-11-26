@@ -11,8 +11,9 @@ from http.server import ThreadingHTTPServer
 
 import pytest
 
-from sewer_app import project as sproject
-from sewer_app import store, ui
+from sewer_app.data import project as sproject
+from sewer_app.core import store
+from sewer_app.web import server as ui
 
 
 @pytest.fixture

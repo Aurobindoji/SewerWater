@@ -7,7 +7,8 @@ import math
 
 import openpyxl
 
-from sewer_app import dpr, pipeline
+from sewer_app.out.dpr import workbook as dpr
+from sewer_app.engine import pipeline
 
 from synthetic import INP, synth
 
@@ -122,7 +123,7 @@ def test_pumping_station_sheets(tmp_path):
 
 def test_project_sheet_texts_kept(tmp_path):
     """Every sheet takes the scheme's name from sheet Project; the texts typed there are kept in the next DPR."""
-    from sewer_app import population
+    from sewer_app.engine import population
     f = population.forecast(2027, 5000, [(2001, 3000), (2011, 3800)], sewage_lpcd=INP["sewage_lpcd"])
     inp = dict(INP, base_year=2027, pop_initial=f["design"]["init"], pop_mid=f["design"]["mid"],
                pop_total=f["design"]["ult"], forecast=f)

@@ -4,7 +4,7 @@ joined by no pipe, are reported with their nearest junctions - not when a barrie
 (cut there on purpose). Both modules' copies of barriers.py."""
 import pytest
 
-from sewer_app import barriers as sb
+from sewer_app.engine import barriers as sb
 from water_app.engine import barriers as wb
 
 

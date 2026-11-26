@@ -3,7 +3,8 @@ and that is printed on the report and the drawing."""
 import ezdxf
 import openpyxl
 
-from sewer_app import cad, pipeline, report
+from sewer_app.out import cad, report
+from sewer_app.engine import pipeline
 
 from synthetic import INP, synth
 

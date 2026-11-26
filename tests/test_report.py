@@ -2,7 +2,8 @@
 SewerGEMS-era oakdale_B workbook is tools/compare_with_agent_report.py - it needs the original scripts)."""
 import openpyxl
 
-from sewer_app import pipeline, report
+from sewer_app.engine import pipeline
+from sewer_app.out import report
 
 from synthetic import INP, synth
 

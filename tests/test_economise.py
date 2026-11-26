@@ -3,8 +3,8 @@ It must give exactly what the the original scripts version gives, which redesign
 (kept here as reference_economise)."""
 import random
 
-from sewer_app import design as nd
-from sewer_app import pipeline
+from sewer_app.engine import design as nd
+from sewer_app.engine import pipeline
 
 from synthetic import INP, synth
 

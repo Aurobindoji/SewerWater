@@ -40,8 +40,8 @@ import os
 import sys
 import time
 
-from . import HOME, DesignError
-from .layout_cmd import cmd_layout
+from sewer_app import HOME, DesignError
+from sewer_app.run.layout_cmd import cmd_layout
 
 OUT_ROOT = os.path.join(HOME, "output")
 
@@ -51,7 +51,7 @@ def load_network(a, log):
     automatic repairs are made."""
     net, stem, src, ex = _read_network(a, log)
     if getattr(a, "repair", False):
-        from . import repair
+        from sewer_app.net import repair
         net, rlog = repair.repair(net, ex, a.outfall, join_gap_m=a.join_gap_m, tjoint_m=a.tjoint_m)
         import collections
         log("Repairs: " + (", ".join(f"{k} {v}" for k, v in collections.Counter(r["repair"] for r in rlog).most_common())
@@ -60,7 +60,8 @@ def load_network(a, log):
 
 
 def _read_network(a, log):
-    from . import dxf_extract, network
+    from sewer_app.net import dxf_extract
+    from sewer_app.core import network
     if a.dxf:
         path = os.path.abspath(a.dxf.strip('"'))
         if not a.pipe_layers:
@@ -112,7 +113,9 @@ def network_args(ap, inputs=True):
 
 
 def cmd_design(argv):
-    from . import cad, dpr, lsection, pipeline, report
+    from sewer_app.out import cad, lsection, report
+    from sewer_app.out.dpr import workbook as dpr
+    from sewer_app.engine import pipeline
     ap = argparse.ArgumentParser(prog="python -m sewer_app design")
     network_args(ap)
     ap.add_argument("--fixed", action="append", help="fixed outfall level, e.g. O-1=142.03 (repeatable)")
@@ -133,7 +136,7 @@ def cmd_design(argv):
     net, stem, src, _ = load_network(a, print)
     applied = []
     if a.zoning_option:
-        from . import zoning
+        from sewer_app.engine import zoning
         print(f"Zoning (to apply option {a.zoning_option}) ...")
         z = zoning.run(net, inp, stp=a.stp, max_zones=a.max_zones, min_zone_m=a.min_zone_m, spike_gl=a.spike_gl,
                        log=lambda s: None)
@@ -182,8 +185,8 @@ def cmd_design(argv):
 
 
 def cmd_zoning(argv):
-    from . import zoning
-    from . import zoning_out
+    from sewer_app.engine import zoning
+    from sewer_app.out import zoning_out
     ap = argparse.ArgumentParser(prog="python -m sewer_app zoning")
     network_args(ap)
     ap.add_argument("--stp", help="node where the STP is (fixed outlet, no pumping station)")
@@ -235,7 +238,9 @@ def cmd_zoning(argv):
 
 def cmd_check(argv):
     import collections
-    from . import cad, network, repair
+    from sewer_app.out import cad
+    from sewer_app.core import network
+    from sewer_app.net import repair
     ap = argparse.ArgumentParser(prog="python -m sewer_app check")
     network_args(ap, inputs=False)
     a = ap.parse_args(argv)
@@ -272,11 +277,11 @@ def main(argv=None):
         return
     cmd, rest = argv[0], argv[1:]
     if cmd == "inspect":
-        from . import dxf_inspect
+        from sewer_app.net import dxf_inspect
         sys.argv = ["dxf_inspect"] + rest
         dxf_inspect.main()
     elif cmd == "extract":
-        from . import dxf_extract
+        from sewer_app.net import dxf_extract
         sys.argv = ["dxf_extract"] + rest
         dxf_extract.main()
     elif cmd == "layout":
@@ -288,7 +293,7 @@ def main(argv=None):
     elif cmd == "zoning":
         cmd_zoning(rest)
     elif cmd == "ui":
-        from . import ui
+        from sewer_app.web import server as ui
         ui.main(rest)
     else:
         sys.exit(f"unknown command '{cmd}' - inspect, extract, layout, check, zoning, design or ui")

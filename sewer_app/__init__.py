@@ -7,6 +7,9 @@ import os
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # the code and its data (read only when packed)
+# the package's own folder (its static/ pages) - found from here by every module, wherever its file lies (rewrite
+# stage 4, 26-Nov-2026: modules in folders)
+PKG = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(ROOT, "data")
 
 

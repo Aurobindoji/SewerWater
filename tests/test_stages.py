@@ -10,9 +10,9 @@ from http.server import ThreadingHTTPServer
 import openpyxl
 import pytest
 
-from sewer_app import ui
+from sewer_app.web import server as ui
 
-from sewer_app import project as sproject
+from sewer_app.data import project as sproject
 from water_app.web import server as wserver
 from water_app.data import project as wproject
 
@@ -47,7 +47,7 @@ def test_sewer_stages(server):
     """Population of the stages (user decision 22-Oct-2026): the base-year population - the wards' when none is given -
     and the census give the +15 / +30 years population with the floating population (population.forecast); the design
     is on +30 years, the base year and +15 years are checked (CPHEEO Table 2.1 p2-9)."""
-    from sewer_app import population
+    from sewer_app.engine import population
     assert call(server + "/api/layout", {"name": "s", "kml": kml()})["ok"]
     cat = call(server + "/api/catalogs")["catalogs"][0]["name"]
     req = {"name": "s", "stp": "MH-17", "catalog": cat, "joint": "ss", "sewage_lpcd": 108, "start_depth": 0.7}

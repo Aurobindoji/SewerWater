@@ -1,7 +1,7 @@
 """The user's changes from the pipe / manhole tables (edits.apply): a given diameter / slope is designed as given (only
 steepened for the minimum cover, broken rules flagged), a given manhole GL / outgoing invert is used; unknown labels
 are left out."""
-from sewer_app import edits, pipeline, zoning
+from sewer_app.engine import edits, pipeline, zoning
 
 from synthetic import INP, synth
 

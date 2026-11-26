@@ -7,8 +7,8 @@ both followed by economise_sizes, on synthetic networks (flat and falling ground
 """
 import pytest
 
-from sewer_app import design as nd
-from sewer_app import pipeline
+from sewer_app.engine import design as nd
+from sewer_app.engine import pipeline
 
 from synthetic import INP, synth
 

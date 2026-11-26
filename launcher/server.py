@@ -91,7 +91,7 @@ def _version(port):
 def _start(name):
     """The module's server in a thread (imported here, only now); returns the version it must answer with."""
     if name == "sewer":
-        from sewer_app import ui as mod
+        from sewer_app.web import server as mod
     else:
         from water_app.web import server as mod
     threading.Thread(target=mod.serve, kwargs={"open_browser": False}, daemon=True).start()

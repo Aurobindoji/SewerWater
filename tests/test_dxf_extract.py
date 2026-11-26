@@ -3,7 +3,8 @@ manholes, and one manhole drawn ON a continuous pipe line. (Old and new code giv
 oakdale.dxf - checked 12-Oct-2026 with the same arguments.)"""
 import ezdxf
 
-from sewer_app import dxf_extract, network
+from sewer_app.net import dxf_extract
+from sewer_app.core import network
 
 
 def make_dxf(path):
@@ -51,7 +52,7 @@ def test_two_numbering_series_and_gl_with_hyphen(tmp_path):
     """greenfield lanes.dxf style (13-Oct-2026): manhole blocks on one layer with 'MH-1', 'GL-75.56 m', 'IL-..', 'D-..'
     under each; two separate networks numbered from MH-1 each; a few long rising mains on 'LinePrimitive'. The
     repeated labels get the part number (MH-1/1, MH-1/2), the GLs are read, the layer guess skips the rising main."""
-    from sewer_app import dxf_inspect as di, netedit
+    from sewer_app.net import dxf_inspect as di, netedit
     assert di.classify("GL-75.56 m") == [("level", 75.56)] and di.classify("IL-74.36 m") == [("invert", 74.36)]
     assert di.classify("D-1.20 m") == []
     path = str(tmp_path / "two.dxf")

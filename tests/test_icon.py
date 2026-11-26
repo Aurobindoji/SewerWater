@@ -11,7 +11,7 @@ import pytest
 from PIL import Image
 
 from launcher import server as L
-from sewer_app import ui
+from sewer_app.web import server as ui
 from water_app.web import server as wserver
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

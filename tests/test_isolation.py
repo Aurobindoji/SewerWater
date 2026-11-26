@@ -33,7 +33,7 @@ def test_sewer_loads_nothing_of_water():
 
 
 def test_own_pages_and_servers():
-    from sewer_app import ui
+    from sewer_app.web import server as ui
     from water_app.web import server
     assert os.path.dirname(ui.STATIC) != os.path.dirname(server.STATIC)
     assert server.PORT != 8765 and ui.proj_dir() != server.proj_dir() and ui.out_root() != server.out_root()

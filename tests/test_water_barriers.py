@@ -7,7 +7,7 @@ import pytest
 
 from water_app.engine import barriers as wb
 from water_app.core import geo as wgeo
-from sewer_app import geo as sgeo
+from sewer_app.core import geo as sgeo
 
 from test_water_ui import SAMPLE, call, server  # noqa: F401  (the fixture)
 

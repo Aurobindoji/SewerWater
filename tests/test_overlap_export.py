@@ -10,9 +10,10 @@ from http.server import ThreadingHTTPServer
 import ezdxf
 import pytest
 
-from sewer_app import repair, ui
+from sewer_app.net import repair
+from sewer_app.web import server as ui
 
-from sewer_app import project as sproject
+from sewer_app.data import project as sproject
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SAMPLE = os.path.join(HERE, "samples", "sample_area.kml")

@@ -3,7 +3,7 @@ one): a sewer crossing it is cut there, both parts ending 1 m short of the line;
 network, so the side cut off from the STP drains to an outlet of its own."""
 import os
 
-from sewer_app import barriers as sb
+from sewer_app.engine import barriers as sb
 
 from test_ui import SAMPLE, call, server  # noqa: F401  (the fixture)
 

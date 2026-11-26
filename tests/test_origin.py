@@ -9,8 +9,8 @@ from http.server import ThreadingHTTPServer
 
 import pytest
 
-from sewer_app import project as sproject
-from sewer_app import ui
+from sewer_app.data import project as sproject
+from sewer_app.web import server as ui
 from water_app.data import project as wproject
 from water_app.web import server as wserver
 

@@ -1,7 +1,8 @@
 """L-section of the main trunk (user decision 12-Oct-2026: general form, option (a))."""
 import ezdxf
 
-from sewer_app import lsection, pipeline
+from sewer_app.out import lsection
+from sewer_app.engine import pipeline
 
 from synthetic import INP, synth
 

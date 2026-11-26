@@ -12,11 +12,13 @@ from http.server import ThreadingHTTPServer
 
 import pytest
 
-from sewer_app import netedit, network, ui
+from sewer_app.net import netedit
+from sewer_app.core import network
+from sewer_app.web import server as ui
 
-from sewer_app import inputs as sinputs
+from sewer_app.data import inputs as sinputs
 
-from sewer_app import project as sproject
+from sewer_app.data import project as sproject
 
 from synthetic import INP
 from test_dxf_extract import make_dxf

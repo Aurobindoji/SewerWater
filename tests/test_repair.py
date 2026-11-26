@@ -2,7 +2,9 @@
 import ezdxf
 import openpyxl
 
-from sewer_app import network, pipeline, repair
+from sewer_app.core import network
+from sewer_app.engine import pipeline
+from sewer_app.net import repair
 
 from synthetic import INP
 
@@ -86,7 +88,7 @@ def test_fill_gl_is_linear_along_a_run():
 def test_cut_head_population_share():
     """pop_dist csv: a head made by a cut (cut_of, or label <MH>-C<n> at the same place after a CSV round trip)
     gets its share of the manhole's population by sewer length; a head given in the file keeps its value."""
-    from sewer_app import flows
+    from sewer_app.engine import flows
     nodes = {"A": {"xy": (0.0, 0.0)}, "A-C1": {"xy": (0.0, 0.0)}, "B": {"xy": (30.0, 0.0)},
              "B-C1": {"xy": (99.0, 0.0)}, "D-C2": {"xy": (5.0, 5.0), "cut_of": "D"}, "D": {"xy": (5.0, 5.0)}}
     assert flows.cut_heads(nodes) == {"A-C1": "A", "D-C2": "D"}            # B-C1 is elsewhere: a real manhole

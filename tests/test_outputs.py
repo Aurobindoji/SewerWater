@@ -5,7 +5,7 @@ import time
 
 import pytest
 
-from sewer_app import project as sproject
+from sewer_app.data import project as sproject
 from water_app.data import project as wproject
 
 

@@ -33,7 +33,7 @@ def test_guide_covers_the_page(mod):
         assert m.group(1) and m.group(2)
 
 
-@pytest.mark.parametrize("srv", ["water_app.web.server", "sewer_app.ui"])
+@pytest.mark.parametrize("srv", ["water_app.web.server", "sewer_app.web.server"])
 def test_guide_served(srv):
     import importlib
     m = importlib.import_module(srv)

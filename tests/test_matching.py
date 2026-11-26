@@ -2,8 +2,8 @@
 no false manholes where the drawing has manhole symbols, optimal pass 2, numbering prior."""
 import ezdxf
 
-from sewer_app import dxf_extract
-from sewer_app import dxf_inspect as di
+from sewer_app.net import dxf_extract
+from sewer_app.net import dxf_inspect as di
 
 
 def drawing(path, n=40, small_every=4, symbols=True):

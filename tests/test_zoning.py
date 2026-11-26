@@ -4,10 +4,10 @@ import copy
 
 import openpyxl
 
-from sewer_app import zoning
+from sewer_app.engine import zoning
 
-from sewer_app import zoning_out
-from sewer_app.criteria import load_criteria
+from sewer_app.out import zoning_out
+from sewer_app.engine.criteria import load_criteria
 
 from synthetic import INP, synth
 
@@ -29,7 +29,8 @@ def test_options_ranked_and_written(tmp_path):
 def test_apply_option_then_design():
     """The chosen option applied to the network: outlets = outfalls, cut conduits start at new head manholes; the
     design then agrees with the zoning (same depths, every manhole within the project limit)."""
-    from sewer_app import network, pipeline
+    from sewer_app.core import network
+    from sewer_app.engine import pipeline
     crit = copy.deepcopy(load_criteria())
     crit["sewer"]["lift_stations_allowed"]["value"] = False
     crit["sewer"]["max_depth_project_m"]["value"] = 3.0
@@ -68,7 +69,7 @@ def test_pumping_station_added_where_too_deep():
     assert giv["m"]["option"] == "GIVEN" and giv["m"]["rank"] == len(z["rank"])
     assert giv["m"]["of these added for depth"] == 0 and sorted(set(giv["zone"].values())) == sorted(cur_outs(z))
     assert giv["m"]["manholes deeper than project limit"] >= 1
-    from sewer_app import pipeline
+    from sewer_app.engine import pipeline
     net, _ = zoning.apply_option(synth(), giv)
     assert net["outfalls"] == sorted(cur_outs(z))
     out = pipeline.run(net, INP, crit=crit, log=lambda s: None)

@@ -21,6 +21,7 @@ import shutil
 import sys
 import tempfile
 import threading
+import time
 import urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -28,7 +29,8 @@ SAMPLE = os.path.join(ROOT, "samples", "sample_area.kml")
 TS = [(re.compile(r"\d{8}_\d{4,6}"), "<TS>"), (re.compile(r"\d{2}-\d{2}-\d{4} \d{2}:\d{2}"), "<TIME>"),
       (re.compile(r"\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2})?"), "<TIME>"),
       (re.compile(r"\(\d+(\.\d+)? s\)"), "(<S> s)")]                      # run times in the logs
-DROP = {"time", "modified", "mtime", "made", "version", "pid", "net_rev", "code_version", "stamp", "dpr_rates"}
+DROP = {"time", "modified", "mtime", "made", "version", "pid", "net_rev", "code_version", "stamp", "dpr_rates",
+        "seconds"}
 
 
 # --------------------------------------------------------------------------------------------- canonical outputs
@@ -101,12 +103,15 @@ class Canon:
 class Run:
     def __init__(self, out, tmp):
         self.out, self.canon, self.n = out, Canon(tmp), 0
+        self.times = []                                  # (the call, seconds): OUT_DIR + "_times.txt", not compared
 
     def call(self, url, body=None, raw=False):
         req = urllib.request.Request(url, data=None if body is None else json.dumps(body).encode("utf-8"),
                                      headers={"Content-Type": "application/json"})
+        t0 = time.perf_counter()
         with urllib.request.urlopen(req, timeout=1800) as r:
             data = r.read()
+        self.times.append((url.split("/api/", 1)[-1], time.perf_counter() - t0))
         return data if raw else json.loads(data)
 
     def keep(self, name, obj):
@@ -126,6 +131,11 @@ class Run:
                 self.keep(f"{name}_{k}_xlsx", self.canon.xlsx(p))
             elif p.endswith(".dxf"):
                 self.keep(f"{name}_{k}_dxf", self.canon.dxf(p))
+            elif p.endswith(".pdf"):
+                import re as _re
+                with open(p, "rb") as fh:
+                    pages = len(_re.findall(rb"/Type\s*/Page[^s]", fh.read()))
+                self.keep(f"{name}_{k}_pdf", {"pages": pages})
 
 
 def serve(handler):
@@ -212,7 +222,85 @@ def water(R, url, tmp):
     R.answer("w5_zoning_loop", R.call(w + "water_zoning", ql))
     d = R.answer("w5_design_loop", R.call(w + "water_design", ql))
     R.files("w5_design", d.get("files") or {})
+    water_more(R, url, w, kml, path)
     R.answer("w_projects", R.call(url + "/api/w/projects"))
+
+
+def _outputs(r):
+    """The Outputs tab's answer, kept as the set of its file names (timestamps masked): a file's size changes with
+    the zip times inside an xlsx, and two runs in one minute share a name."""
+    names = sorted({_mask(str(f.get("file") or f.get("name") or "")) for f in r.get("files") or []})
+    return dict({k: v for k, v in r.items() if k != "files"}, files=names)
+
+
+def water_more(R, url, w, kml, path):
+    """Stage 0 of the rewrite (26-Nov-2026): the calls the scenarios above did not make - saved projects and lists,
+    the DXF dialog's calls, network corrections, simulation, the map export, rate import / reset, the outputs."""
+    R.answer("w6_save", R.call(w + "save", {"name": "wk", "kml": kml}))
+    R.answer("w6_project", R.call(url + "/api/w/project?name=wk"))
+    R.answer("w6_list_save", R.call(w + "barriers_save", {"name": "wk", "barriers": [{"name": "B", "latlngs": [[1, 2], [3, 4]]}]}))
+    R.answer("w6_list", R.call(url + "/api/w/barriers?name=wk"))
+    R.answer("w6_layers", R.call(w + "dxf_layers", {"path": path}))
+    R.answer("w6_preview", R.call(w + "dxf_preview", {"path": path, "layer": "PIPE", "epsg": "local"}))
+    R.answer("w6_gl_options", R.call(w + "dxf_gl_options", {"path": path, "pipe_layers": ["PIPE"], "mh_layers": ["MH"]}))
+    R.answer("w6_netpreview", R.call(w + "dxf_netpreview", {"path": path, "pipe_layers": ["PIPE"], "mh_layers": ["MH"],
+                                                            "level_layers": ["GL"], "epsg": "local"}))
+    R.answer("w6_missing", R.call(w + "dxf_layers", {"path": path + ".none"}))
+    R.answer("w6_net", R.call(url + "/api/w/net?name=ws"))
+    R.answer("w6_edit", R.call(w + "net_edit", {"name": "ws", "ops": [{"op": "set_gl", "mh": "MH-3", "gl": 85.05}]}))
+    R.answer("w6_edit_bad", R.call(w + "net_edit", {"name": "ws", "ops": [{"op": "rename", "mh": "MH-6", "to": "MH-1"}]}))
+    R.answer("w6_undo", R.call(w + "net_undo", {"name": "ws"}))
+    R.answer("w6_repair", R.call(w + "net_repair", {"name": "ws"}))
+    R.answer("w6_sim_info", R.call(url + "/api/w/water_sim_info?name=wg"))
+    R.answer("w6_sim_ssa", R.call(w + "water_sim", {"name": "wg", "mode": "ssa"}))
+    R.answer("w6_sim_eps", R.call(w + "water_sim", {"name": "wg", "mode": "eps"}))
+    m = R.call(w + "water_map", {"name": "wg", "fmt": "kml"})
+    m.pop("b64", None)
+    R.answer("w6_map", m)
+    rx = R.call(w + "water_rates", {"act": "export", "name": "wg"})
+    import base64
+    with open(rx["path"], "rb") as fh:
+        b64 = base64.b64encode(fh.read()).decode("ascii")
+    R.answer("w6_rates_import", R.call(w + "water_rates", {"act": "import", "file": "rates.xlsx", "b64": b64}))
+    R.answer("w6_rates_status", R.call(w + "water_rates", {"act": "status"}))
+    R.answer("w6_rates_reset", R.call(w + "water_rates", {"act": "reset"}))
+    R.answer("w6_outputs", _outputs(R.call(url + "/api/w/outputs?name=wg")))
+
+
+def sewer_more(R, url, s, kml, tmp):
+    """Stage 0 of the rewrite (26-Nov-2026): sewer from the tests' small DXF, saved projects and lists, the DXF
+    dialog's calls, network corrections, the outputs."""
+    sys.path.insert(0, os.path.join(ROOT, "tests"))
+    from test_dxf_extract import make_dxf
+    src = os.path.join(tmp, "small_s.dxf")
+    make_dxf(src)
+    with open(src, "rb") as fh:
+        req = urllib.request.Request(s + "dxf_upload?file=small_s.dxf", data=fh.read(),
+                                     headers={"Content-Type": "application/octet-stream"})
+        with urllib.request.urlopen(req, timeout=120) as resp:
+            path = json.loads(resp.read())["path"]
+    R.answer("s4_layers", R.call(s + "dxf_layers", {"path": path}))
+    R.answer("s4_preview", R.call(s + "dxf_preview", {"path": path, "layer": "PIPE", "epsg": "local"}))
+    R.answer("s4_netpreview", R.call(s + "dxf_netpreview", {"path": path, "pipe_layers": ["PIPE"], "mh_layers": ["MH"],
+                                                            "level_layers": ["GL"], "epsg": "local"}))
+    R.answer("s4_import", R.call(s + "dxf_import", {"path": path, "name": "ss", "pipe_layers": ["PIPE"],
+                                                    "mh_layers": ["MH"], "level_layers": ["GL"], "epsg": "local"}))
+    R.answer("s4_edit", R.call(s + "net_edit", {"name": "ss", "ops": [{"op": "outfall", "mh": "MH-5", "on": True}]}))
+    R.answer("s4_undo", R.call(s + "net_undo", {"name": "ss"}))
+    R.answer("s4_edit2", R.call(s + "net_edit", {"name": "ss", "ops": [{"op": "outfall", "mh": "MH-5", "on": True}]}))
+    R.answer("s4_repair", R.call(s + "net_repair", {"name": "ss"}))
+    R.answer("s4_save", R.call(s + "net_save", {"name": "ss"}))
+    R.answer("s4_net", R.call(url + "/api/net?name=ss"))
+    q = {"name": "ss", "stp": "MH-5", "sewage_lpcd": 108, "start_depth": 0.7}
+    z = R.answer("s4_zoning", R.call(s + "zoning", q))
+    if z.get("options"):
+        d = R.answer("s4_design", R.call(s + "design", dict(q, option=z["options"][0]["option"])))
+        R.files("s4_design", d.get("files") or {})
+    R.answer("s4_ksave", R.call(s + "save", {"name": "sk", "kml": kml}))
+    R.answer("s4_project", R.call(url + "/api/project?name=sk"))
+    R.answer("s4_list_save", R.call(s + "loops_save", {"name": "sk", "loops": [{"name": "L", "latlngs": [[1, 2], [3, 4], [5, 6]]}]}))
+    R.answer("s4_list", R.call(url + "/api/loops?name=sk"))
+    R.answer("s4_outputs", _outputs(R.call(url + "/api/outputs?name=sg")))
 
 
 def _paths(x):
@@ -226,7 +314,7 @@ def _paths(x):
     return set()
 
 
-def sewer(R, url):
+def sewer(R, url, tmp):
     with open(SAMPLE, encoding="utf-8") as fh:
         kml = fh.read()
     s = url + "/api/"
@@ -267,6 +355,7 @@ def sewer(R, url):
     R.answer("s3_zoning_loop", R.call(s + "zoning", ql))
     d = R.answer("s3_design_loop", R.call(s + "design", dict(ql, option="CURRENT")))
     R.files("s3_design", d.get("files") or {})
+    sewer_more(R, url, s, kml, tmp)
     R.answer("s_projects", R.call(url + "/api/projects"))
 
 
@@ -285,11 +374,15 @@ def snap(out):
     ssv, surl = serve(sui.Handler)
     try:
         water(R, wurl, tmp)
-        sewer(R, surl)
+        sewer(R, surl, tmp)
     finally:
         wsv.shutdown()
         ssv.shutdown()
         shutil.rmtree(tmp, ignore_errors=True)
+    with open(out.rstrip("/\\") + "_times.txt", "w", encoding="utf-8") as fh:
+        for k, s in R.times:
+            fh.write(f"{s:8.2f}  {k}\n")
+        fh.write(f"{sum(s for _, s in R.times):8.2f}  total\n")
     print(f"{R.n} outputs in {out}")
 
 

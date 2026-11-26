@@ -47,9 +47,9 @@ def test_dpr_written_on_export_only(design):
     folder = os.path.dirname(d["files"]["dpr"])
     assert results.dpr_file("wdpr", open_it=False)["path"] == d["files"]["dpr"]
     n = len(glob.glob(os.path.join(folder, "wdpr_water_design_*_DPR.xlsx")))
-    assert os.path.isfile(os.path.join(folder, "wdpr_wdesign_dpr.pkl"))
+    assert os.path.isfile(os.path.join(folder, "wdpr_wdesign_dpr.json"))
     results._keep("wdpr", "zoning", {"ok": True}, {})
-    assert not os.path.isfile(os.path.join(folder, "wdpr_wdesign_dpr.pkl"))
+    assert not os.path.isfile(os.path.join(folder, "wdpr_wdesign_dpr.json"))
     with pytest.raises(ValueError):
         results.dpr_file("wdpr", open_it=False)
     assert len(glob.glob(os.path.join(folder, "wdpr_water_design_*_DPR.xlsx"))) == n

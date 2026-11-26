@@ -53,7 +53,7 @@ def dpr_of(name):
 
 def call(url, body=None):
     req = urllib.request.Request(url, data=None if body is None else json.dumps(body).encode("utf-8"),
-                                 headers={"Content-Type": "application/json"})
+                                 headers={"Content-Type": "application/json", wserver.TOKEN_HEADER: wserver.TOKEN})
     with urllib.request.urlopen(req, timeout=180) as r:
         data = r.read()
     return json.loads(data) if r.headers.get_content_type() == "application/json" else data.decode("utf-8")
@@ -240,7 +240,7 @@ def test_water_network_from_a_dxf(server, sewer):
     make_dxf(src)
     with open(src, "rb") as fh:                                                   # picked on the page: uploaded
         req = urllib.request.Request(url + "/api/w/dxf_upload?file=small.dxf", data=fh.read(),
-                                     headers={"Content-Type": "application/octet-stream"})
+                                     headers={"Content-Type": "application/octet-stream", wserver.TOKEN_HEADER: wserver.TOKEN})
     with urllib.request.urlopen(req, timeout=60) as r:
         path = json.loads(r.read())["path"]
     assert path.startswith(str(tmp / "w_projects" / "dxf"))                       # the water module's folder

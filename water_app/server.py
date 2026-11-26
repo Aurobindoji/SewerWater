@@ -11,6 +11,8 @@ import json
 import os
 import re
 import threading
+import hmac
+import secrets
 import time
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -21,11 +23,17 @@ from .project import (NETS, converters_for, has_network, is_dxf, layout_result, 
                       output_files, paths,
                       proj_dir, project_net, read_list, safe_name, save_project, stage_inputs, to_latlng,
                       write_list)
+from . import store
 
 STATIC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 MAX_BODY = 30 * 1024 * 1024
 MAX_DXF = 1024 * 1024 * 1024        # a DXF picked on the page (uploaded as it is, to projects\\dxf\\)
 PORT = 8766
+# The run's secret (rewrite stage 1, user decision 26-Nov-2026): written into the page this server gives, sent back by
+# the page with every POST (header X-App-Token). Another page of the browser cannot read it (not its origin), and no
+# other program on this computer knows it - so only this app's own page can make the server do anything.
+TOKEN = secrets.token_urlsafe(32)
+TOKEN_HEADER = "X-App-Token"
 # nothing of the sewer module here (user decision 10-Nov-2026): the start page is the launcher's (port 8764)
 
 
@@ -75,8 +83,8 @@ def net_import(req):
         return {"ok": False, "log": "\n".join(lines) + f"\n{type(e).__name__}: {e}"}
     NETS[stem] = st
     os.makedirs(proj_dir(), exist_ok=True)
-    with open(os.path.join(proj_dir(), stem + ".dxf.json"), "w", encoding="utf-8") as fh:
-        json.dump({"kind": "dxf", "dxf": path, "state": netedit.state_path(out_root(), stem)}, fh, ensure_ascii=False)
+    store.write_json(os.path.join(proj_dir(), stem + ".dxf.json"),
+                     {"kind": "dxf", "dxf": path, "state": netedit.state_path(out_root(), stem)})
     out = netedit.page_data(st)
     out["log"] = "\n".join(lines)
     return out
@@ -199,8 +207,7 @@ def run_layout(name, kml, gl_mode="spots", flat_gl=None, snap=1.0, spacing=30.0,
         bnd = [f for f in k["polygons"] if len(f["coords"]) >= 3]
     if bnd:
         f_b = os.path.join(folder, f"{stem}_boundary.kml")
-        with open(f_b, "w", encoding="utf-8") as fh:
-            fh.write('<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2"><Document>'
+        store.write_text(f_b, '<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2"><Document>'
                      + "".join("<Placemark><name>Project boundary</name><Polygon><outerBoundaryIs><LinearRing><coordinates>"
                                + " ".join(f"{c[0]},{c[1]},0" for c in f["coords"])
                                + "</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>" for f in bnd)
@@ -223,8 +230,7 @@ def run_layout(name, kml, gl_mode="spots", flat_gl=None, snap=1.0, spacing=30.0,
     text = buf.getvalue()
     marks = [{"name": m.group(1), "manhole": m.group(2), "dist": float(m.group(3))}
              for m in re.finditer(r"point '(.+?)' -> nearest manhole (\S+) \((\d+(?:\.\d+)?) m away\)", text)]
-    with open(os.path.join(folder, f"{stem}_layout_ui.json"), "w", encoding="utf-8") as fh:
-        json.dump({"marks": marks, "log": text}, fh, ensure_ascii=False)
+    store.write_json(os.path.join(folder, f"{stem}_layout_ui.json"), {"marks": marks, "log": text})
     return layout_result(stem)
 
 
@@ -255,8 +261,11 @@ def _answer(fn, *args, plain=()):
 
 
 def dxf_path(req):
-    """The DXF the page names -> (its path, None); (the path, the answer saying so) when there is no such file."""
+    """The DXF the page names -> (its path, None); (the path, the answer saying so) when there is no such file, or it
+    is not a .dxf (only drawings are read on the page's word - rewrite stage 1, 26-Nov-2026)."""
     path = str(req.get("path") or "").strip().strip('"')
+    if not path.lower().endswith(".dxf"):
+        return path, {"ok": False, "log": f"केवल .dxf file / only a .dxf file: {path}"}
     return path, (None if os.path.isfile(path) else {"ok": False, "log": f"file नहीं मिली: {path}"})
 
 
@@ -331,6 +340,15 @@ class Handler(BaseHTTPRequestHandler):
         self._send(403, {"ok": False, "log": "local use only"})
         return False
 
+    def _token_ok(self):
+        """The POST carries this run's TOKEN (the app's own page sends it); else refused, its body read first."""
+        if hmac.compare_digest(str(self.headers.get(TOKEN_HEADER) or "").encode(), TOKEN.encode()):
+            return True
+        self.rfile.read(min(int(self.headers.get("Content-Length") or 0), MAX_DXF))
+        self._send(403, {"ok": False, "token": True,
+                         "log": "page पुराना है (app दोबारा चला) - page दोबारा खोलें (F5) / the page is out of date: reload it"})
+        return False
+
     def _name(self, u):
         """The project named in the query, as a file name."""
         return safe_name((parse_qs(u.query).get("name") or [""])[0])
@@ -348,7 +366,10 @@ class Handler(BaseHTTPRequestHandler):
         if u.path in PAGES:
             fname, ctype = PAGES[u.path]
             with open(os.path.join(STATIC, fname), "rb") as fh:
-                return self._send(200, fh.read(), ctype)
+                data = fh.read()
+            if fname == "map.html":                       # the run's token, for the page's POSTs
+                data = data.replace(b"__APP_TOKEN__", TOKEN.encode("ascii"))
+            return self._send(200, data, ctype)
         if u.path.startswith("/api/") and u.path[5:] in LISTS:
             return self._send(200, {"ok": True, u.path[5:]: read_list(self._name(u), u.path[5:])})
         get = self.GET.get(u.path)
@@ -412,7 +433,7 @@ class Handler(BaseHTTPRequestHandler):
 
     # ----------------------------------------------------------------------------------------------- POST
     def do_POST(self):
-        if not self._local_only() or not self._own_page():
+        if not self._local_only() or not self._own_page() or not self._token_ok():
             return
         n = int(self.headers.get("Content-Length") or 0)
         u = self._route()

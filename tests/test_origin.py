@@ -28,9 +28,11 @@ def base(request, tmp_path, monkeypatch):
     srv.server_close()
 
 
-def post(url, body, origin=None):
+def post(url, body, origin=None, token=True):
+    """A POST; with water's run token unless token=False (the sewer server has none yet - rewrite stage 2)."""
     req = urllib.request.Request(url, data=json.dumps(body).encode("utf-8"),
-                                 headers={"Content-Type": "text/plain", **({"Origin": origin} if origin else {})})
+                                 headers={"Content-Type": "text/plain", **({"Origin": origin} if origin else {}),
+                                          **({wserver.TOKEN_HEADER: wserver.TOKEN} if token else {})})
     try:
         with urllib.request.urlopen(req, timeout=30) as r:
             return r.status, json.loads(r.read())

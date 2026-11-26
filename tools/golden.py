@@ -29,6 +29,7 @@ SAMPLE = os.path.join(ROOT, "samples", "sample_area.kml")
 TS = [(re.compile(r"\d{8}_\d{4,6}"), "<TS>"), (re.compile(r"\d{2}-\d{2}-\d{4} \d{2}:\d{2}"), "<TIME>"),
       (re.compile(r"\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2})?"), "<TIME>"),
       (re.compile(r"\(\d+(\.\d+)? s\)"), "(<S> s)")]                      # run times in the logs
+AUTH = {}                    # water's run token (rewrite stage 1): set when its server is imported; sewer ignores it
 DROP = {"time", "modified", "mtime", "made", "version", "pid", "net_rev", "code_version", "stamp", "dpr_rates",
         "seconds"}
 
@@ -107,7 +108,7 @@ class Run:
 
     def call(self, url, body=None, raw=False):
         req = urllib.request.Request(url, data=None if body is None else json.dumps(body).encode("utf-8"),
-                                     headers={"Content-Type": "application/json"})
+                                     headers={"Content-Type": "application/json", **AUTH})
         t0 = time.perf_counter()
         with urllib.request.urlopen(req, timeout=1800) as r:
             data = r.read()
@@ -185,7 +186,7 @@ def water(R, url, tmp):
     make_dxf(src)
     with open(src, "rb") as fh:
         req = urllib.request.Request(w + "dxf_upload?file=small.dxf", data=fh.read(),
-                                     headers={"Content-Type": "application/octet-stream"})
+                                     headers={"Content-Type": "application/octet-stream", **AUTH})
         with urllib.request.urlopen(req, timeout=120) as resp:
             path = json.loads(resp.read())["path"]
     d = R.answer("w3_import", R.call(w + "dxf_import", {"path": path, "name": "ws", "pipe_layers": ["PIPE"],
@@ -276,7 +277,7 @@ def sewer_more(R, url, s, kml, tmp):
     make_dxf(src)
     with open(src, "rb") as fh:
         req = urllib.request.Request(s + "dxf_upload?file=small_s.dxf", data=fh.read(),
-                                     headers={"Content-Type": "application/octet-stream"})
+                                     headers={"Content-Type": "application/octet-stream", **AUTH})
         with urllib.request.urlopen(req, timeout=120) as resp:
             path = json.loads(resp.read())["path"]
     R.answer("s4_layers", R.call(s + "dxf_layers", {"path": path}))
@@ -369,6 +370,7 @@ def snap(out):
     os.makedirs(out)
     from sewer_app import ui as sui
     from water_app import server as wsrv
+    AUTH.update({getattr(wsrv, "TOKEN_HEADER", "X-App-Token"): getattr(wsrv, "TOKEN", "")})
     R = Run(out, tmp)
     wsv, wurl = serve(wsrv.Handler)
     ssv, surl = serve(sui.Handler)

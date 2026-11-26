@@ -67,7 +67,7 @@ $("dxffile").onchange = async e => {
   let r = null;
   await withLoading(tr(`${f.name} (${(f.size / 1048576).toFixed(1)} MB) भेज रहे हैं …`, `Sending ${f.name} (${(f.size / 1048576).toFixed(1)} MB) …`), async () => {
     r = await fetch("/api/w/dxf_upload?file=" + encodeURIComponent(f.name),
-      { method: "POST", headers: { "Content-Type": "application/octet-stream" }, body: f }).then(x => x.json()).catch(err => ({ ok: false, log: String(err) }));
+      { method: "POST", headers: { "Content-Type": "application/octet-stream", "X-App-Token": APP_TOKEN }, body: f }).then(x => x.json()).catch(err => ({ ok: false, log: String(err) }));
   });
   if (!r.ok) { $("dxfstatus").className = "status err"; $("dxfstatus").textContent = r.log; return; }
   $("dxfpath").value = r.path; $("dxfstatus").textContent = "";

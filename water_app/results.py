@@ -4,9 +4,9 @@ statement's data (restructure stage 2, 15-Nov-2026: out of ui_api.py)."""
 import collections
 import json
 import os
-import pickle
 import time
 from . import project as ui
+from . import store
 from . import design as wd
 from . import dpr as wdpr
 from .wards import _town_list, ward_table
@@ -21,10 +21,10 @@ def _keep(stem, kind, res, req):
                                                   "fire_min_m")
                           + ui.STAGE_KEYS},
                 time=time.strftime("%d-%m-%Y %H:%M"), net_rev=ui.net_rev(stem))
-    with open(os.path.join(folder, f"{stem}_w{kind}_ui.json"), "w", encoding="utf-8") as fh:
-        json.dump(keep, fh, ensure_ascii=False, separators=(",", ":"))
+    store.write_json(os.path.join(folder, f"{stem}_w{kind}_ui.json"), keep)
     if kind == "zoning":
-        for f in (f"{stem}_wdesign_ui.json", f"{stem}_wdesign_dpr.pkl", f"{stem}_wsim.pkl"):
+        for f in (f"{stem}_wdesign_ui.json", f"{stem}_wdesign_dpr.json", f"{stem}_wsim.json",
+                  f"{stem}_wdesign_dpr.pkl", f"{stem}_wsim.pkl"):      # (the .pkl of before 0.9.42: never read)
             try:
                 os.remove(os.path.join(folder, f))
             except OSError:
@@ -41,18 +41,15 @@ def dpr_file(stem, open_it=True):
     stamp = rates.stamp()                       # rates imported / reset since that DPR: written again with them
     if not path or not os.path.isfile(path) or (r.get("files") or {}).get("dpr_rates", "") != stamp:
         folder = os.path.join(ui.out_root(), stem)
-        try:
-            with open(_dpr_data(folder, stem), "rb") as fh:
-                info = pickle.load(fh)
-        except (OSError, pickle.UnpicklingError, EOFError, AttributeError, ImportError):
-            raise ValueError("DPR का data नहीं मिला - पहले Design चलाएँ / no DPR data: run the Design first") from None
+        info = _read_kept(_dpr_data(folder, stem))
+        if info is None:
+            raise ValueError("DPR का data नहीं मिला - Design (दोबारा) चलाएँ / no DPR data: run the Design (again)")
         path = _dpr(folder, stem, info)
         f = os.path.join(folder, f"{stem}_wdesign_ui.json")            # the design remembers its DPR
         with open(f, encoding="utf-8") as fh:
             keep = json.load(fh)
         keep.setdefault("files", {}).update(dpr=path, dpr_rates=stamp)
-        with open(f, "w", encoding="utf-8") as fh:
-            json.dump(keep, fh, ensure_ascii=False, separators=(",", ":"))
+        store.write_json(f, keep)
     if open_it and hasattr(os, "startfile"):
         try:
             os.startfile(path)
@@ -69,11 +66,7 @@ def rate_export(stem, open_it=True):
     from . import rates
     folder = os.path.join(ui.out_root(), stem)
     use, note = None, ""
-    try:
-        with open(_dpr_data(folder, stem), "rb") as fh:
-            info = pickle.load(fh)
-    except (OSError, pickle.UnpicklingError, EOFError, AttributeError, ImportError):
-        info = None
+    info = _read_kept(_dpr_data(folder, stem))
     if info is not None:
         from .dpr.usage import used
         use = used(info)
@@ -153,32 +146,37 @@ def _dpr_info(stem, res, z, crit, req, wnet=None, net=None):
     return info
 
 
+# The data a design keeps for its DPR and its Simulation tab: typed JSON (store), never pickle - a .pkl runs code when
+# it is read, so one of another computer's project folder could do anything here (rewrite stage 1, 26-Nov-2026; the
+# .pkl of designs before 0.9.42 are not read: the design is run again).
 def _dpr_data(folder, stem):
-    return os.path.join(folder, f"{stem}_wdesign_dpr.pkl")
+    return os.path.join(folder, f"{stem}_wdesign_dpr.json")
 
 
 def _keep_dpr(folder, stem, info):
-    with open(_dpr_data(folder, stem), "wb") as fh:
-        pickle.dump(info, fh, protocol=pickle.HIGHEST_PROTOCOL)
+    store.write_json(_dpr_data(folder, stem), info, typed=True)
 
 
 def _sim_data(folder, stem):
-    return os.path.join(folder, f"{stem}_wsim.pkl")
+    return os.path.join(folder, f"{stem}_wsim.json")
 
 
 def _keep_sim(folder, stem, pack):
     """The designed network for the Simulation tab (design_run._sim_pack), next to the design."""
-    with open(_sim_data(folder, stem), "wb") as fh:
-        pickle.dump(pack, fh, protocol=pickle.HIGHEST_PROTOCOL)
+    store.write_json(_sim_data(folder, stem), pack, typed=True)
+
+
+def _read_kept(path):
+    """Data a design kept (_keep_dpr / _keep_sim); None when there is none or it is not readable."""
+    try:
+        return store.read_json(path, typed=True)
+    except (OSError, ValueError):
+        return None
 
 
 def sim_pack(stem):
-    """The Simulation tab's data of the last design, None without one (or one made before 17-Nov-2026)."""
-    try:
-        with open(_sim_data(os.path.join(ui.out_root(), stem), stem), "rb") as fh:
-            return pickle.load(fh)
-    except (OSError, pickle.UnpicklingError, EOFError, AttributeError, ImportError):
-        return None
+    """The Simulation tab's data of the last design, None without one (or one made before 0.9.42)."""
+    return _read_kept(_sim_data(os.path.join(ui.out_root(), stem), stem))
 
 
 def _dpr(folder, stem, info):

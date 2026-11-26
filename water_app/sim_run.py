@@ -30,14 +30,15 @@ WORST_N = 12
 def _pack(stem):
     p = sim_pack(stem)
     if not p:
-        raise ValueError("Simulation के लिए पहले Design चलाएँ (इस version में - पुराने design में simulation का data नहीं)")
+        raise ValueError("Simulation के लिए Design (दोबारा) चलाएँ - पुराने version के design का data नहीं पढ़ा जाता / "
+                         "run the Design (again) for the Simulation")
     return p
 
 
 def info(stem):
     p = _pack(ui.safe_name(stem))
     crit = p["crit"]
-    f = os.path.join(ui.out_root(), ui.safe_name(stem), f"{ui.safe_name(stem)}_wsim.pkl")
+    f = os.path.join(ui.out_root(), ui.safe_name(stem), f"{ui.safe_name(stem)}_wsim.json")
     return {"ok": True, "stages": p["stages"], "pattern": list(crit["draw_off_pattern"]["value"]),
             "pattern_ref": crit["draw_off_pattern"]["ref"], "windows": p["windows"],
             "peak_factor": crit["peak_factor"]["value"], "fire_lps": p.get("fire_lps"), "fire_min": p.get("fire_min"),

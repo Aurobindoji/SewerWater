@@ -29,6 +29,8 @@ def _inventory(path):
         doc, _ = di.load(path)
         _INV.clear()                                    # one drawing at a time
         _INV_INFO.clear()
+        from water_app.net import cad
+        cad.remember_text_height(path, doc)             # for the DXF export: not read again for it
         _INV[key] = di.inventory(doc.modelspace())
         _INV_INFO[key] = dict(di.inventory.info)
     return _INV[key]

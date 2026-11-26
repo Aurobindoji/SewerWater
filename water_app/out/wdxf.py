@@ -156,7 +156,8 @@ def _text_height(stem, net):
             with open(os.path.join(ui.proj_dir(), stem + ".dxf.json"), encoding="utf-8") as fh:
                 src = json.load(fh).get("dxf")
             if src and os.path.isfile(src):
-                return round(cad.source_text_height(src)[0] * 0.67, 3), "0.67 x the original drawing's texts"
+                keep = os.path.join(ui.out_root(), stem, f"{stem}_dxf_text_height.json")   # read once per drawing
+                return round(cad.source_text_height(src, keep)[0] * 0.67, 3), "0.67 x the original drawing's texts"
         except Exception:
             pass
     return cad.default_text_height(net), "from the pipe lengths"

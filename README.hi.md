@@ -330,6 +330,13 @@ python -m venv .venv
 - `build_setup.bat` - setup बनाता है (PyInstaller + Inno Setup 6); version `launcher\about.py` से।
 - `.venv\Scripts\python -m pytest` - tests।
 
+**Code की बनावट:** सीवर और पेयजल दो अलग programs हैं - कोई code साझा नहीं, ताकि एक का बदलाव दूसरे को न छुए। दोनों
+में एक जैसे folders: `core/` (geometry, network graph, हिंदी texts, files का पूरा-या-कुछ-नहीं लिखना), `engine/`
+(गणनाएँ: आबादी, माँग / flow, zoning, pipe design, hydraulics), `net/` (KML / DXF से network और उसका सुधार), `data/`
+(project की files), `out/` (DPR, reports, DXF, नक्शे), `run/` (page के हर बटन के पीछे का काम), `web/` (server;
+`static/` में page, उसकी scripts और नक्शे की libraries), और पेयजल में `intze/` (Intze टंकी का design, calculation,
+drawings)। नीचे का folder ऊपर वाले को import नहीं करता - tests इसे जाँचते हैं।
+
 ---
 
 Licence: GNU General Public License v3.0 or later ([LICENSE](LICENSE)) - बिना किसी warranty के।

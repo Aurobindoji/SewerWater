@@ -129,6 +129,25 @@ python -m venv .venv
 - `.venv\Scripts\python -m pytest` runs the tests.
 - `.venv\Scripts\ruff check` looks for mistakes such as unused or undefined names.
 
+### Code layout
+
+The sewer and the water modules are two separate programs: they share no code, so a change in one cannot change
+the other. Each is laid out the same way:
+
+| Folder | What is in it |
+|---|---|
+| `core/` | small tools every part uses: geometry, the network graph, Hindi texts, files written whole |
+| `engine/` | the calculations: population, demand or flows, zoning, pipe design, hydraulics |
+| `net/` | the network read from a KML layout or a DXF drawing, and its repair |
+| `data/` | a project's files: the project, its inputs and results (water: rates, wards) |
+| `out/` | what the app gives out: the DPR (`out/dpr/`), reports, DXF drawings, maps |
+| `run/` | the work behind each button of the page |
+| `web/` | the page's server; `static/` holds the page, its scripts and the map libraries |
+| `intze/` | water only: the Intze tank's design, calculation report and drawings |
+
+`launcher/` holds the start page and the update check; `app.py` is the desktop window. A lower folder never imports
+a higher one (core, engine < net < data < out < run < web); the tests check it.
+
 ## Standards used
 
 - CPHEEO Manual on Sewerage and Sewage Treatment Systems (2013).
@@ -142,6 +161,8 @@ Where a manual leaves a choice, the value the app uses and its source are shown 
 
 - **Aurobindoji**: the engineering requirements, design decisions, reference data and testing.
 - **Claude** (Anthropic): written together with Aurobindoji, as an AI coding assistant.
+- The map uses [Leaflet](https://leafletjs.com) (BSD-2-Clause) and [Leaflet.draw](https://github.com/Leaflet/Leaflet.draw)
+  (MIT), shipped with the app with their licences (`static/vendor/`).
 
 ## License
 

@@ -244,6 +244,14 @@ PAGES.update({f"/js/{f}": (f"js/{f}", "text/javascript; charset=utf-8")
               for f in sorted(os.listdir(os.path.join(STATIC, "js"))) if f.endswith(".js")})
 # a DXF network's own drawing, each kind a list kept as projects\<name>.<kind>.json:
 # GET /api/<kind>?name=... reads it, POST /api/<kind>_save writes it
+# the map libraries shipped with the app (static/vendor, rewrite stage 2, 26-Nov-2026: not from a CDN at run time)
+_TYPES = {".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".png": "image/png",
+          ".svg": "image/svg+xml"}
+for _d, _, _fs in os.walk(os.path.join(STATIC, "vendor")):
+    for _f in _fs:
+        _rel = os.path.relpath(os.path.join(_d, _f), STATIC).replace(os.sep, "/")
+        if os.path.splitext(_f)[1] in _TYPES:
+            PAGES["/" + _rel] = (_rel, _TYPES[os.path.splitext(_f)[1]])
 LISTS = ("ohts", "barriers", "loops", "crossings", "wards", "bulk", "prv", "tw")
 
 

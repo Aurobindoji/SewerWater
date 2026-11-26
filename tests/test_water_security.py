@@ -129,3 +129,15 @@ def test_device_names_are_not_project_names():
     assert wproject.safe_name("con") == "_con" and wproject.safe_name("NUL") == "_NUL"
     assert wproject.safe_name("COM1") == "_COM1" and wproject.safe_name("console") == "console"
     assert wproject.safe_name("../../x") == "x"
+
+
+def test_the_map_libraries_come_with_the_app(base):
+    import re
+    url, _ = base
+    with urllib.request.urlopen(url + "/water", timeout=30) as r:
+        page = r.read().decode("utf-8")
+    assert "unpkg.com" not in page and "://" not in "".join(re.findall(r'<(?:script|link)[^>]+>', page))
+    for src in re.findall(r'(?:src|href)="(vendor/[^"]+)"', page) + ["vendor/leaflet/images/marker-icon.png",
+                                                                       "vendor/leaflet-draw/images/spritesheet.svg"]:
+        with urllib.request.urlopen(url + "/" + src, timeout=30) as r:
+            assert r.status == 200 and len(r.read()) > 500, src

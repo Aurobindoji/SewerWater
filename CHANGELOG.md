@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.9.42 (beta) - 2026-11-26
+
+**After updating:** in a water project, run the **Design** once again before **Export DPR** or the **Simulation** -
+the data a design keeps is now stored in a safer format, and the one kept by earlier versions is not read.
+
+Safer:
+- Only the app's own page can make it do anything: every action of the page carries a secret made at each start
+  of the app; another web page or program on the computer is refused.
+- The page runs only the app's own scripts. A name in a drawing or a KML can no longer act as code on the page.
+- The map libraries come with the app: the page no longer loads code from the internet, and opens without it
+  (the map background still needs the internet).
+- Project files are written whole or not at all - a crash or a full disk never leaves half a file.
+- The Outputs tab opens only drawings, workbooks, maps, PDF and CSV files; only .dxf drawings are read when a
+  path is typed.
+
+Faster:
+- Water DXF export of a network read from a drawing: on a large project 19-22 s -> 4-6 s (the drawing's text
+  size is read once, not at every export). The sewer zoning's drawing likewise.
+
+Inside (no change to any result):
+- The code of each module is laid out in folders by its work, its largest files split into parts. The sewer and
+  water modules stay fully separate.
+
 ## 0.9.41 (beta) - 2026-11-24
 
 - Water supply - Intze OHT: an existing OHT short of its operation zone's need gets a new Intze tank designed for

@@ -31,22 +31,22 @@ function label(layer) {
   if (layer.kind === "spot" && p.gl !== undefined && p.gl !== "")
     layer.bindTooltip(Number(p.gl).toFixed(2), { permanent: true, direction: "right", className: "gl", offset: [6, 0] });
   else if (layer.kind === "ward")
-    layer.bindTooltip(`${p.name || "वार्ड"}: ${p.population ? Number(p.population).toLocaleString("en-IN") : "population ?"}`,
+    layer.bindTooltip(`${esc(p.name || "वार्ड")}: ${p.population ? Number(p.population).toLocaleString("en-IN") : "population ?"}`,
       { sticky: true, direction: "right", offset: [22, 0] });
-  else if (layer.kind === "road" && p.name) layer.bindTooltip(p.name, { sticky: true, direction: "right", offset: [22, 0] });
+  else if (layer.kind === "road" && p.name) layer.bindTooltip(esc(p.name), { sticky: true, direction: "right", offset: [22, 0] });
   else if (layer.kind === "tw")
     hoverCard(layer, () => ({ html: twCardHtml(layer.props.name, layer.props.discharge_lpm, true) + hcStale(),
       acts: [["✕", tr("नक्शे से हटाएँ", "remove from the map"), () => hcDelete(layer), "del"], ["✥ move", tr("खींचकर नई जगह", "drag to a new place"), () => hcMove(layer)]] }));
   else if (layer.kind === "prv")
-    layer.bindTooltip(`${p.name || "PRV"}: setting ${p.setting_m ? `${p.setting_m} m` : tr("अपने-आप", "by itself")}`, { direction: "right", offset: [10, 0] });
+    layer.bindTooltip(`${esc(p.name || "PRV")}: setting ${p.setting_m ? `${esc(p.setting_m)} m` : tr("अपने-आप", "by itself")}`, { direction: "right", offset: [10, 0] });
   else if (layer.kind === "bulk")
-    layer.bindTooltip(`${p.name || "Bulk"}: ${p.kld ? `${p.kld} KL/day` : tr("KL/day ?", "KL/day ?")}${p.peak ? `, peak ${p.peak}` : ""}`, { direction: "right", offset: [10, 0] });
+    layer.bindTooltip(`${esc(p.name || "Bulk")}: ${p.kld ? `${esc(p.kld)} KL/day` : tr("KL/day ?", "KL/day ?")}${p.peak ? `, peak ${esc(p.peak)}` : ""}`, { direction: "right", offset: [10, 0] });
   else if (layer.kind === "crossing")
-    layer.bindTooltip(`${p.name || "Crossing"} - ${tr("यहाँ pipe आर-पार", "a pipe goes across here")}`, { sticky: true, direction: "right", offset: [22, 0] });
+    layer.bindTooltip(`${esc(p.name || "Crossing")} - ${tr("यहाँ pipe आर-पार", "a pipe goes across here")}`, { sticky: true, direction: "right", offset: [22, 0] });
   else if (layer.kind === "zone_loop")
-    layer.bindTooltip(`${p.name || "Zone"} - ${tr("घेरा क्षेत्र एक zone", "the area enclosed: one zone")}`, { sticky: true, direction: "right", offset: [22, 0] });
+    layer.bindTooltip(`${esc(p.name || "Zone")} - ${tr("घेरा क्षेत्र एक zone", "the area enclosed: one zone")}`, { sticky: true, direction: "right", offset: [22, 0] });
   else if (layer.kind === "barrier")
-    layer.bindTooltip(`${p.name || ""} (${barrierType(p.type)}) - ${tr("कोई pipe पार नहीं करेगा", "no pipe crosses it")}`, { sticky: true, direction: "right", offset: [22, 0] });
+    layer.bindTooltip(`${esc(p.name || "")} (${barrierType(p.type)}) - ${tr("कोई pipe पार नहीं करेगा", "no pipe crosses it")}`, { sticky: true, direction: "right", offset: [22, 0] });
   if (layer.kind === "oht" && layer.setIcon) layer.setIcon(icon("oht", layer === selected, p));     // the name on the marker
   if (layer.kind === "oht")
     hoverCard(layer, () => ({ html: ohtCardHtml(layer.props.name, true, layer.props) + hcStale(),

@@ -83,7 +83,7 @@ function withCuts(r, geo) { for (const c of r.cut_parts || []) geo[c.label] = c;
 function drawCuts(r, layer) {
   for (const c of r.cuts || [])
     L.marker(c.latlng, { icon: L.divIcon({ className: "cut-icon", html: "✂", iconSize: [14, 14] }) })
-      .bindTooltip(tr(`${c.pipe}: ${c.barrier} पर कटा - दोनों ओर रेखा से पहले बंद`, `${c.pipe}: cut at ${c.barrier} - ends short of it on both sides`)).addTo(layer);
+      .bindTooltip(tr(`${esc(c.pipe)}: ${esc(c.barrier)} पर कटा - दोनों ओर रेखा से पहले बंद`, `${esc(c.pipe)}: cut at ${esc(c.barrier)} - ends short of it on both sides`)).addTo(layer);
 }
 // a gap between separate pieces of the drawing (user 30-Oct-2026): a red dashed line between their nearest junctions,
 // a ring at its middle (a gap of a metre or two is too short to see as a line)
@@ -286,7 +286,7 @@ function renderWZoning(r, note) {
   };
   for (const c of r.closed)
     L.marker(pgeo[c.pipe] && pgeo[c.pipe].length > 1 ? midAlong(pgeo[c.pipe]) : c.latlng, { icon: L.divIcon({ className: "closed-icon", html: "⊗", iconSize: [14, 14] }) })
-      .bindTooltip(tr(`${c.pipe}: बंद (OZ / DMA सीमा का valve)`, `${c.pipe}: closed (OZ / DMA boundary valve)`)).addTo(zoneLayer);
+      .bindTooltip(tr(`${esc(c.pipe)}: बंद (OZ / DMA सीमा का valve)`, `${esc(c.pipe)}: closed (OZ / DMA boundary valve)`)).addTo(zoneLayer);
   // OHT capacity: max(33 %, mass balance) of the OZ's daily demand (CPHEEO Table 2.7 S.No.12 p175)
   const st = r.storage, pc = x => (x * 100).toFixed(1) + " %";
   const stShare = st ? pc(st.share) : "33 %";

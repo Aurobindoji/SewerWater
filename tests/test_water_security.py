@@ -142,3 +142,24 @@ def test_the_map_libraries_come_with_the_app(base):
                                                                        "vendor/leaflet-draw/images/spritesheet.svg"]:
         with urllib.request.urlopen(url + "/" + src, timeout=30) as r:
             assert r.status == 200 and len(r.read()) > 500, src
+
+
+def test_the_page_runs_only_the_apps_own_scripts(base):
+    """Rewrite stage 6: the map page's Content-Security-Policy lets only this app's script files run - a name from a
+    drawing or a KML that slipped into the page's HTML (an onerror=, a <script>) is never run; the page itself has no
+    inline script or handler attribute for the policy to break."""
+    import re
+    url, _ = base
+    with urllib.request.urlopen(url + "/water", timeout=30) as r:
+        csp = r.headers.get("Content-Security-Policy") or ""
+        page = r.read().decode("utf-8")
+    rules = dict((d.split(" ", 1) + [""])[:2] for d in (x.strip() for x in csp.split(";")) if d)
+    assert rules.get("script-src") == "'self'" and rules.get("object-src") == "'none'" and "default-src" in rules
+    assert not re.search(r"<script(?![^>]*\bsrc=)[^>]*>", page)                 # no inline script
+    assert not re.search(r"\son[a-z]+\s*=", page)                              # no handler attribute
+    js = os.path.join(wserver.STATIC, "js")
+    for name in os.listdir(js):
+        with open(os.path.join(js, name), encoding="utf-8") as fh:
+            text = fh.read()
+        assert not re.search(r"\beval\(|new Function\(", text), name
+        assert not re.search(r"<[a-z][^>]*\son(click|change|input|load|error|mouse\w+|key\w+)=", text), name

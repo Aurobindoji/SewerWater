@@ -3,7 +3,7 @@ too-low OHT is reported with the head missing, an existing (fixed) pipe keeps it
 import copy
 import itertools
 
-from water_app import design as wd
+from water_app.engine import design as wd
 
 
 def town(n=6, staging=24.0, demand=0.6):

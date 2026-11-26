@@ -6,8 +6,8 @@ import os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES = ("sewer_app", "water_app")
-# what the launcher may take of each module: its server, to start it
-LAUNCHER_MAY = {"sewer_app.ui", "water_app.server"}
+# what the launcher may take of each module: its server, to start it (water's in web/ since rewrite stage 3)
+LAUNCHER_MAY = {"sewer_app.ui", "water_app.web.server"}
 
 
 def _imports(path):
@@ -59,6 +59,8 @@ def test_the_launcher_only_starts_the_modules():
     for path in list(_files("launcher")) + [os.path.join(ROOT, "app.py")]:
         for name, line in _imports(path):
             # `from sewer_app import ui` gives "sewer_app" (the package) and "sewer_app.ui" (what is taken)
-            if _top(name) in MODULES and name not in LAUNCHER_MAY and name not in MODULES:
+            # (and "water_app.web", the package of water's server)
+            parent_of_allowed = any(m.startswith(name + ".") for m in LAUNCHER_MAY)
+            if _top(name) in MODULES and name not in LAUNCHER_MAY and name not in MODULES and not parent_of_allowed:
                 bad.append(f"{os.path.relpath(path, ROOT)}:{line} imports {name}")
     assert not bad, "\n".join(bad)

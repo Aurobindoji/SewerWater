@@ -7,8 +7,8 @@ import pytest
 
 from test_dxf_extract import make_dxf
 from test_water_ui import dpr_of, call, server  # noqa: F401  (the fixture)
-from water_app import netedit
-from water_app import population as P
+from water_app.net import netedit
+from water_app.engine import population as P
 
 # the Elmwood 'T': census 1951-2011 and the population known in 2025
 CENSUS = "1951 376834, 1961 498567, 1971 672634, 1981 825717, 1991 1139236, 2001 1374963, 2011 1636569, 2025 2679842"
@@ -108,7 +108,7 @@ def test_zoning_and_design_on_a_projection(server):  # noqa: F811
 def test_far_open_below_one_is_flagged():
     """Far-open's balancing factor below 1 (user decision 10-Nov-2026): flagged as 'below' - its own warning in place
     of 'low'; the example's ratios give back the example's Far-open (technical.xlsx T P470)."""
-    from water_app import wards
+    from water_app.data import wards
     ch = wards.WARD_CHARS
     city = dict(zip(ch, (698311, 673088, 720858, 587585)))
     growth = dict(zip(ch, ([1.02, 1.25, 1.50], [1.04, 1.40, 1.85], [1.06, 1.63, 2.45], [1.0932, 1.9183, 3.3282])))

@@ -3,6 +3,9 @@ import os
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # the code and its data (read only when packed)
+# the package's own folder: its data files (criteria.json, pipes.json, dpr_water.json, the SOR, the DPR template) and
+# static/ - found from here by every module, wherever its file lies (rewrite stage 3, 26-Nov-2026: modules in folders)
+PKG = os.path.dirname(os.path.abspath(__file__))
 
 
 def _documents():

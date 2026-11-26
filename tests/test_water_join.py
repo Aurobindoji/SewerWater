@@ -4,8 +4,8 @@ crossed), within the page's limit (500 m from 7-Nov-2026, was 100 m); a preview 
 purple on the page, one Undo)."""
 from test_dxf_extract import make_dxf
 from test_water_ui import call, server  # noqa: F401  (the fixture)
-from water_app import netedit
-from water_app import server as wserver
+from water_app.net import netedit
+from water_app.web import server as wserver
 
 
 def _import(url, tmp, name):

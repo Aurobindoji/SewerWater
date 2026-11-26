@@ -8,10 +8,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CODE = """
 import importlib, pkgutil, sys
 pkg = importlib.import_module("{mine}")
-for m in pkgutil.iter_modules(pkg.__path__):
-    if m.name in {skip!r}:
+for m in pkgutil.walk_packages(pkg.__path__, "{mine}."):      # its folders too (water: rewrite stage 3)
+    if m.name.rsplit(".", 1)[-1] in {skip!r}:
         continue
-    importlib.import_module("{mine}." + m.name)
+    importlib.import_module(m.name)
 other = sorted(k for k in sys.modules if k == "{other}" or k.startswith("{other}."))
 print("OTHER:" + ",".join(other))
 """
@@ -34,7 +34,7 @@ def test_sewer_loads_nothing_of_water():
 
 def test_own_pages_and_servers():
     from sewer_app import ui
-    from water_app import server
+    from water_app.web import server
     assert os.path.dirname(ui.STATIC) != os.path.dirname(server.STATIC)
     assert server.PORT != 8765 and ui.proj_dir() != server.proj_dir() and ui.out_root() != server.out_root()
     for f, mod in ((os.path.join(ui.STATIC, "js", "core.js"), "sewer"), (os.path.join(server.STATIC, "js", "core.js"), "water")):

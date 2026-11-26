@@ -3,9 +3,9 @@ hour's detail; simulate.ssa; sim_run's checks of the page's inputs."""
 import pytest
 
 from test_water_load import small_design
-from water_app import demand as dm
-from water_app import sim_run
-from water_app import simulate as wsim
+from water_app.engine import demand as dm
+from water_app.run import sim_run
+from water_app.engine import simulate as wsim
 
 
 def _tank(crit):

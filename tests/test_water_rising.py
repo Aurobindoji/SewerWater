@@ -10,11 +10,11 @@ import pytest
 
 from test_dxf_extract import make_dxf
 from test_water_ui import dpr_of, call, server  # noqa: F401  (the fixture)
-from water_app import design as wd
-from water_app import dpr as wdpr
-from water_app.dpr import rising_main as dpr_rm
-from water_app import netedit
-from water_app import rising
+from water_app.engine import design as wd
+from water_app.out import dpr as wdpr
+from water_app.out.dpr import rising_main as dpr_rm
+from water_app.net import netedit
+from water_app.engine import rising
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 with open(os.path.join(HERE, "water_app", "criteria.json"), encoding="utf-8") as fh:
@@ -192,7 +192,7 @@ def test_design_and_dpr_with_a_tube_well(server):  # noqa: F811
     ch = next(row for row in rows if row[2] and "Sluice valve chamber (masonry type)" in str(row[2]))
     assert ch[7].startswith("=D") and ch[8] == "='U02 SV M'!K17"
     # Export DPR (user request 15-Nov-2026): the last design's workbook, found (not opened here)
-    from water_app import results
+    from water_app.run import results
     f = results.dpr_file("wrm", open_it=False)
     assert f["path"].endswith("_DPR.xlsx") and os.path.isfile(f["path"]) and not f["opened"]
 
@@ -231,7 +231,7 @@ def test_a_cwr_zone_s_tube_wells_fill_the_cwr(server):  # noqa: F811
     # new Intze OHT, user decision 10-Nov-2026)
     assert "Prop-OHT-1" not in R["cwr"]
     o = next(x for x in r["outlets"] if x["name"] == "Prop-OHT-1")
-    from water_app import intze
+    from water_app.intze import design as intze
     cone = intze.cone_depth(o["required_kl"], 3 if o["required_kl"] <= 100 else 4 if o["required_kl"] <= 1000 else 5)
     assert cone > 0.5
     assert 84.60 + 3 + cone <= R["top"]["Prop-OHT-1"] - o["staging_m"] <= 85.70 + 5 + cone   # GL 84.60-85.70
@@ -270,8 +270,8 @@ def test_only_as_many_tube_wells_as_the_oz_needs():
 def test_standby_tube_wells_the_farthest_and_the_page_s_table():
     """User decisions 15-Nov-2026: the standby tube wells of an OZ are the farthest from its OHT along the roads (at
     least one stays working); the page may give the tube wells their own standby table (the pumps keep CPHEEO's)."""
-    from water_app import demand as dm
-    from water_app import zoning_run
+    from water_app.engine import demand as dm
+    from water_app.run import zoning_run
     wnet, z = _line()
     rate = lambda s, c="K7": 1000.0
     mapped = [{"name": "TW far", "xy": (361.0, 0.0)}, {"name": "TW near", "xy": (121.0, 1.0)},

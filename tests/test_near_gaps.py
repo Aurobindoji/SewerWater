@@ -5,7 +5,7 @@ joined by no pipe, are reported with their nearest junctions - not when a barrie
 import pytest
 
 from sewer_app import barriers as sb
-from water_app import barriers as wb
+from water_app.engine import barriers as wb
 
 
 def _net(gap):

@@ -8,9 +8,9 @@ import pytest
 
 from test_dxf_extract import make_dxf
 from test_water_ui import dpr_of, call, server  # noqa: F401  (the fixture)
-from water_app import hydraulics as hy
-from water_app import netedit
-from water_app import prv
+from water_app.engine import hydraulics as hy
+from water_app.net import netedit
+from water_app.engine import prv
 
 CRIT = {"residual_head_m": {"value": 17.0}, "residual_head_max_m": {"value": 21.0}}
 

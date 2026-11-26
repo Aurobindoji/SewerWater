@@ -6,7 +6,7 @@ import ezdxf
 import pytest
 from openpyxl import load_workbook
 
-from water_app import intze, intze_api, intze_calc, intze_dwg
+from water_app.intze import design as intze, api as intze_api, calc as intze_calc, drawing as intze_dwg
 
 
 @pytest.mark.parametrize("cap,stg", [(150, 15), (500, 20), (1000, 22), (2700, 24)])

@@ -8,10 +8,10 @@ import pytest
 from test_dxf_extract import make_dxf
 from test_water_ui import dpr_of, SAMPLE, call, server  # noqa: F401  (the fixture)
 from test_water_zoning import grid
-from water_app import demand as dm
-from water_app import netedit
-from water_app import zoning as wz
-from water_app.design import load_criteria
+from water_app.engine import demand as dm
+from water_app.net import netedit
+from water_app.engine import zoning as wz
+from water_app.engine.design import load_criteria
 
 
 def test_zoning_counts_bulk_demand():

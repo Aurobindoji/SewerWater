@@ -7,12 +7,12 @@ import re
 import openpyxl
 import pytest
 
-from water_app import dpr as wdpr
-from water_app import server as wserver
-from water_app import project as wproject
-from water_app import design_run
-from water_app import results
-from water_app import zoning_run
+from water_app.out import dpr as wdpr
+from water_app.web import server as wserver
+from water_app.data import project as wproject
+from water_app.run import design_run
+from water_app.run import results
+from water_app.run import zoning_run
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SAMPLE = os.path.join(HERE, "samples", "sample_area.kml")
 REF = re.compile(r"(?:'((?:[^']|'')+)'|([A-Za-z_][\w\.]*))!")
@@ -354,7 +354,7 @@ def test_dpr_as_the_example_technical_statement(design):
     four Excel charts (census bars, simple graph, semi-log, the methods compared), T2 Town Wards from the town's list of
     the page, T3 Ward Projection, T4 Zone Population, T5-T9, then T10-T21; the WTP's load left out."""
     import zipfile
-    from water_app import city_wards as cw
+    from water_app.data import city_wards as cw
     town = [{"no": "1", "name": "Riverside", "pop": 37040, "hh": 4645, "area": 132.0, "census": 17204, "char": ""},
             {"no": "3", "name": "Ashford", "pop": 41898, "hh": 5966, "area": 356.58, "census": 22096, "char": ""},
             {"no": "77", "name": "Exeter", "pop": 19467, "hh": 3603, "area": 21.69, "census": 13345, "char": ""}]
@@ -402,7 +402,7 @@ def test_dpr_as_the_example_technical_statement(design):
 
 def test_dpr_storage_as_zoning(design):
     """The Storage sheet: the page's filling hours, its result the share the zoning used (38.5 % for 8 h)."""
-    from water_app import demand as dm
+    from water_app.engine import demand as dm
     d = design(oht_inflow="4-8, 16-20")
     wb = openpyxl.load_workbook(d["files"]["dpr"])
     st = wb["T11 Mass Balance"]
@@ -432,7 +432,7 @@ def test_dpr_project_texts_kept(design):
 
 def test_dpr_info_valves():
     """Sluice valves of the network: every closed boundary pipe and DMA inlet of its size, one at each OHT outlet."""
-    from water_app.design import load_criteria
+    from water_app.engine.design import load_criteria
     zones = [{"name": "A", "population": 1000, "connections": 167, "demand_kld": 200, "capacity_kl": None,
               "required_kl": 100, "cwr_kl": None, "tubewells": 0, "dma_count": 2}]
     pipes = [{"label": "P-1", "size": "HDPE 110", "length": 100, "oz": "A"},

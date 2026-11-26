@@ -5,8 +5,8 @@ import io
 import openpyxl
 import pytest
 
-from water_app import city_wards as cw
-from water_app import project as wproject
+from water_app.data import city_wards as cw
+from water_app.data import project as wproject
 
 
 @pytest.fixture

@@ -2,11 +2,11 @@
 peak factor of the page, the load cases and the 24 h run of the designed network."""
 import pytest
 
-from water_app import demand as dm
-from water_app import design as wd
-from water_app import simulate as wsim
-from water_app import wards as W
-from water_app.zoning_run import _crit
+from water_app.engine import demand as dm
+from water_app.engine import design as wd
+from water_app.engine import simulate as wsim
+from water_app.data import wards as W
+from water_app.run.zoning_run import _crit
 
 
 def tee():

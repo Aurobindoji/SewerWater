@@ -11,9 +11,10 @@ from http.server import ThreadingHTTPServer
 
 import pytest
 
-from water_app import project as wproject
-from water_app import results, store
-from water_app import server as wserver
+from water_app.data import project as wproject
+from water_app.run import results
+from water_app.core import store
+from water_app.web import server as wserver
 
 
 @pytest.fixture

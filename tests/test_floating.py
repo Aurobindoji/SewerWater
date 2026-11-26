@@ -3,7 +3,7 @@ Annexure 2.8 suggests 1-3 % when no figures are available) - sewer forecast and 
 import pytest
 
 from sewer_app import population as P
-from water_app import zoning_run
+from water_app.run import zoning_run
 def test_sewer_forecast_takes_the_page_share():
     d = P.forecast(2027, 100000, None, sewage_lpcd=120)
     assert d["floating_share"] == 0.10 and d["floating"]["init"] == 10000

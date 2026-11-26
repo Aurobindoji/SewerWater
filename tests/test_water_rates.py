@@ -8,8 +8,8 @@ import openpyxl
 import pytest
 
 from test_water_dpr import design  # noqa: F401  (the fixture)
-from water_app import rates
-from water_app import results
+from water_app.data import rates
+from water_app.run import results
 @pytest.fixture
 def mine(tmp_path, monkeypatch):
     monkeypatch.setattr(rates, "USER_FILE", str(tmp_path / "home" / "rates" / "water_rates.json"))
@@ -71,7 +71,7 @@ def test_export_import_reset(design, mine):  # noqa: F811
 
 
 def test_export_without_a_design_and_bad_files(tmp_path, monkeypatch, mine):
-    from water_app import project as wproject
+    from water_app.data import project as wproject
     monkeypatch.setattr(wproject, "OUT_ROOT", str(tmp_path / "o"))
     r = results.rate_export("none", open_it=False)
     assert r["ok"] and not r["design"] and r["sor_used"] == 0 and r["upjn_used"] == 0
@@ -100,5 +100,5 @@ def test_export_without_a_design_and_bad_files(tmp_path, monkeypatch, mine):
 
 
 def wdpr_settings():
-    from water_app import dpr as wdpr
+    from water_app.out import dpr as wdpr
     return wdpr.settings()

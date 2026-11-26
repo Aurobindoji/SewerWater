@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 import ezdxf
 import pytest
 
-from water_app import netedit
+from water_app.net import netedit
 
 X0, Y0 = 500000.0, 2800000.0                     # UTM 44N (mock place)
 NS = {"k": "http://www.opengis.net/kml/2.2"}

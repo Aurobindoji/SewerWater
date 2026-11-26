@@ -4,8 +4,8 @@ keep (one OZ as drawn), merge (into the neighbouring OZ) or split (new OZs withi
 page asks."""
 import pytest
 
-from water_app import design as wd
-from water_app import zoning as wz
+from water_app.engine import design as wd
+from water_app.engine import zoning as wz
 
 from test_water_ui import SAMPLE, call, server  # noqa: F401  (the fixture)
 
@@ -110,7 +110,7 @@ def test_small_pieces_cut_off_by_a_loop_go_to_the_neighbour_or_into_it(crit):
     """User report 27-Oct-2026: a loop drawn across roads gave every bit of road cut off inside it an OZ of its own
     (8 - 193 people). A small piece inside not joined to the loop's main part goes out to the neighbour; a small
     piece outside joined only to the loop comes in."""
-    from water_app import zoning_run
+    from water_app.run import zoning_run
     net = _grid()
     del net["pipes"]["h4-0"], net["pipes"]["v4-0"]          # 4-0: joined only to 3-0, inside the loop
     lp = {"name": "L", "nodes": {n for n in net["nodes"] if int(n.split("-")[0]) <= 3} | {"8-8"}}   # 8-8: a stray

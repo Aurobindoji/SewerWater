@@ -3,7 +3,7 @@ without an outfall problems there, the auto repair does not cut them, and the lo
 (<junction>-C<n> on the same spot, a red cross) are merged back in one step."""
 import pytest
 
-from water_app import netedit, repair
+from water_app.net import netedit, repair
 
 from test_dxf_extract import make_dxf
 

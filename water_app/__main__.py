@@ -1,7 +1,7 @@
 """python -m water_app ui [--port 8766] [--no-browser]: the water module's map page on its own server."""
 import sys
 
-from .server import main
+from water_app.web.server import main
 
 if __name__ == "__main__":
     args = sys.argv[1:]

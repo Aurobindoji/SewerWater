@@ -3,10 +3,10 @@ DMAs of 500-3000 connections each with one inlet, boundary pipes to close, CWR r
 import itertools
 import math
 
-from water_app import demand as dm
-from water_app import hydraulics as hy
-from water_app import zoning as wz
-from water_app.design import load_criteria
+from water_app.engine import demand as dm
+from water_app.engine import hydraulics as hy
+from water_app.engine import zoning as wz
+from water_app.engine.design import load_criteria
 
 
 def grid(n=12, pop=400.0, spacing=100.0, elev=lambda i, j: 80.0):

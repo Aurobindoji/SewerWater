@@ -13,8 +13,8 @@ import pytest
 from sewer_app import ui
 
 from sewer_app import project as sproject
-from water_app import server as wserver
-from water_app import project as wproject
+from water_app.web import server as wserver
+from water_app.data import project as wproject
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SAMPLE = os.path.join(HERE, "samples", "sample_area.kml")

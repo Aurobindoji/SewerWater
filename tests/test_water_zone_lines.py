@@ -5,7 +5,7 @@ import numpy as np
 from matplotlib.path import Path
 import matplotlib.tri as mtri
 
-from water_app import zone_geom
+from water_app.core import zone_geom
 
 
 def grid(rows, n=13, step=40.0):
@@ -90,7 +90,7 @@ def test_two_parts_touching_at_one_point_do_not_cross():
 def test_open_land_the_zones_close_in_is_theirs():
     """Triangles left out for their length: those shut in by kept ones on every side come back (no empty figure in
     the middle of the zones); those that reach the edge of the points, or lie outside the project, stay out."""
-    from water_app import zone_lines
+    from water_app.run import zone_lines
     # a ring of points round an empty middle, and one point far outside it
     ang = np.linspace(0.0, 2 * np.pi, 24, endpoint=False)
     X = np.concatenate([300 * np.cos(ang), 330 * np.cos(ang + 0.13), [0.0], [2000.0]])
@@ -120,7 +120,7 @@ def test_land_closed_in_by_the_zones_is_theirs_whatever_its_size():
     """User 15-Nov-2026: no ring round empty land inside the zones (as the DPR's key plan) - land the zones close in on
     every side is theirs, however large; open land reaching the outside stays out."""
     import numpy as np
-    from water_app import zone_lines
+    from water_app.run import zone_lines
     assert zone_lines.BLOCK_MAX_M2 is None
     # triangle 1: left out, closed in by the kept 0, 2, 3; triangle 4: left out, on the outer edge (-1)
     nb = np.array([[1, -1, -1], [0, 2, 3], [1, -1, -1], [1, 4, -1], [3, -1, -1]])

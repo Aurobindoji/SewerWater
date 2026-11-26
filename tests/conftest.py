@@ -5,7 +5,7 @@ Tests that post to both servers through one helper send one value, so here both 
 tests (test_*_security.py) still check that a POST without it, or with a wrong one, is refused.
 """
 from sewer_app import ui as _sewer_ui
-from water_app import server as _water_server
+from water_app.web import server as _water_server
 
 TEST_TOKEN = "test-run-token"
 _sewer_ui.TOKEN = _water_server.TOKEN = TEST_TOKEN

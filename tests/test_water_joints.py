@@ -5,7 +5,7 @@ import json
 
 from test_dxf_extract import make_dxf
 from test_water_ui import call, server  # noqa: F401  (the fixture)
-from water_app import netedit
+from water_app.net import netedit
 
 
 def net_of(pipes, xy=None, **flags):

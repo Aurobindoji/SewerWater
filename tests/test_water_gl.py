@@ -3,7 +3,7 @@ no text and only when Z agrees with the texts (user request 22-Oct-2026, chit5: 
 polylines' elevation - 74.533, -4.617 - though the node layer has its GL texts)."""
 import ezdxf
 
-from water_app import dxf_extract
+from water_app.net import dxf_extract
 
 
 def drawing(path, z_of_lines, texts_at=4):

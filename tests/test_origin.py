@@ -11,8 +11,8 @@ import pytest
 
 from sewer_app import project as sproject
 from sewer_app import ui
-from water_app import project as wproject
-from water_app import server as wserver
+from water_app.data import project as wproject
+from water_app.web import server as wserver
 
 
 @pytest.fixture(params=["sewer", "water"])

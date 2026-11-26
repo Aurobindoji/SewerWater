@@ -14,8 +14,8 @@ import pytest
 from sewer_app import ui
 
 from sewer_app import project as sproject
-from water_app import server as wserver
-from water_app import project as wproject
+from water_app.web import server as wserver
+from water_app.data import project as wproject
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SAMPLE = os.path.join(HERE, "samples", "sample_area.kml")
@@ -47,7 +47,7 @@ def sewer(tmp_path, monkeypatch):
 
 def dpr_of(name):
     """The DPR workbook of the project's last design - written on Export DPR, not with the design (15-Nov-2026)."""
-    from water_app import results
+    from water_app.run import results
     return results.dpr_file(name, open_it=False)["path"]
 
 
@@ -233,7 +233,7 @@ def test_water_network_from_a_dxf(server, sewer):
     import sys
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     from test_dxf_extract import make_dxf
-    from water_app import netedit
+    from water_app.net import netedit
     netedit._UNDO.clear()
     url, tmp = server
     src = str(tmp / "small.dxf")
@@ -484,7 +484,7 @@ def test_water_dxf_export(server):
     assert any(t.startswith(f"{p['label']} {p['size']}mm") or t == p["label"] for t in txt)
     assert not any("/" in t and t.endswith("mm") for t in txt)
     # each size on a layer and in a colour of its own, a legend of the sizes with their lengths
-    from water_app import wdxf
+    from water_app.out import wdxf
     doc = ezdxf.readfile(r["path"])
     sizes = sorted({q["size"] for q in d["pipes"] if q["size"] and not q.get("closed")})
     assert all(len(doc.modelspace().query(f"LWPOLYLINE[layer=='{wdxf.size_layer(x)}']")) > 1 for x in sizes)
@@ -496,7 +496,7 @@ def test_water_dxf_export(server):
     assert f"HGL {n['head']:.2f}" in txt and f"RH {n['p']:.2f}" in txt
     assert len(msp.query("SOLID[layer=='W_FLOW_ARROW']")) > 0
     # no pipe label over a junction's name / GL / HGL / RH (user request 16-Nov-2026)
-    from water_app import cad
+    from water_app.net import cad
 
     def box(e):
         align, at = e.get_align_enum(), e.get_placement()[1]
@@ -515,7 +515,7 @@ def test_ward_table_from_a_kml():
     """'KML से वार्ड तालिका' (user decision 7-Nov-2026): a polygon with a ward number / name field is a ward, the others
     the zone; each ward's area and the share of it in the zone (only a check), its population / households where the
     KML gives them above 0, its boundary for the map."""
-    from water_app import wards
+    from water_app.data import wards
     dx, dy = 0.0099, 0.009                       # about 1 km at Springfield
     sq = lambda x0, y0, x1, y1: " ".join(f"{x:.6f},{y:.6f}" for x, y in
                                          ((x0, y0), (x1, y0), (x1, y1), (x0, y1), (x0, y0)))

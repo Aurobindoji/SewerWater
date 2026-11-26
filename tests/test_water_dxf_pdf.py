@@ -5,7 +5,7 @@ in one colour and the junction names with their levels in another."""
 import ezdxf
 import pytest
 
-from water_app import dxf_extract, dxf_inspect as di, netedit
+from water_app.net import dxf_extract, dxf_inspect as di, netedit
 
 S = 2.0                      # metres per drawing unit
 STEP = 20.0                  # junction spacing in drawing units (40 m)

@@ -1,7 +1,7 @@
 """The page's messages in Hindi (user request 30-Oct-2026), the technical terms as they are; files and logs keep the
 English. Water design checks and sewer design warnings."""
 from sewer_app import hindi as shi
-from water_app import hindi as whi
+from water_app.core import hindi as whi
 
 
 def test_water_check_texts():

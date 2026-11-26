@@ -2,7 +2,7 @@
 from openpyxl import Workbook
 from openpyxl.styles import Border, Font, Side
 
-from water_app.dpr import style
+from water_app.out.dpr import style
 
 
 def test_texts_fitted_to_their_cells():

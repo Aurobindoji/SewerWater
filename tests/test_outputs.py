@@ -6,7 +6,7 @@ import time
 import pytest
 
 from sewer_app import project as sproject
-from water_app import project as wproject
+from water_app.data import project as wproject
 
 
 @pytest.mark.parametrize("mod", [wproject, sproject])

@@ -7,7 +7,7 @@ import os
 
 import pytest
 
-from water_app import netedit
+from water_app.net import netedit
 
 from test_dxf_extract import make_dxf
 

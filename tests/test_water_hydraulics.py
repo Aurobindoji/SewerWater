@@ -5,7 +5,7 @@ import math
 
 import pytest
 
-from water_app import hydraulics as hy
+from water_app.engine import hydraulics as hy
 
 
 def hl(Q_ls, L, d_mm, C, minor=1.0):

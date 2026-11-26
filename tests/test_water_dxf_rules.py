@@ -3,7 +3,7 @@ a node layer mixing levels with depths, pipe lengths not taken for GL, a typing 
 heights, one Z at every line end, lines drawn twice, power lines and road centre lines not taken for pipes."""
 import ezdxf
 
-from water_app import dxf_extract, dxf_inspect as di, netedit
+from water_app.net import dxf_extract, dxf_inspect as di, netedit
 
 PTS = [(30.0 * i, 0.0) for i in range(8)]
 GL = [78.0 + 0.1 * i for i in range(8)]
@@ -189,7 +189,7 @@ def test_network_preview_is_what_the_import_makes(tmp_path):
 def test_water_words_and_old_projects(tmp_path):
     """Junctions, not manholes, in the water import's problems; loops are no problem (18-Nov-2026). A project saved
     before keeps its old texts - they still give their issues."""
-    from water_app import repair
+    from water_app.net import repair
     doc, msp = base()
     msp.add_line((500.0, 0.0), (530.0, 0.0), dxfattribs={"layer": "PIPE"})
     p = str(tmp_path / "w.dxf")

@@ -93,7 +93,7 @@ def _start(name):
     if name == "sewer":
         from sewer_app import ui as mod
     else:
-        from water_app import server as mod
+        from water_app.web import server as mod
     threading.Thread(target=mod.serve, kwargs={"open_browser": False}, daemon=True).start()
     return mod.VERSION
 

@@ -2,7 +2,7 @@
 gives: random networks with loops, equal heads, fixed pipes, junctions without a head and two sources."""
 import random
 
-from water_app import design
+from water_app.engine import design
 
 
 def _path_table(net, res, adj, fixed):

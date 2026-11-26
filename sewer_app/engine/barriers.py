@@ -4,7 +4,7 @@ their road on either side, each ending gap_m short of the line (given for each l
 27-Oct-2026) at a dead end, a new junction without population of its own; a part between two crossings (no junction
 of its own on it) is left out. A side of the network so cut off
 drains to an outlet of its own (the zoning's: an outfall / pumping station on that side).
-The sewer module's copy of water_app/barriers.py (isolation of sewer and water, 21-Oct-2026): "junction" = manhole.
+The sewer module's copy of water_app/engine/barriers.py (isolation of sewer and water, 21-Oct-2026): "junction" = manhole.
 
 Crossings (user request 27-Oct-2026: a pipe laid across a road where needed): a short line drawn across a barrier
 line or a zone loop. Where it crosses one (crossing_points), a pipe of the network crossing it within CROSS_TOL_M
@@ -61,12 +61,6 @@ def clean_crossings(raw, to_xy):
                     "latlngs": [[float(p[0]), float(p[1])] for p in pts],
                     "xy": [tuple(p) for p in to_xy([[float(p[0]), float(p[1])] for p in pts])]})
     return out
-
-
-def ring_line(name, xy):
-    """A zone loop's ring as a closed line for crossing_points / cut: name "loop:<name>"."""
-    xy = [tuple(p) for p in xy]
-    return {"name": f"loop:{name}", "type": "other", "gap_m": GAP_M, "xy": xy + xy[:1]}
 
 
 def _cross(poly, line):

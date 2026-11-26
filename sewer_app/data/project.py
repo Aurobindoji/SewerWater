@@ -16,7 +16,7 @@ PROJECTS = os.path.join(HOME, "projects")
 OUT_ROOT = os.path.join(HOME, "output")
 
 
-# the water module has its own server (water_app/server.py, port 8766), page and folders - isolation of sewer and
+# the water module has its own server (water_app/web/server.py, port 8766), page and folders - isolation of sewer and
 # water (user requests 21-Oct-2026, 10-Nov-2026): nothing of it here; the start page is the launcher's (port 8764)
 
 

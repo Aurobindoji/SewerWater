@@ -1,5 +1,5 @@
 """Files of the sewer module written whole or not at all, and data kept as JSON (rewrite stage 2, 26-Nov-2026;
-this module's own copy of water_app/store.py - the two modules share no code).
+this module's own copy of water_app/core/store.py - the two modules share no code).
 
 Every file goes first to a temporary name in its own folder and then takes the real name in one step (os.replace):
 a crash, a full disk or a second click never leaves half a file. Kept data is JSON only - never pickle, which runs

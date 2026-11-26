@@ -1,6 +1,6 @@
 """Hindi texts of the sewer design's warnings for the map page (user request 30-Oct-2026: the page's messages in Hindi,
 the technical terms as they are; the report Excel and the log keep the English). The sewer module's own copy of the
-idea of water_app/hindi.py (isolation of sewer and water, 21-Oct-2026). A warning not matched stays English.
+idea of water_app/core/hindi.py (isolation of sewer and water, 21-Oct-2026). A warning not matched stays English.
 
     hi(text) -> the Hindi of one warning
 """

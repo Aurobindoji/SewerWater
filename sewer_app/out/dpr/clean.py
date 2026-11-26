@@ -2,7 +2,7 @@
 comes from - no DPR and its page, no workbook's sheet and cell, no town, firm or department as the source; the
 department's own name is the Project sheet's 'Department / implementing agency'). Applied to every text cell and to
 the texts inside formulas just before the workbook is saved; the values and the method stay. (The sewer module's own
-copy of water_app/dpr/clean.py: the two modules stay apart.)
+copy of water_app/out/dpr/clean.py: the two modules stay apart.)
 
     clean.workbook(wb)      # in place
     clean.text(s) -> s

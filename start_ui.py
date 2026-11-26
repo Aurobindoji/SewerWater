@@ -1,8 +1,8 @@
 """Start the app in the browser (sewer_ui.bat): the launcher's start page - the language, then sewer or water.
 
-    start page : launcher/server.py     http://127.0.0.1:8764/
-    sewer      : sewer_app/ui.py        http://127.0.0.1:8765/sewer    started only when chosen
-    water      : water_app/server.py    http://127.0.0.1:8766/water    started only when chosen
+    start page : launcher/server.py         http://127.0.0.1:8764/
+    sewer      : sewer_app/web/server.py    http://127.0.0.1:8765/sewer    started only when chosen
+    water      : water_app/web/server.py    http://127.0.0.1:8766/water    started only when chosen
 
 User decision 10-Nov-2026: the two apps are fully independent - the module chosen opens alone (in the start page's
 tab); the other starts only from its button beside "CPHEEO / language" on a module's page, in a tab of its own.

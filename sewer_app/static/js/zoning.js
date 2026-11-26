@@ -187,7 +187,7 @@ function barrierInputs() {
 function drawCuts(r, layer) {
   for (const c of r.cuts || [])
     L.marker(c.latlng, { icon: L.divIcon({ className: "cut-icon", html: "✂", iconSize: [14, 14] }) })
-      .bindTooltip(tr(`${c.pipe}: ${c.barrier} पर कटा - दोनों ओर रेखा से पहले बंद`, `${c.pipe}: cut at ${c.barrier} - ends short of it on both sides`)).addTo(layer);
+      .bindTooltip(tr(`${esc(c.pipe)}: ${esc(c.barrier)} पर कटा - दोनों ओर रेखा से पहले बंद`, `${esc(c.pipe)}: cut at ${esc(c.barrier)} - ends short of it on both sides`)).addTo(layer);
 }
 // a gap between separate pieces of the drawing (user 30-Oct-2026): a red dashed line between their nearest manholes,
 // a ring at its middle (a gap of a metre or two is too short to see as a line)
@@ -369,7 +369,7 @@ function showOption(o) {
   }
   for (const x of o.outlets) if (x.latlng) {
     const stp = x.role === "STP (gravity)";
-    L.marker(x.latlng, { icon: stp ? icon("stp") : L.divIcon({ className: "ps-icon", html: `PS ${zn.name[x.manhole]}`, iconSize: [40, 16] }) })
+    L.marker(x.latlng, { icon: stp ? icon("stp") : L.divIcon({ className: "ps-icon", html: `PS ${esc(zn.name[x.manhole])}`, iconSize: [40, 16] }) })
       .bindTooltip(`${zn.full(x.manhole)} का outlet ${esc(x.manhole)}: ${stp ? "STP" : "pumping station"} (${esc(x.why)})<br>${lakh(x.flow_lps)} L/s, wet well ${x.depth ?? "-"} m` +
         (why[x.manhole] ? `<br>${esc(why[x.manhole])}` : ""), { className: "why-tip" })
       .addTo(zoneLayer);
@@ -457,7 +457,7 @@ function renderDesign(r, note) {
     const opt = zoningData && zoningData.options.find(o => o.option === r.summary.option);
     if (opt) { const zn = zoneNames(opt); opt.outlets.forEach(x => { if (!x.latlng) return;
       const stp = x.role === "STP (gravity)";
-      L.marker(x.latlng, { icon: stp ? icon("stp") : L.divIcon({ className: "ps-icon", html: `PS ${zn.name[x.manhole]}`, iconSize: [40, 16] }) })
+      L.marker(x.latlng, { icon: stp ? icon("stp") : L.divIcon({ className: "ps-icon", html: `PS ${esc(zn.name[x.manhole])}`, iconSize: [40, 16] }) })
         .bindTooltip(`${zn.full(x.manhole)} का outlet ${esc(x.manhole)}: ${stp ? "STP" : "pumping station"}`).addTo(designLayer); }); }
     const s = r.summary;
     $("dstatus").className = "status " + (r.stale ? "err" : "ok"); $("dstatus").textContent = (note ? note + " - " : "") + `Design (${s.grade}) - option ${s.option}`;

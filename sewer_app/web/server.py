@@ -39,6 +39,13 @@ MAX_DXF = 1024 * 1024 * 1024        # a DXF picked on the page (uploaded as it i
 # other program on this computer knows it - so only this app's own page can make the server do anything.
 TOKEN = secrets.token_urlsafe(32)
 TOKEN_HEADER = "X-App-Token"
+# What the map page may load and run (rewrite stage 6, 26-Nov-2026): only this app's own scripts - no inline script, no
+# handler attribute, no eval - so a name from a drawing or a KML that slipped into the page's HTML can never run as
+# code. Styles may be inline (the page sets them); map tiles come from any web address the user picks; the page talks
+# only to this computer (its server, the start page's, the other module's).
+CSP = ("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http:; "
+       "connect-src 'self' http://127.0.0.1:* http://localhost:*; frame-src 'self'; object-src 'none'; base-uri 'self'; "
+       "form-action 'self'")
 
 
 def code_version():
@@ -256,10 +263,12 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):                       # quiet console
         pass
 
-    def _send(self, code, body, ctype="application/json; charset=utf-8"):
+    def _send(self, code, body, ctype="application/json; charset=utf-8", headers=None):
         data = body if isinstance(body, bytes) else json.dumps(body, ensure_ascii=False).encode("utf-8")
         self.send_response(code)
         self.send_header("Content-Type", ctype)
+        for k, v in (headers or {}).items():
+            self.send_header(k, v)
         self.send_header("Content-Length", str(len(data)))
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
@@ -341,7 +350,8 @@ class Handler(BaseHTTPRequestHandler):
                 data = fh.read()
             if fname == "map.html":                       # the run's token, for the page's POSTs
                 data = data.replace(b"__APP_TOKEN__", TOKEN.encode("ascii"))
-            return self._send(200, data, ctype)
+                return self._send(200, data, ctype, {"Content-Security-Policy": CSP, "X-Content-Type-Options": "nosniff"})
+            return self._send(200, data, ctype, {"X-Content-Type-Options": "nosniff"})
         if u.path.startswith("/api/") and u.path[5:] in LISTS:
             return self._send(200, {"ok": True, u.path[5:]: read_list(self._name(u), u.path[5:])})
         get = self.GET.get(u.path)

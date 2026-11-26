@@ -29,15 +29,15 @@ function label(layer) {
   if (layer.kind === "spot" && p.gl !== undefined && p.gl !== "")
     layer.bindTooltip(Number(p.gl).toFixed(2), { permanent: true, direction: "right", className: "gl", offset: [6, 0] });
   else if (layer.kind === "ward")
-    layer.bindTooltip(`${p.name || "वार्ड"}: ${p.population ? Number(p.population).toLocaleString("en-IN") : "population ?"}`,
+    layer.bindTooltip(`${esc(p.name || "वार्ड")}: ${p.population ? Number(p.population).toLocaleString("en-IN") : "population ?"}`,
       { sticky: true, direction: "right", offset: [22, 0] });
-  else if (layer.kind === "road" && p.name) layer.bindTooltip(p.name, { sticky: true, direction: "right", offset: [22, 0] });
+  else if (layer.kind === "road" && p.name) layer.bindTooltip(esc(p.name), { sticky: true, direction: "right", offset: [22, 0] });
   else if (layer.kind === "crossing")
-    layer.bindTooltip(`${p.name || "Crossing"} - ${tr("यहाँ sewer आर-पार", "a sewer goes across here")}`, { sticky: true, direction: "right", offset: [22, 0] });
+    layer.bindTooltip(`${esc(p.name || "Crossing")} - ${tr("यहाँ sewer आर-पार", "a sewer goes across here")}`, { sticky: true, direction: "right", offset: [22, 0] });
   else if (layer.kind === "zone_loop")
-    layer.bindTooltip(`${p.name || "Zone"} - ${tr("घेरा क्षेत्र एक zone", "the area enclosed: one zone")}`, { sticky: true, direction: "right", offset: [22, 0] });
+    layer.bindTooltip(`${esc(p.name || "Zone")} - ${tr("घेरा क्षेत्र एक zone", "the area enclosed: one zone")}`, { sticky: true, direction: "right", offset: [22, 0] });
   else if (layer.kind === "barrier")
-    layer.bindTooltip(`${p.name || ""} (${barrierType(p.type)}) - ${tr("कोई sewer पार नहीं करेगा", "no sewer crosses it")}`, { sticky: true, direction: "right", offset: [22, 0] });
+    layer.bindTooltip(`${esc(p.name || "")} (${barrierType(p.type)}) - ${tr("कोई sewer पार नहीं करेगा", "no sewer crosses it")}`, { sticky: true, direction: "right", offset: [22, 0] });
 }
 function select(layer) {
   const reEdit = editing && layer && layer !== editTarget;       // editing: a click on another feature edits that one

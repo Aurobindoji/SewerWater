@@ -312,11 +312,8 @@ class Handler(BaseHTTPRequestHandler):
         return True
 
     def _route(self):
-        """The request's path; the page calls /api/w/... (as when one server had both modules) - the same as /api/..."""
-        u = urlparse(self.path)
-        if u.path.startswith("/api/w/"):
-            u = u._replace(path="/api/" + u.path[len("/api/w/"):])
-        return u
+        """The request's path (the old /api/w/... of the time one server had both modules: gone in rewrite stage 8)."""
+        return urlparse(self.path)
 
     def _dxf_upload(self, n):
         """The bytes of a DXF picked on the page -> projects/dxf/<its name>.dxf of the module; its path back."""

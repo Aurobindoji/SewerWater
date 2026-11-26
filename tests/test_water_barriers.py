@@ -86,14 +86,14 @@ def test_zoning_and_design_do_not_cross_a_barrier(server):  # noqa: F811
     url, tmp = server
     with open(SAMPLE, encoding="utf-8") as fh:
         kml = fh.read()
-    r = call(url + "/api/w/layout", {"name": "wbar", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100})
+    r = call(url + "/api/layout", {"name": "wbar", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100})
     assert r["ok"], r["log"]
     lats = sorted(m["latlng"][0] for m in r["manholes"])
     lngs = sorted({m["latlng"][1] for m in r["manholes"]})
     mid = (lngs[len(lngs) // 2] + lngs[len(lngs) // 2 + 1]) / 2           # between two junctions (none on the line)
     bar = {"name": "Railway 1", "type": "railway", "latlngs": [[lats[0] - 0.01, mid], [lats[-1] + 0.01, mid]]}
     req = {"name": "wbar", "ohts": [], "pop_factor": 3, "barriers": [bar]}
-    z = call(url + "/api/w/water_zoning", req)
+    z = call(url + "/api/water_zoning", req)
     assert z["ok"], z.get("log")
     assert z["cuts"] and z["cut_parts"] and z["barriers"][0]["name"] == "Railway 1"
     assert any("Railway 1 (Railway line)" in f["text"] and "pipes cut" in f["text"] for f in z["flags"])
@@ -107,12 +107,12 @@ def test_zoning_and_design_do_not_cross_a_barrier(server):  # noqa: F811
     assert any("1 gap(s) of 50 m or less" in f["text"] and "J-40 - J-46 40.03 m" in f["text"] and
                "J-40 - J-46 40.03 m" in f["hi"] for f in z["flags"])
     # the gap's distance from the page (user request 7-Nov-2026): within 30 m, none
-    z2 = call(url + "/api/w/water_zoning", dict(req, near_m="30"))
+    z2 = call(url + "/api/water_zoning", dict(req, near_m="30"))
     assert z2["near_gaps"] == [] and not any("gap(s)" in f["text"] for f in z2["flags"])
     # why each OZ (user request 30-Oct-2026): a piece cut off by the line
     assert all(x["why"]["kind"] == "proposed" and x["why"]["barriers"] == ["Railway 1"] and not x["why"]["isolated"]
                for x in z["zones"])
-    d = call(url + "/api/w/water_design", req)
+    d = call(url + "/api/water_design", req)
     assert d["ok"], d.get("log")
     cut = {c["pipe"] for c in d["cuts"]}
     labels = {p["label"] for p in d["pipes"]}
@@ -124,8 +124,8 @@ def test_zoning_and_design_do_not_cross_a_barrier(server):  # noqa: F811
         if n.get("oz"):
             side.setdefault(n["oz"], set()).add(_side(bar, n["latlng"]))
     assert len(side) >= 2 and all(len(v) == 1 for v in side.values()), side
-    assert call(url + "/api/w/water_last?name=wbar")["design"]["req"]["barriers"][0]["name"] == "Railway 1"
-    x = call(url + "/api/w/water_export", {"name": "wbar"})
+    assert call(url + "/api/water_last?name=wbar")["design"]["req"]["barriers"][0]["name"] == "Railway 1"
+    x = call(url + "/api/water_export", {"name": "wbar"})
     assert x["ok"] and x["counts"]["barriers"] == 1 and x["counts"]["pipes"] == len(d["pipes"])
     msp = ezdxf.readfile(x["path"]).modelspace()
     assert len(msp.query("LWPOLYLINE[layer=='W_BARRIER']")) == 1
@@ -135,9 +135,9 @@ def test_zoning_and_design_do_not_cross_a_barrier(server):  # noqa: F811
 def test_dxf_project_keeps_its_barrier_lines(server):  # noqa: F811
     url, tmp = server
     b = [{"latlngs": [[25.3, 83.0], [25.31, 83.0]], "props": {"name": "NH-19", "type": "highway"}}]
-    assert call(url + "/api/w/barriers_save", {"name": "dx", "barriers": b})["ok"]
-    assert call(url + "/api/w/barriers?name=dx")["barriers"] == b
-    assert call(url + "/api/w/barriers?name=none")["barriers"] == []
+    assert call(url + "/api/barriers_save", {"name": "dx", "barriers": b})["ok"]
+    assert call(url + "/api/barriers?name=dx")["barriers"] == b
+    assert call(url + "/api/barriers?name=none")["barriers"] == []
     assert os.path.isfile(tmp / "w_projects" / "dx.barriers.json")
 
 
@@ -176,19 +176,19 @@ def test_crossings_from_the_page(server):  # noqa: F811
     url, tmp = server
     with open(SAMPLE, encoding="utf-8") as fh:
         kml = fh.read()
-    r = call(url + "/api/w/layout", {"name": "wx", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100})
+    r = call(url + "/api/layout", {"name": "wx", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100})
     lats = sorted({m["latlng"][0] for m in r["manholes"]})
     lngs = sorted({m["latlng"][1] for m in r["manholes"]})
     mid = (lngs[len(lngs) // 2] + lngs[len(lngs) // 2 + 1]) / 2
     bar = {"name": "Rail", "type": "railway", "latlngs": [[lats[0] - 0.01, mid], [lats[-1] + 0.01, mid]]}
-    z0 = call(url + "/api/w/water_zoning", {"name": "wx", "ohts": [], "pop_factor": 3, "barriers": [bar]})
+    z0 = call(url + "/api/water_zoning", {"name": "wx", "ohts": [], "pop_factor": 3, "barriers": [bar]})
     c = z0["cuts"][0]                                                            # a pipe cut there without a crossing
     xing = {"name": "Bridge", "latlngs": [[c["latlng"][0], mid - 0.0002], [c["latlng"][0], mid + 0.0002]]}
-    z = call(url + "/api/w/water_zoning", {"name": "wx", "ohts": [], "pop_factor": 3, "barriers": [bar],
+    z = call(url + "/api/water_zoning", {"name": "wx", "ohts": [], "pop_factor": 3, "barriers": [bar],
                                           "crossings": [xing]})
     assert z["ok"], z.get("log")
     assert c["pipe"] not in {x["pipe"] for x in z["cuts"]} and len(z["cuts"]) == len(z0["cuts"]) - 1
     assert z["crossings"][0]["existing"] == [c["pipe"]]
     assert any("crossings: Bridge (Rail)" in f["text"] for f in z["flags"])
-    assert call(url + "/api/w/crossings_save", {"name": "dx", "crossings": [{"latlngs": xing["latlngs"], "props": {}}]})["ok"]
-    assert call(url + "/api/w/crossings?name=dx")["crossings"][0]["latlngs"] == xing["latlngs"]
+    assert call(url + "/api/crossings_save", {"name": "dx", "crossings": [{"latlngs": xing["latlngs"], "props": {}}]})["ok"]
+    assert call(url + "/api/crossings?name=dx")["crossings"][0]["latlngs"] == xing["latlngs"]

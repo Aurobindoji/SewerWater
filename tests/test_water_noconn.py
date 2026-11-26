@@ -53,11 +53,11 @@ def test_no_population_on_pipes_without_connections(server):  # noqa: F811
     src = str(tmp / "small.dxf")
     make_dxf(src)
     netedit._UNDO.clear()
-    d = call(url + "/api/w/dxf_import", {"path": src, "name": "wnc", "pipe_layers": ["PIPE"], "mh_layers": ["MH"],
+    d = call(url + "/api/dxf_import", {"path": src, "name": "wnc", "pipe_layers": ["PIPE"], "mh_layers": ["MH"],
                                          "level_layers": ["GL"], "epsg": "local"})
     assert d["ok"]
     c, end = _leaf(d["conduits"], "from", "to")
-    r = call(url + "/api/w/net_edit", {"name": "wnc", "ops": [{"op": "set_noconn", "ids": [c["id"]], "value": True}]})
+    r = call(url + "/api/net_edit", {"name": "wnc", "ops": [{"op": "set_noconn", "ids": [c["id"]], "value": True}]})
     assert r["ok"] and r["conduits_upd"][str(c["id"])]["nc"] == 1
     # the total of the page: none on the dead end of the marked pipe, the rest by pipe length as before
     _, net, pop = zoning_run._load("wnc", {"pop_total": 1000})
@@ -73,7 +73,7 @@ def test_no_population_on_pipes_without_connections(server):  # noqa: F811
     assert pop.get(end, 0) == 0 and sum(pop.values()) == pytest.approx(600) and net["ward_note"]["outside"] == []
     a = d["nodes"]["MH-1"]["latlng"]
     oht = {"name": "Ex-OHT-1", "lat": a[0], "lng": a[1], "existing": "1", "capacity_kl": 200, "staging_m": 20}
-    z = call(url + "/api/w/water_zoning", {"name": "wnc", "ohts": [oht], "pop_factor": 1, "pop_total": 1000})
+    z = call(url + "/api/water_zoning", {"name": "wnc", "ohts": [oht], "pop_factor": 1, "pop_total": 1000})
     assert z["ok"], z.get("log")
     f = next(x for x in z["flags"] if "without service connections" in x["text"])
     assert f["text"].startswith("1 pipes (") and "बिना कनेक्शन" in f["hi"]

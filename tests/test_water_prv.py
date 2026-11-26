@@ -91,7 +91,7 @@ def test_design_with_a_prv_on_the_map(server):  # noqa: F811
     src = str(tmp / "prv.dxf")
     make_dxf(src)                                    # MH-1 - MH-2 - MH-6, MH-2 - MH-3 - MH-4 - MH-5 (a branch)
     netedit._UNDO.clear()
-    d = call(url + "/api/w/dxf_import", {"path": src, "name": "wprv", "pipe_layers": ["PIPE"], "mh_layers": ["MH"],
+    d = call(url + "/api/dxf_import", {"path": src, "name": "wprv", "pipe_layers": ["PIPE"], "mh_layers": ["MH"],
                                          "level_layers": ["GL"], "epsg": "local"})
     assert d["ok"]
     a = d["nodes"]["MH-1"]["latlng"]
@@ -101,17 +101,17 @@ def test_design_with_a_prv_on_the_map(server):  # noqa: F811
            "ohts": [{"name": "Ex-OHT-1", "lat": a[0], "lng": a[1], "existing": "1", "capacity_kl": 200, "staging_m": 25}],
            "prvs": [{"name": "PRV 1", "lat": at[0], "lng": at[1], "setting_m": "12"},
                     {"name": "PRV 2", "lat": a[0] + 0.01, "lng": a[1], "setting_m": ""}]}      # ~1 km off: no pipe
-    assert call(url + "/api/w/prv_save", {"name": "wprv", "prv": [{"latlng": at, "props": {"name": "PRV 1"}}]})["ok"]
-    assert call(url + "/api/w/prv?name=wprv")["prv"][0]["props"]["name"] == "PRV 1"
+    assert call(url + "/api/prv_save", {"name": "wprv", "prv": [{"latlng": at, "props": {"name": "PRV 1"}}]})["ok"]
+    assert call(url + "/api/prv?name=wprv")["prv"][0]["props"]["name"] == "PRV 1"
     # the PRV option of the page off (the default, user 31-Oct-2026): the PRVs on the map are not used, none suggested
-    r = call(url + "/api/w/water_design", req)
+    r = call(url + "/api/water_design", req)
     assert r["ok"] and r["prvs"] == [] and r["prv_suggest"] == [] and r["prv_option"] is False
     off = next(c for c in r["checks"] if c["check"] == "PRV")
     assert off["ok"] and "2 PRVs on the map not used" in off["detail"] and "विकल्प बंद" in off["detail_hi"]
     ws = openpyxl.load_workbook(dpr_of("wprv"))["D2 DS Estimate"]
     assert not any(row[2] and "Pressure reducing valves" in str(row[2]) for row in ws.iter_rows(values_only=True))
     req["use_prv"] = "1"
-    r = call(url + "/api/w/water_design", req)
+    r = call(url + "/api/water_design", req)
     assert r["ok"], r.get("log")
     p1, p2 = r["prvs"]
     assert p1["active"] and p1["setting_m"] == 12 and p1["size"] and p1["down"] == "MH-4" and p1["nodes"] == 2

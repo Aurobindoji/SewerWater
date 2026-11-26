@@ -1,5 +1,5 @@
 """Water module on its own server (water_app.server, isolation of sewer and water 21-Oct-2026): /water is its map
-page; /api/w/... (as the page calls) works in water_app's own folders (a sewer project and a water project do not see
+page; /api/... (as the page calls) works in water_app's own folders (a sewer project and a water project do not see
 each other); layout without bend nodes, zoning (OZ / DMA), design and the
 results kept for the next opening."""
 import json
@@ -73,17 +73,17 @@ def test_water_layout_zoning_design(server, sewer):
     assert '$("wexport").onclick = () => exportDxf("design")' in page and "zoning + design" not in page
     with open(SAMPLE, encoding="utf-8") as fh:
         kml = fh.read()
-    r = call(url + "/api/w/layout", {"name": "wtest", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100})
+    r = call(url + "/api/layout", {"name": "wtest", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100})
     assert r["ok"], r["log"]
     assert os.path.isfile(tmp / "w_projects" / "wtest.kml") and not os.path.exists(tmp / "projects" / "wtest.kml")
-    assert [p["name"] for p in call(url + "/api/w/projects")["projects"]] == ["wtest"]
+    assert [p["name"] for p in call(url + "/api/projects")["projects"]] == ["wtest"]
     assert call(sewer + "/api/projects")["projects"] == []                  # the sewer side does not see it
     assert all(len(c["pts"]) >= 2 for c in r["conduits"])
     # water nodes only along the roads (<= 100 m apart), far fewer than the sewer's manholes at 30 m and every bend
     assert len(r["manholes"]) < 200
     assert all(m["label"].startswith("J-") for m in r["manholes"]) and all(c["label"].startswith("P-") for c in r["conduits"])
     # spacing 0: junctions only where roads meet and at their ends - no node in the middle of a pipe
-    r0 = call(url + "/api/w/layout", {"name": "wtest0", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 0})
+    r0 = call(url + "/api/layout", {"name": "wtest0", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 0})
     assert r0["ok"] and len(r0["manholes"]) < len(r["manholes"])
     deg = {}
     for c in r0["conduits"]:
@@ -93,7 +93,7 @@ def test_water_layout_zoning_design(server, sewer):
     m = max(r["manholes"], key=lambda x: x["gl"] or 0)                     # the OHT on the highest ground
     oht = {"name": "OHT-1", "lat": m["latlng"][0], "lng": m["latlng"][1], "capacity_kl": "", "staging_m": 22,
            "tubewells": 4}
-    z = call(url + "/api/w/water_zoning", {"name": "wtest", "ohts": [oht], "pop_factor": 1.5})
+    z = call(url + "/api/water_zoning", {"name": "wtest", "ohts": [oht], "pop_factor": 1.5})
     assert z["ok"], z.get("log")
     oz = z["zones"][0]
     assert oz["name"] == "OHT-1" and oz["population"] == round(9000 * 1.5)
@@ -102,23 +102,23 @@ def test_water_layout_zoning_design(server, sewer):
     assert oz["rings"] and z["dmas"]
     assert z["storage"]["share"] == 0.33 and z["storage"]["hours"] == 16                # Elmwood 5-12, 13-22
     # filled 8 h only: mass balance 38.5 % > 33 % (CPHEEO Table 2.7 S.No.12 p175, the larger)
-    z8 = call(url + "/api/w/water_zoning", {"name": "wtest", "ohts": [oht], "pop_factor": 1.5, "oht_inflow": "4-8, 16-20"})
+    z8 = call(url + "/api/water_zoning", {"name": "wtest", "ohts": [oht], "pop_factor": 1.5, "oht_inflow": "4-8, 16-20"})
     s8 = z8["storage"]["share"]
     a8 = z8["zones"][0]                     # + a third of the fire demand (CPHEEO S.No.13, user decision 30-Oct-2026)
     assert round(s8, 3) == 0.385 and a8["required_kl"] >= s8 * (a8["demand_kld"] - a8["fire_kld"]) + a8["fire_kld"] / 3 - 0.1
     assert z8["storage"]["fire_share"] == pytest.approx(1 / 3, abs=1e-3)
     assert z8["zones"][0]["required_kl"] > oz["required_kl"]
-    d = call(url + "/api/w/water_design", {"name": "wtest", "ohts": [oht], "pop_factor": 1.5})
+    d = call(url + "/api/water_design", {"name": "wtest", "ohts": [oht], "pop_factor": 1.5})
     assert d["ok"], d.get("log")
     assert d["summary"]["min_pressure"] >= 17.0 - 1e-6
     assert all(c["ok"] for c in d["checks"])
     assert all(c["check_hi"] and c["detail_hi"] for c in d["checks"])           # their Hindi for the page
     assert all(p["size"] for p in d["pipes"]) and d["outlets"][0]["flow"] > 0
     assert os.path.isfile(d["files"]["excel"])
-    last = call(url + "/api/w/water_last?name=wtest")
+    last = call(url + "/api/water_last?name=wtest")
     assert last["zoning"]["zones"][0]["name"] == "OHT-1" and last["design"]["summary"]["min_pressure"] >= 17 - 1e-6
     # an OHT without staging: the design finds it (0.5 m steps, just enough for 17 m)
-    auto = call(url + "/api/w/water_design", {"name": "wtest", "ohts": [dict(oht, staging_m="")]})
+    auto = call(url + "/api/water_design", {"name": "wtest", "ohts": [dict(oht, staging_m="")]})
     assert auto["ok"] and auto["outlets"][0]["staging_auto"] and 17 - 1e-6 <= auto["outlets"][0]["lowest_p"] < 17.5 + 1e-6
 
 
@@ -128,11 +128,11 @@ def test_water_table_edits(server):
     url, _ = server
     with open(SAMPLE, encoding="utf-8") as fh:
         kml = fh.read()
-    r = call(url + "/api/w/layout", {"name": "wed", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100})
+    r = call(url + "/api/layout", {"name": "wed", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100})
     m = max(r["manholes"], key=lambda x: x["gl"] or 0)
     req = {"name": "wed", "ohts": [{"name": "OHT-1", "lat": m["latlng"][0], "lng": m["latlng"][1], "capacity_kl": "",
                                     "staging_m": 22, "tubewells": 0}], "pop_factor": 1}
-    d = call(url + "/api/w/water_design", req)
+    d = call(url + "/api/water_design", req)
     assert d["ok"] and d["sizes"] and d["edits"] == {"pipes": {}, "junctions": {}}
     assert all("checks" in p and not p["edited"] for p in d["pipes"]) and all("pop" in n for n in d["nodes"])
     p = next(x for x in d["pipes"] if not x["closed"])
@@ -140,14 +140,14 @@ def test_water_table_edits(server):
     n = next(x for x in d["nodes"] if x["p"] is not None and x["label"] != m.get("label"))
     edits = {"pipes": {p["label"]: {"size": big}, "NOPE": {"size": big}},
              "junctions": {n["label"]: {"gl": n["gl"] - 2.0, "pop": 500}, "J-XX": {"gl": 1}}}
-    e = call(url + "/api/w/water_design", dict(req, edits=edits))
+    e = call(url + "/api/water_design", dict(req, edits=edits))
     assert e["ok"], e.get("log")
     p2 = next(x for x in e["pipes"] if x["label"] == p["label"])
     assert p2["size"] == big and p2["edited"]
     n2 = next(x for x in e["nodes"] if x["label"] == n["label"])
     assert abs(n2["gl"] - (n["gl"] - 2.0)) < 1e-9 and n2["pop"] == 500 and n2["edited"]
     assert "edit ignored: pipe NOPE not in the network" in e["log"] and "edit ignored: junction J-XX" in e["log"]
-    last = call(url + "/api/w/water_last?name=wed")
+    last = call(url + "/api/water_last?name=wed")
     assert last["design"]["edits"]["pipes"][p["label"]]["size"] == big
 
 
@@ -157,17 +157,17 @@ def test_existing_oht_then_proposed_ones_with_staging_from_the_design(server):
     url, tmp = server
     with open(SAMPLE, encoding="utf-8") as fh:
         kml = fh.read()
-    r = call(url + "/api/w/layout", {"name": "wplan", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100})
+    r = call(url + "/api/layout", {"name": "wplan", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100})
     m = min(r["manholes"], key=lambda x: x["latlng"][0] + x["latlng"][1])          # a corner
     old = {"name": "OLD-1", "lat": m["latlng"][0], "lng": m["latlng"][1], "capacity_kl": 300, "staging_m": 22,
            "tubewells": 1}
-    z = call(url + "/api/w/water_zoning", {"name": "wplan", "ohts": [old], "pop_factor": 3})
+    z = call(url + "/api/water_zoning", {"name": "wplan", "ohts": [old], "pop_factor": 3})
     assert z["ok"], z.get("log")
     assert [p["name"] for p in z["proposed"]] == ["Prop-OHT-1"]
     oz = {x["name"]: x for x in z["zones"]}
     assert oz["OLD-1"]["existing"] and oz["OLD-1"]["demand_kld"] <= 300 / 0.33 + 1e-6
     assert oz["Prop-OHT-1"]["proposed"] and oz["Prop-OHT-1"]["required_kl"] > 0
-    d = call(url + "/api/w/water_design", {"name": "wplan", "ohts": [old], "pop_factor": 3})
+    d = call(url + "/api/water_design", {"name": "wplan", "ohts": [old], "pop_factor": 3})
     assert d["ok"], d.get("log")
     out = {o["name"]: o for o in d["outlets"]}
     assert not out["OLD-1"]["staging_auto"] and out["OLD-1"]["staging_m"] == 22 and out["OLD-1"]["short_m"] is None
@@ -178,7 +178,7 @@ def test_existing_oht_then_proposed_ones_with_staging_from_the_design(server):
     assert all(c["ok"] for c in d["checks"])
     # an existing OHT too low for its OZ - by default (CPHEEO Table 2.7 S.No.10 p173) it keeps its OZ and gets a
     # VFD pump at its outlet: the head missing, at its peak outlet flow
-    vf = call(url + "/api/w/water_design", {"name": "wplan", "ohts": [dict(old, staging_m=16)], "pop_factor": 3})
+    vf = call(url + "/api/water_design", {"name": "wplan", "ohts": [dict(old, staging_m=16)], "pop_factor": 3})
     assert vf["ok"], vf.get("log")
     lv = {o["name"]: o for o in vf["outlets"]}
     assert lv["OLD-1"]["low_head"] == "vfd" and lv["OLD-1"]["vfd_head_m"] > 0 and lv["OLD-1"]["vfd_kw"] > 0
@@ -187,7 +187,7 @@ def test_existing_oht_then_proposed_ones_with_staging_from_the_design(server):
     assert any(c["check"] == "OLD-1: VFD pump at the outlet" for c in vf["checks"]) and vf["checks"][0]["ok"]
     # set to give its higher ground to a new OHT: the junctions it cannot give 17 m go - by their ground in the
     # zoning, and those its designed pipes still leave below 17 m by zoning and design again
-    low = call(url + "/api/w/water_design", {"name": "wplan", "ohts": [dict(old, staging_m=16, low_head="new_oht")],
+    low = call(url + "/api/water_design", {"name": "wplan", "ohts": [dict(old, staging_m=16, low_head="new_oht")],
                                              "pop_factor": 3})
     assert low["ok"], low.get("log")
     lo = {o["name"]: o for o in low["outlets"]}
@@ -197,10 +197,10 @@ def test_existing_oht_then_proposed_ones_with_staging_from_the_design(server):
     below = [n for n in low["nodes"] if n["oz"] == "OLD-1" and n["p"] is not None and n["p"] < 17 - 0.005]
     assert len(below) <= 1, below                                                  # at most the OHT's own node
     assert all(o["short_m"] is None for nm, o in lo.items() if nm != "OLD-1")
-    zl = call(url + "/api/w/water_last?name=wplan")                                # the zones shown: as designed
+    zl = call(url + "/api/water_last?name=wplan")                                # the zones shown: as designed
     assert {x["name"] for x in zl["zoning"]["zones"]} == set(lo) and "design" in zl
     # no OHT at all: all proposed
-    z0 = call(url + "/api/w/water_zoning", {"name": "wplan", "ohts": [], "pop_factor": 1})
+    z0 = call(url + "/api/water_zoning", {"name": "wplan", "ohts": [], "pop_factor": 1})
     assert z0["ok"] and len(z0["proposed"]) == 1
 
 
@@ -210,17 +210,17 @@ def test_existing_and_new_tanks(server):
     url, tmp = server
     with open(SAMPLE, encoding="utf-8") as fh:
         kml = fh.read()
-    r = call(url + "/api/w/layout", {"name": "wex", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 0})
+    r = call(url + "/api/layout", {"name": "wex", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 0})
     m = r["manholes"][0]
     ex = {"name": "Ex-OHT-1", "lat": m["latlng"][0], "lng": m["latlng"][1], "existing": "1", "capacity_kl": "",
           "staging_m": 20}
-    bad = call(url + "/api/w/water_zoning", {"name": "wex", "ohts": [ex]})
+    bad = call(url + "/api/water_zoning", {"name": "wex", "ohts": [ex]})
     assert not bad["ok"] and "Ex-OHT-1" in bad["log"] and "क्षमता" in bad["log"]
-    bad = call(url + "/api/w/water_zoning", {"name": "wex", "ohts": [dict(ex, capacity_kl=200, staging_m="")]})
+    bad = call(url + "/api/water_zoning", {"name": "wex", "ohts": [dict(ex, capacity_kl=200, staging_m="")]})
     assert not bad["ok"] and "staging" in bad["log"]
     prop = {"name": "Prop-OHT-1", "lat": m["latlng"][0], "lng": m["latlng"][1], "existing": "0", "capacity_kl": 50,
             "staging_m": ""}
-    z = call(url + "/api/w/water_zoning", {"name": "wex", "ohts": [dict(ex, capacity_kl=100), prop], "pop_factor": 3})
+    z = call(url + "/api/water_zoning", {"name": "wex", "ohts": [dict(ex, capacity_kl=100), prop], "pop_factor": 3})
     assert z["ok"], z.get("log")
     oz = {x["name"]: x for x in z["zones"]}
     assert oz["Ex-OHT-1"]["existing"] and not oz["Prop-OHT-1"]["existing"]          # the 50 KL of a new tank: not used
@@ -239,30 +239,30 @@ def test_water_network_from_a_dxf(server, sewer):
     src = str(tmp / "small.dxf")
     make_dxf(src)
     with open(src, "rb") as fh:                                                   # picked on the page: uploaded
-        req = urllib.request.Request(url + "/api/w/dxf_upload?file=small.dxf", data=fh.read(),
+        req = urllib.request.Request(url + "/api/dxf_upload?file=small.dxf", data=fh.read(),
                                      headers={"Content-Type": "application/octet-stream", wserver.TOKEN_HEADER: wserver.TOKEN})
     with urllib.request.urlopen(req, timeout=60) as r:
         path = json.loads(r.read())["path"]
     assert path.startswith(str(tmp / "w_projects" / "dxf"))                       # the water module's folder
-    lay = call(url + "/api/w/dxf_layers", {"path": path})
+    lay = call(url + "/api/dxf_layers", {"path": path})
     assert lay["ok"] and lay["guess"]["pipe"] == ["PIPE"]
-    d = call(url + "/api/w/dxf_import", {"path": path, "name": "wsmall", "pipe_layers": ["PIPE"], "mh_layers": ["MH"],
+    d = call(url + "/api/dxf_import", {"path": path, "name": "wsmall", "pipe_layers": ["PIPE"], "mh_layers": ["MH"],
                                          "level_layers": ["GL"], "epsg": "local"})
     assert d["ok"] and len(d["nodes"]) == 6
-    assert [p["name"] for p in call(url + "/api/w/projects")["projects"]] == ["wsmall"]
+    assert [p["name"] for p in call(url + "/api/projects")["projects"]] == ["wsmall"]
     assert call(sewer + "/api/projects")["projects"] == []                        # not a sewer project
-    assert call(url + "/api/w/net_save", {"name": "wsmall"})["ok"]
+    assert call(url + "/api/net_save", {"name": "wsmall"})["ok"]
     a = d["nodes"]["MH-1"]["latlng"]
     oht = {"name": "Ex-OHT-1", "lat": a[0], "lng": a[1], "existing": "1", "capacity_kl": 200, "staging_m": 20}
-    bad = call(url + "/api/w/water_zoning", {"name": "wsmall", "ohts": [oht], "pop_factor": 1})
+    bad = call(url + "/api/water_zoning", {"name": "wsmall", "ohts": [oht], "pop_factor": 1})
     assert not bad["ok"] and "population" in bad["log"]                          # no wards, no total
-    z = call(url + "/api/w/water_zoning", {"name": "wsmall", "ohts": [oht], "pop_factor": 1, "pop_total": 1500})
+    z = call(url + "/api/water_zoning", {"name": "wsmall", "ohts": [oht], "pop_factor": 1, "pop_total": 1500})
     assert z["ok"], z.get("log")
     assert z["population"] == 1500 and [x["name"] for x in z["zones"]] == ["Ex-OHT-1"]
-    w = call(url + "/api/w/water_design", {"name": "wsmall", "ohts": [oht], "pop_factor": 1, "pop_total": 1500})
+    w = call(url + "/api/water_design", {"name": "wsmall", "ohts": [oht], "pop_factor": 1, "pop_total": 1500})
     assert w["ok"], w.get("log")
     assert len(w["pipes"]) == 5 and w["outlets"][0]["lowest_p"] >= 17 - 1e-6
-    last = call(url + "/api/w/water_last?name=wsmall")
+    last = call(url + "/api/water_last?name=wsmall")
     assert last["network_current"] and last["design"]["req"]["pop_total"] == 1500
     # wards drawn on the DXF network (user 30-Oct-2026): their population on the junctions inside, the total given
     # not used; a junction in no ward gets none (warned, orange on the map); a ward with no junction is named
@@ -274,7 +274,7 @@ def test_water_network_from_a_dxf(server, sewer):
     assert d["nodes"][far]["latlng"][1] > lo1
     wards = [{"name": "Ward 7", "population": "1,200", "latlngs": [[la0, lo0], [la1, lo0], [la1, lo1], [la0, lo1]]},
              {"name": "Empty", "population": 300, "latlngs": [[la0 + 1, lo0], [la0 + 1.01, lo0], [la0 + 1.01, lo0 + .01]]}]
-    z = call(url + "/api/w/water_zoning", {"name": "wsmall", "ohts": [oht], "pop_factor": 1, "pop_total": 1500,
+    z = call(url + "/api/water_zoning", {"name": "wsmall", "ohts": [oht], "pop_factor": 1, "pop_total": 1500,
                                            "wards": wards})
     assert z["ok"], z.get("log")
     assert z["population"] == 1200 and len(z["ward_out_pts"]) == 1
@@ -283,14 +283,14 @@ def test_water_network_from_a_dxf(server, sewer):
     assert any(t.startswith("1 junctions (") and "lie in no ward" in t for t in txt)
     assert any("no junction inside" in t and "Empty" in t for t in txt)
     assert all(f.get("hi") for f in z["flags"])
-    assert call(url + "/api/w/water_last?name=wsmall")["zoning"]["req"]["wards"][0]["name"] == "Ward 7"
+    assert call(url + "/api/water_last?name=wsmall")["zoning"]["req"]["wards"][0]["name"] == "Ward 7"
     # a ward's character (user decision 6-Nov-2026, Riverside water DPR p76): its population is the present one, grown
     # by the character - Far-open x 1.0932 / 1.9183 / 3.3282 (7-Nov-2026) - in place of the page's factor; the stages by it too
     wc = [dict(wards[0], character="Far-open"), wards[1]]
-    z = call(url + "/api/w/water_zoning", {"name": "wsmall", "ohts": [oht], "pop_factor": 1, "wards": wc})
+    z = call(url + "/api/water_zoning", {"name": "wsmall", "ohts": [oht], "pop_factor": 1, "wards": wc})
     assert z["ok"], z.get("log")
     assert z["population"] == pytest.approx(1200 * 3.3282, abs=1)
-    w = call(url + "/api/w/water_design", {"name": "wsmall", "ohts": [oht], "pop_factor": 1, "base_year": 2027,
+    w = call(url + "/api/water_design", {"name": "wsmall", "ohts": [oht], "pop_factor": 1, "base_year": 2027,
                                            "wards": wc})
     assert w["ok"], w.get("log")
     st = {s["stage"]: s["pop"] for s in w["stages"]}
@@ -312,12 +312,12 @@ def test_water_network_from_a_dxf(server, sewer):
     wn = [dict(wards[0], ward_no="7"), wards[1]]
     rq = {"name": "wsmall", "ohts": [oht], "pop_factor": 1, "base_year": 2027, "wards": wn, "ward_table": wt,
           "projection": {"base_pop": "", "census": census, "method": ""}}
-    pj = call(url + "/api/w/projection", rq)["projection"]
+    pj = call(url + "/api/projection", rq)["projection"]
     assert pj["from_year"] == 2025 and pj["from_pop"] == 1400 and pj["adopted"] == "geometrical"
-    z = call(url + "/api/w/water_zoning", rq)
+    z = call(url + "/api/water_zoning", rq)
     assert z["ok"], z.get("log")
     assert z["population"] == pytest.approx(1400 * pj["ratio_from"]["ult"], abs=2)
-    w = call(url + "/api/w/water_design", rq)
+    w = call(url + "/api/water_design", rq)
     assert w["ok"], w.get("log")
     st = {s["stage"]: s["pop"] for s in w["stages"]}
     assert st["init"] == pytest.approx(pj["pop"]["init"], abs=2) and st["ult"] == pytest.approx(pj["pop"]["ult"], abs=2)
@@ -326,7 +326,7 @@ def test_water_network_from_a_dxf(server, sewer):
     lah = next(r for r in t8 if r[1] == "Riverside")
     assert lah[2] == "7" and lah[3] == 2000 and lah[8] == 0.5 and lah[13] == "-" and lah[14] == "yes"
     assert next(r for r in t8 if r[1] == "Sikraul")[14].startswith("no")
-    assert call(url + "/api/w/water_last?name=wsmall")["design"]["req"]["ward_table"]["rows"][0]["no"] == "7"
+    assert call(url + "/api/water_last?name=wsmall")["design"]["req"]["ward_table"]["rows"][0]["no"] == "7"
     # the DMA-wise demand (example technical.xlsx 'Tech3', 9-Nov-2026): a row for each ward in the DMA, its no. and the
     # share of its design-year population; the junctions in no ward a row of their own
     dd = [r for r in wb["T5 DMA Demand"].iter_rows(min_row=10, values_only=True) if str(r[0]).startswith("Ex-OHT-1/")]
@@ -337,11 +337,11 @@ def test_water_network_from_a_dxf(server, sewer):
     wt2 = dict(wt, rows=[wt["rows"][0], dict(wt["rows"][1], char="Far-open")], growth={"Far-open": [1.1, 2.0, 3.0]},
                city={"Far-open": ""})
     rq2 = dict(rq, ward_table=wt2)
-    pj = call(url + "/api/w/projection", rq2)["projection"]
+    pj = call(url + "/api/projection", rq2)["projection"]
     rf = pj["ratio_from"]
     want = {t: 1000 * rf[t] + 400 * f for t, f in (("init", 1.1), ("mid", 2.0), ("ult", 3.0))}
     assert {t: pj["wards"][t] for t in want} == pytest.approx(want)
-    w = call(url + "/api/w/water_design", rq2)
+    w = call(url + "/api/water_design", rq2)
     assert w["ok"], w.get("log")
     st = {s["stage"]: s["pop"] for s in w["stages"]}
     assert st == {t: pytest.approx(v, abs=2) for t, v in want.items()}
@@ -355,7 +355,7 @@ def test_water_network_from_a_dxf(server, sewer):
     # population by character (default Springfield's; here given) grown by the method, less the others x their factors
     city = {"Proximal Developed": 100, "Core": 100, "Proximal Developing": 100, "Far-open": 200}
     rq3 = dict(rq, ward_table=dict(wt2, city=city))
-    pj = call(url + "/api/w/projection", rq3)["projection"]
+    pj = call(url + "/api/projection", rq3)["projection"]
     G = {"Proximal Developed": [1.02, 1.25, 1.50], "Core": [1.04, 1.40, 1.85], "Proximal Developing": [1.06, 1.63, 2.45]}
     R = pj["town_ratio_from"]
     fo = [(500 * R[t] - sum(100 * v[j] for v in G.values())) / 200 for j, t in enumerate(("init", "mid", "ult"))]
@@ -363,11 +363,11 @@ def test_water_network_from_a_dxf(server, sewer):
     rf = pj["ratio_from"]
     want = {t: 1000 * rf[t] + 400 * fo[j] for j, t in enumerate(("init", "mid", "ult"))}
     assert {t: pj["wards"][t] for t in want} == pytest.approx(want)
-    w = call(url + "/api/w/water_design", rq3)
+    w = call(url + "/api/water_design", rq3)
     assert w["ok"], w.get("log")
     assert {s["stage"]: s["pop"] for s in w["stages"]} == {t: pytest.approx(v, abs=2) for t, v in want.items()}
     t8 = openpyxl.load_workbook(dpr_of("wsmall"))["T16 Ward Population"]       # before a zoning forgets the design
-    assert any("Far-open" in f["text"] and "balanced" in f["text"] for f in w.get("flags", []) + call(url + "/api/w/water_zoning", rq3)["flags"])
+    assert any("Far-open" in f["text"] and "balanced" in f["text"] for f in w.get("flags", []) + call(url + "/api/water_zoning", rq3)["flags"])
     g = next(c.row for c in t8["B"] if c.value == "Low (Far-open)")
     tg = next(c.row for c in t8["B"] if c.value == "The town by the adopted projection")
     assert t8.cell(g, 7).value == 200 and str(t8.cell(g, 4).value).startswith(f"=(D{tg}-")
@@ -375,13 +375,13 @@ def test_water_network_from_a_dxf(server, sewer):
     # Riverside 2000 / 12 ha (no character) x the adopted ratio above it - in the flags and T8, its population not cut
     d = 2000 / 12 * rf["ult"]
     sq = dict(rq3, ward_table=dict(rq3["ward_table"], sat=str(round(d * 0.9))))
-    pj = call(url + "/api/w/projection", sq)["projection"]
+    pj = call(url + "/api/projection", sq)["projection"]
     assert [x["no"] for x in pj["saturation"]["over"]] == ["7"] and pj["saturation"]["over"][0]["d"] == pytest.approx(d, abs=0.1)
-    w = call(url + "/api/w/water_design", sq)
+    w = call(url + "/api/water_design", sq)
     assert w["ok"], w.get("log")
     assert {s["stage"]: s["pop"] for s in w["stages"]} == {t: pytest.approx(v, abs=2) for t, v in want.items()}
     t8 = openpyxl.load_workbook(dpr_of("wsmall"))["T16 Ward Population"]       # before a zoning forgets the design
-    fl = w.get("flags", []) + call(url + "/api/w/water_zoning", sq)["flags"]
+    fl = w.get("flags", []) + call(url + "/api/water_zoning", sq)["flags"]
     assert any("saturation" in f["text"] for f in fl)
     # CPHEEO Annexure 2.7 p974 (8-Nov-2026): the core's factor 1.50 above 1.10 warned of; the clauses in T8's note
     assert any(f["text"].startswith("Saturated (Core) x 1.50") and "p974" in f["text"] for f in fl)
@@ -389,16 +389,16 @@ def test_water_network_from_a_dxf(server, sewer):
     assert t8.cell(x, 16).value == f'=IFERROR(H{x}*M{x}/J{x},"")'
     assert t8.cell(x, 17).value.startswith(f'=IF(P{x}="","",IF(P{x}>$P$')
     assert any("2.8.1.24" in str(c.value) and "585 Saturated (Core)" in str(c.value) for c in t8["B"])
-    assert "saturation" not in call(url + "/api/w/projection", dict(sq, ward_table=dict(sq["ward_table"], sat="")))["projection"]
+    assert "saturation" not in call(url + "/api/projection", dict(sq, ward_table=dict(sq["ward_table"], sat="")))["projection"]
     # a method too slow for the factors: not balanced, the page's, warned
     slow = dict(rq3, projection=dict(rq3["projection"], method="arithmetical"),
                 ward_table=dict(wt2, city=dict(city, **{"Far-open": 1})))
-    pj = call(url + "/api/w/projection", slow)["projection"]
+    pj = call(url + "/api/projection", slow)["projection"]
     assert "far_open" not in pj and "Far-open" in pj["far_open_error"]
     # kept with the project, as its barrier lines
     keep = [{"latlngs": wards[0]["latlngs"], "props": {"name": "Ward 7", "population": "1200"}}]
-    assert call(url + "/api/w/wards_save", {"name": "wsmall", "wards": keep})["ok"]
-    assert call(url + "/api/w/wards?name=wsmall")["wards"] == keep
+    assert call(url + "/api/wards_save", {"name": "wsmall", "wards": keep})["ok"]
+    assert call(url + "/api/wards?name=wsmall")["wards"] == keep
 
 
 def test_water_map_kml(server):
@@ -412,7 +412,7 @@ def test_water_map_kml(server):
     K = "{http://www.opengis.net/kml/2.2}"
     with open(SAMPLE, encoding="utf-8") as fh:
         kml = fh.read()
-    assert call(url + "/api/w/layout", {"name": "wm", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100})["ok"]
+    assert call(url + "/api/layout", {"name": "wm", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100})["ok"]
 
     def folders(r):
         data = base64.b64decode(r["b64"])
@@ -421,18 +421,18 @@ def test_water_map_kml(server):
         root = ET.fromstring(data)
         return {f.find(K + "name").text.split(" (")[0]: len(f.findall(K + "Placemark")) for f in root.iter(K + "Folder")}
     bulk = [{"name": "Hospital", "lat": 25.31, "lng": 82.97, "kld": "50", "peak": "2"}]
-    r = call(url + "/api/w/water_map", {"name": "wm", "fmt": "kml", "req": {"bulk": bulk}})
+    r = call(url + "/api/water_map", {"name": "wm", "fmt": "kml", "req": {"bulk": bulk}})
     assert r["ok"] and r["file"].endswith(".kml") and os.path.isfile(r["path"]) and not r["counts"]["zoning"]
     f = folders(r)
     assert f["Pipes"] == r["counts"]["pipes"] > 0 and f["Bulk consumers"] == 1 and not any(k.startswith("Operational") for k in f)
-    assert call(url + "/api/w/water_zoning", {"name": "wm", "pop_factor": 1.5})["ok"]
-    assert call(url + "/api/w/water_design", {"name": "wm", "pop_factor": 1.5})["ok"]
-    r = call(url + "/api/w/water_map", {"name": "wm", "fmt": "kmz", "parts": ["network", "tanks", "zones", "junctions"]})
+    assert call(url + "/api/water_zoning", {"name": "wm", "pop_factor": 1.5})["ok"]
+    assert call(url + "/api/water_design", {"name": "wm", "pop_factor": 1.5})["ok"]
+    r = call(url + "/api/water_map", {"name": "wm", "fmt": "kmz", "parts": ["network", "tanks", "zones", "junctions"]})
     assert r["ok"] and r["file"].endswith(".kmz") and r["counts"]["design"] and r["counts"]["zoning"]
     f = folders(r)
     assert any(k.startswith("Pipes - ") and k.endswith(" mm") for k in f) and f["Tanks"] >= 1
     assert f["Operational zones"] >= 1 and f["Junctions"] == r["counts"]["junctions"] > 0 and "DMAs" not in f
-    assert any(x["file"] == r["file"] for x in call(url + "/api/w/outputs?name=wm")["files"])
+    assert any(x["file"] == r["file"] for x in call(url + "/api/outputs?name=wm")["files"])
 
 
 def test_water_dxf_export(server):
@@ -441,12 +441,12 @@ def test_water_dxf_export(server):
     url, tmp = server
     with open(SAMPLE, encoding="utf-8") as fh:
         kml = fh.read()
-    assert call(url + "/api/w/layout", {"name": "wx", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100})["ok"]
-    r = call(url + "/api/w/water_export", {"name": "wx"})
+    assert call(url + "/api/layout", {"name": "wx", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100})["ok"]
+    r = call(url + "/api/water_export", {"name": "wx"})
     assert not r["ok"] and "Zoning" in r["log"]                              # nothing to export yet
-    z = call(url + "/api/w/water_zoning", {"name": "wx", "pop_factor": 1.5})
+    z = call(url + "/api/water_zoning", {"name": "wx", "pop_factor": 1.5})
     assert z["ok"]
-    r = call(url + "/api/w/water_export", {"name": "wx"})
+    r = call(url + "/api/water_export", {"name": "wx"})
     assert r["ok"] and not r["counts"]["design"] and os.path.isfile(r["path"])
     doc = ezdxf.readfile(r["path"])
     layers = {e.dxf.layer for e in doc.modelspace()}
@@ -459,17 +459,17 @@ def test_water_dxf_export(server):
     assert all(e.dxf.flags & 128 and e.dxf.ltscale > 1 for e in oz + dma) and doc.header["$LWDISPLAY"] == 1
     assert {"W_OZ_DASHDOT", "W_DMA_DASHED"} <= {t.dxf.name for t in doc.linetypes} and not doc.audit().errors
     # the design's own drawing: none before a design (user request 14-Nov-2026: zoning and design kept apart)
-    r = call(url + "/api/w/water_export", {"name": "wx", "what": "design"})
+    r = call(url + "/api/water_export", {"name": "wx", "what": "design"})
     assert not r["ok"] and "Design" in r["log"]
-    r = call(url + "/api/w/water_export", {"name": "wx", "what": "zoning"})
+    r = call(url + "/api/water_export", {"name": "wx", "what": "zoning"})
     assert r["ok"] and not r["counts"]["design"] and "_zoning_" in os.path.basename(r["path"])
-    d = call(url + "/api/w/water_design", {"name": "wx", "pop_factor": 1.5})
+    d = call(url + "/api/water_design", {"name": "wx", "pop_factor": 1.5})
     assert d["ok"], d.get("log")
-    r = call(url + "/api/w/water_export", {"name": "wx"})
+    r = call(url + "/api/water_export", {"name": "wx"})
     assert r["ok"] and r["counts"]["design"] and r["counts"]["pipes"] == len(d["pipes"])
     # with a design made: the zoning's drawing still holds the zoning alone; the design's holds the design
-    rz = call(url + "/api/w/water_export", {"name": "wx", "what": "zoning"})
-    rd = call(url + "/api/w/water_export", {"name": "wx", "what": "design"})
+    rz = call(url + "/api/water_export", {"name": "wx", "what": "zoning"})
+    rd = call(url + "/api/water_export", {"name": "wx", "what": "design"})
     assert rz["ok"] and not rz["counts"]["design"] and rd["ok"] and rd["counts"]["design"]
     assert "_zoning_" in os.path.basename(rz["path"]) and "_design_" in os.path.basename(rd["path"])
     lz = {e.dxf.layer for e in ezdxf.readfile(rz["path"]).modelspace()}

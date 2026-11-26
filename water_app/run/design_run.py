@@ -1,4 +1,4 @@
-"""The water design of the map page (/api/w/water_design): pipe sizes and OHT stagings for 17 m, the OHTs moved
+"""The water design of the map page (/api/water_design): pipe sizes and OHT stagings for 17 m, the OHTs moved
 where no size helps, the stage-wise check, the PRVs, the rising mains of the new tube wells (restructure stage 2,
 15-Nov-2026: out of ui_api.py)."""
 import math

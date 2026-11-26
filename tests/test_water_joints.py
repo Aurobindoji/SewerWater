@@ -65,9 +65,9 @@ def test_import_option_and_the_button_with_undo(server, tmp_path):  # noqa: F811
     make_dxf(src)                              # MH-1 - MH-2 - MH-6, and MH-2 - MH-3 - MH-4 - MH-5 (MH-3, MH-4 between)
     netedit._UNDO.clear()
     req = {"path": src, "pipe_layers": ["PIPE"], "mh_layers": ["MH"], "level_layers": ["GL"], "epsg": "local"}
-    plain = call(url + "/api/w/dxf_import", dict(req, name="as_drawn"))
+    plain = call(url + "/api/dxf_import", dict(req, name="as_drawn"))
     assert plain["ok"] and plain["summary"]["manholes"] == 6 and plain["summary"]["conduits"] == 5
-    d = call(url + "/api/w/dxf_import", dict(req, name="joints", joints_only=True))
+    d = call(url + "/api/dxf_import", dict(req, name="joints", joints_only=True))
     assert d["ok"] and d["summary"]["manholes"] == 4 and d["summary"]["conduits"] == 3
     assert "junctions only where pipes join: 2 junctions" in d["log"]
     long = max(d["conduits"], key=lambda c: c["len"])
@@ -75,9 +75,9 @@ def test_import_option_and_the_button_with_undo(server, tmp_path):  # noqa: F811
     # the same on a network imported as drawn, by the button; a tube well on MH-3 keeps it; undo brings all back
     with open(tmp / "w_projects" / "as_drawn.tw.json", "w", encoding="utf-8") as fh:
         json.dump([{"latlng": plain["nodes"]["MH-3"]["latlng"], "props": {}}], fh)
-    r = call(url + "/api/w/net_joints", {"name": "as_drawn"})
+    r = call(url + "/api/net_joints", {"name": "as_drawn"})
     assert r["ok"] and r["removed"] == 1 and sorted(r["nodes"]) == ["MH-1", "MH-2", "MH-3", "MH-5", "MH-6"]
-    assert call(url + "/api/w/net_joints", {"name": "as_drawn"})["removed"] == 0
-    back = call(url + "/api/w/net_undo", {"name": "as_drawn"})                 # the second press changed nothing
-    back = call(url + "/api/w/net_undo", {"name": "as_drawn"})
+    assert call(url + "/api/net_joints", {"name": "as_drawn"})["removed"] == 0
+    back = call(url + "/api/net_undo", {"name": "as_drawn"})                 # the second press changed nothing
+    back = call(url + "/api/net_undo", {"name": "as_drawn"})
     assert back["summary"]["manholes"] == 6 and back["summary"]["conduits"] == 5

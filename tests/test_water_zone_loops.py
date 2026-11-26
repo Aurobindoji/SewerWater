@@ -82,7 +82,7 @@ def test_loops_from_the_page_and_the_question(server):  # noqa: F811
     url, _ = server
     with open(SAMPLE, encoding="utf-8") as fh:
         kml = fh.read()
-    r = call(url + "/api/w/layout", {"name": "wl", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100})
+    r = call(url + "/api/layout", {"name": "wl", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100})
     lats = sorted({m["latlng"][0] for m in r["manholes"]})
     lngs = sorted({m["latlng"][1] for m in r["manholes"]})
     mid = (lngs[2] + lngs[3]) / 2                                           # a strip at the west edge
@@ -90,20 +90,20 @@ def test_loops_from_the_page_and_the_question(server):  # noqa: F811
             [lats[0] - 0.001, mid]]
     loop = {"name": "Ward A", "latlngs": ring, "on_limit": ""}
     req = {"name": "wl", "ohts": [], "pop_factor": 1, "loops": [loop]}
-    z = call(url + "/api/w/water_zoning", req)
+    z = call(url + "/api/water_zoning", req)
     assert z["ok"], z.get("log")
     x = z["loops"][0]
     assert x["name"] == "Ward A" and len(x["zones"]) == 1 and x["mode"] == "keep" and x["latlngs"] == ring
     assert x["under"] and z["loop_ask"] and z["loop_ask"][0]["name"] == "Ward A"         # under one DMA: asked
     assert any(f["text"].startswith("zone loop Ward A") for f in z["flags"])
     assert any(f["hi"].startswith("zone लूप Ward A: आबादी") for f in z["flags"])
-    m = call(url + "/api/w/water_zoning", dict(req, loops=[dict(loop, on_limit="merge")]))
+    m = call(url + "/api/water_zoning", dict(req, loops=[dict(loop, on_limit="merge")]))
     assert m["ok"] and not m["loop_ask"] and m["loops"][0]["merged_into"]
     assert len(m["zones"]) == 1
-    d = call(url + "/api/w/water_design", dict(req, loops=[dict(loop, on_limit="keep")]))
+    d = call(url + "/api/water_design", dict(req, loops=[dict(loop, on_limit="keep")]))
     assert d["ok"], d.get("log")
     assert any(c["check"] == "zone loop Ward A" for c in d["checks"]) and d["loops"][0]["answered"]
-    assert call(url + "/api/w/water_last?name=wl")["design"]["req"]["loops"][0]["on_limit"] == "keep"
+    assert call(url + "/api/water_last?name=wl")["design"]["req"]["loops"][0]["on_limit"] == "keep"
 
 
 def test_small_pieces_cut_off_by_a_loop_go_to_the_neighbour_or_into_it(crit):
@@ -128,14 +128,14 @@ def test_a_crossing_keeps_a_loop_boundary_pipe_open(server):  # noqa: F811
     url, _ = server
     with open(SAMPLE, encoding="utf-8") as fh:
         kml = fh.read()
-    r = call(url + "/api/w/layout", {"name": "wlx", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100})
+    r = call(url + "/api/layout", {"name": "wlx", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100})
     lats = sorted({m["latlng"][0] for m in r["manholes"]})
     lngs = sorted({m["latlng"][1] for m in r["manholes"]})
     mid = (lngs[len(lngs) // 2] + lngs[len(lngs) // 2 + 1]) / 2
     ring = [[lats[0] - 0.001, lngs[0] - 0.001], [lats[-1] + 0.001, lngs[0] - 0.001], [lats[-1] + 0.001, mid],
             [lats[0] - 0.001, mid]]
     req = {"name": "wlx", "ohts": [], "pop_factor": 5, "loops": [{"name": "A", "latlngs": ring, "on_limit": "keep"}]}
-    z0 = call(url + "/api/w/water_zoning", req)
+    z0 = call(url + "/api/water_zoning", req)
     n0 = z0["loops"][0]["boundary_pipes"]
     lat = None                                       # where a pipe crosses the loop's east side
     for c in r["conduits"]:
@@ -145,7 +145,7 @@ def test_a_crossing_keeps_a_loop_boundary_pipe_open(server):  # noqa: F811
         if lat is not None:
             break
     xing = {"name": "X", "latlngs": [[lat, mid - 0.0003], [lat, mid + 0.0003]]}
-    z = call(url + "/api/w/water_zoning", dict(req, crossings=[xing]))
+    z = call(url + "/api/water_zoning", dict(req, crossings=[xing]))
     assert z["ok"], z.get("log")
     assert z["loops"][0]["boundary_pipes"] == n0 - 1
     assert any("open at crossings" in f["text"] for f in z["flags"])

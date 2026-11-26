@@ -142,16 +142,16 @@ def test_design_and_dpr_with_a_tube_well(server):  # noqa: F811
     src = str(tmp / "rm.dxf")
     make_dxf(src)
     netedit._UNDO.clear()
-    d = call(url + "/api/w/dxf_import", {"path": src, "name": "wrm", "pipe_layers": ["PIPE"], "mh_layers": ["MH"],
+    d = call(url + "/api/dxf_import", {"path": src, "name": "wrm", "pipe_layers": ["PIPE"], "mh_layers": ["MH"],
                                          "level_layers": ["GL"], "epsg": "local"})
     assert d["ok"]
     a, m5 = d["nodes"]["MH-1"]["latlng"], d["nodes"]["MH-5"]["latlng"]
     req = {"name": "wrm", "pop_factor": 1, "pop_total": 1000, "base_year": 2027, "pop_initial": 600, "pop_mid": 800,
            "ohts": [{"name": "Ex-OHT-1", "lat": a[0], "lng": a[1], "existing": "1", "capacity_kl": 200, "staging_m": 20}],
            "tws": [{"name": "TW 1", "lat": m5[0], "lng": m5[1], "discharge_lpm": "1200"}]}
-    assert call(url + "/api/w/tw_save", {"name": "wrm", "tw": [{"latlng": m5, "props": {"name": "TW 1"}}]})["ok"]
-    assert call(url + "/api/w/tw?name=wrm")["tw"][0]["props"]["name"] == "TW 1"
-    r = call(url + "/api/w/water_design", req)
+    assert call(url + "/api/tw_save", {"name": "wrm", "tw": [{"latlng": m5, "props": {"name": "TW 1"}}]})["ok"]
+    assert call(url + "/api/tw?name=wrm")["tw"][0]["props"]["name"] == "TW 1"
+    r = call(url + "/api/water_design", req)
     assert r["ok"], r.get("log")
     (t,) = [x for x in r["rising"]["tws"] if x["placed"]]
     # MH-5 -> MH-4 -> MH-3 -> MH-2 -> MH-1 along the roads: 30 + 30 + 30 + 30 m
@@ -205,13 +205,13 @@ def test_a_cwr_zone_s_tube_wells_fill_the_cwr(server):  # noqa: F811
     src = str(tmp / "cwr.dxf")
     make_dxf(src)
     netedit._UNDO.clear()
-    d = call(url + "/api/w/dxf_import", {"path": src, "name": "wcwr", "pipe_layers": ["PIPE"], "mh_layers": ["MH"],
+    d = call(url + "/api/dxf_import", {"path": src, "name": "wcwr", "pipe_layers": ["PIPE"], "mh_layers": ["MH"],
                                          "level_layers": ["GL"], "epsg": "local"})
     a, m2, m5 = (d["nodes"][k]["latlng"] for k in ("MH-1", "MH-2", "MH-5"))
     req = {"name": "wcwr", "pop_factor": 1, "pop_total": 60000, "base_year": 2027, "pop_initial": 40000,
            "pop_mid": 50000, "ohts": [{"name": "OHT-1", "lat": a[0], "lng": a[1], "staging_m": 20}],
            "tws": [{"name": "TW 2", "lat": m2[0], "lng": m2[1]}, {"name": "TW 5", "lat": m5[0], "lng": m5[1]}]}
-    r = call(url + "/api/w/water_design", req)
+    r = call(url + "/api/water_design", req)
     assert r["ok"], r.get("log")
     R = r["rising"]
     assert "OHT-1" in R["cwr"]

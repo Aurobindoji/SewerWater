@@ -1,5 +1,5 @@
 """The areas of the zones (OZ / DMA) for the map and the DXF - the water module's own (it began as a copy of
-zone_regions of sewer_app/zoning.py; isolation of sewer and water, user request 21-Oct-2026: changes here do not reach
+zone_regions of sewer_app/engine/zoning.py; isolation of sewer and water, user request 21-Oct-2026: changes here do not reach
 the sewer module, nor the reverse).
 
 User request 14-Nov-2026: the boundary lines straight where they can be, no needless zig-zag -

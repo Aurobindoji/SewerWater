@@ -1,4 +1,4 @@
-"""The boundary lines of the water zones (water_app/zone_geom.py; user request 14-Nov-2026: straight where they can
+"""The boundary lines of the water zones (water_app/core/zone_geom.py; user request 14-Nov-2026: straight where they can
 be, no needless zig-zag): between two rows of points the line runs straight half way; a straightened line never
 passes a point of the network; an OZ's line is the very line of its DMAs."""
 import numpy as np

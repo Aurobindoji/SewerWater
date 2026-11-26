@@ -149,7 +149,7 @@ def serve(handler):
 def water(R, url, tmp):
     with open(SAMPLE, encoding="utf-8") as fh:
         kml = fh.read()
-    w = url + "/api/w/"
+    w = url + "/api/"
     # 1. the KML layout, the OHT on the highest ground, zoning, design, both DXFs, DPR, rate xlsx
     r = R.answer("w1_layout", R.call(w + "layout", {"name": "wg", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100}))
     m = max(r["manholes"], key=lambda x: x["gl"] or 0)
@@ -163,7 +163,7 @@ def water(R, url, tmp):
     R.files("w1_dpr", {"dpr": R.call(w + "water_dpr", {"name": "wg"}).get("path")})
     rx = R.answer("w1_rates", R.call(w + "water_rates", {"act": "export", "name": "wg"}))
     R.files("w1_rates", {"xlsx": rx.get("path")})
-    R.answer("w1_last", R.call(url + "/api/w/water_last?name=wg"))
+    R.answer("w1_last", R.call(url + "/api/water_last?name=wg"))
     # 2. an existing OHT in a corner (new ones proposed), stages, tube wells, Intze drawings of a new tank
     c = min(r["manholes"], key=lambda x: x["latlng"][0] + x["latlng"][1])
     old = {"name": "OLD-1", "lat": c["latlng"][0], "lng": c["latlng"][1], "capacity_kl": 300, "staging_m": 22,
@@ -224,7 +224,7 @@ def water(R, url, tmp):
     d = R.answer("w5_design_loop", R.call(w + "water_design", ql))
     R.files("w5_design", d.get("files") or {})
     water_more(R, url, w, kml, path)
-    R.answer("w_projects", R.call(url + "/api/w/projects"))
+    R.answer("w_projects", R.call(url + "/api/projects"))
 
 
 def _outputs(r):
@@ -238,21 +238,21 @@ def water_more(R, url, w, kml, path):
     """Stage 0 of the rewrite (26-Nov-2026): the calls the scenarios above did not make - saved projects and lists,
     the DXF dialog's calls, network corrections, simulation, the map export, rate import / reset, the outputs."""
     R.answer("w6_save", R.call(w + "save", {"name": "wk", "kml": kml}))
-    R.answer("w6_project", R.call(url + "/api/w/project?name=wk"))
+    R.answer("w6_project", R.call(url + "/api/project?name=wk"))
     R.answer("w6_list_save", R.call(w + "barriers_save", {"name": "wk", "barriers": [{"name": "B", "latlngs": [[1, 2], [3, 4]]}]}))
-    R.answer("w6_list", R.call(url + "/api/w/barriers?name=wk"))
+    R.answer("w6_list", R.call(url + "/api/barriers?name=wk"))
     R.answer("w6_layers", R.call(w + "dxf_layers", {"path": path}))
     R.answer("w6_preview", R.call(w + "dxf_preview", {"path": path, "layer": "PIPE", "epsg": "local"}))
     R.answer("w6_gl_options", R.call(w + "dxf_gl_options", {"path": path, "pipe_layers": ["PIPE"], "mh_layers": ["MH"]}))
     R.answer("w6_netpreview", R.call(w + "dxf_netpreview", {"path": path, "pipe_layers": ["PIPE"], "mh_layers": ["MH"],
                                                             "level_layers": ["GL"], "epsg": "local"}))
     R.answer("w6_missing", R.call(w + "dxf_layers", {"path": path + ".none"}))
-    R.answer("w6_net", R.call(url + "/api/w/net?name=ws"))
+    R.answer("w6_net", R.call(url + "/api/net?name=ws"))
     R.answer("w6_edit", R.call(w + "net_edit", {"name": "ws", "ops": [{"op": "set_gl", "mh": "MH-3", "gl": 85.05}]}))
     R.answer("w6_edit_bad", R.call(w + "net_edit", {"name": "ws", "ops": [{"op": "rename", "mh": "MH-6", "to": "MH-1"}]}))
     R.answer("w6_undo", R.call(w + "net_undo", {"name": "ws"}))
     R.answer("w6_repair", R.call(w + "net_repair", {"name": "ws"}))
-    R.answer("w6_sim_info", R.call(url + "/api/w/water_sim_info?name=wg"))
+    R.answer("w6_sim_info", R.call(url + "/api/water_sim_info?name=wg"))
     R.answer("w6_sim_ssa", R.call(w + "water_sim", {"name": "wg", "mode": "ssa"}))
     R.answer("w6_sim_eps", R.call(w + "water_sim", {"name": "wg", "mode": "eps"}))
     m = R.call(w + "water_map", {"name": "wg", "fmt": "kml"})
@@ -265,7 +265,7 @@ def water_more(R, url, w, kml, path):
     R.answer("w6_rates_import", R.call(w + "water_rates", {"act": "import", "file": "rates.xlsx", "b64": b64}))
     R.answer("w6_rates_status", R.call(w + "water_rates", {"act": "status"}))
     R.answer("w6_rates_reset", R.call(w + "water_rates", {"act": "reset"}))
-    R.answer("w6_outputs", _outputs(R.call(url + "/api/w/outputs?name=wg")))
+    R.answer("w6_outputs", _outputs(R.call(url + "/api/outputs?name=wg")))
 
 
 def sewer_more(R, url, s, kml, tmp):

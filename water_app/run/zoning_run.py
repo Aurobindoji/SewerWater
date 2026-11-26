@@ -1,4 +1,4 @@
-"""The water zoning of the map page (/api/w/water_zoning, /api/w/water_join_plan): the network as cut at the barrier
+"""The water zoning of the map page (/api/water_zoning, /api/water_join_plan): the network as cut at the barrier
 lines and zone loops, its population (wards / total / bulk consumers), the OHTs, the OZs and DMAs and their
 checks (restructure stage 2, 15-Nov-2026: out of ui_api.py)."""
 import collections

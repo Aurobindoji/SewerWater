@@ -125,13 +125,13 @@ def wsrv(tmp_path, monkeypatch):
 
 def test_water_stages(wsrv):
     server = wsrv
-    r = call(server + "/api/w/layout", {"name": "w", "kml": kml(), "gl_mode": "spots", "snap": 1, "spacing": 100})
+    r = call(server + "/api/layout", {"name": "w", "kml": kml(), "gl_mode": "spots", "snap": 1, "spacing": 100})
     assert r["ok"], r["log"]
     m = max(r["manholes"], key=lambda x: x["gl"] or 0)
     oht = {"name": "OHT-1", "lat": m["latlng"][0], "lng": m["latlng"][1], "capacity_kl": "", "staging_m": 22}
     req = {"name": "w", "ohts": [oht], "pop_factor": 1.5}
-    assert call(server + "/api/w/water_zoning", req)["ok"]
-    d = call(server + "/api/w/water_design", dict(req, base_year="2027", pop_initial=9000, pop_mid=11000))
+    assert call(server + "/api/water_zoning", req)["ok"]
+    d = call(server + "/api/water_design", dict(req, base_year="2027", pop_initial=9000, pop_mid=11000))
     assert d["ok"], d.get("log")
     st = d["stages"]
     assert [(x["year"], x["pop"]) for x in st] == [(2027, 9000), (2042, 11000), (2057, 13500)]
@@ -145,7 +145,7 @@ def test_water_stages(wsrv):
     assert all(p["v_init"] <= p["v"] + 1e-6 for p in d["pipes"] if "v_init" in p)
     wb = openpyxl.load_workbook(d["files"]["excel"], read_only=True)
     assert "Stages" in wb.sheetnames
-    last = call(server + "/api/w/water_last?name=w")
+    last = call(server + "/api/water_last?name=w")
     assert last["design"]["req"]["pop_mid"] == 11000 and len(last["design"]["stages"]) == 3
-    plain = call(server + "/api/w/water_design", req)
+    plain = call(server + "/api/water_design", req)
     assert plain["ok"] and plain["stages"] == []

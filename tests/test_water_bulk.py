@@ -33,14 +33,14 @@ def test_bulk_consumer_on_a_dxf_network(server, tmp_path):  # noqa: F811
     src = str(tmp / "small.dxf")
     make_dxf(src)
     netedit._UNDO.clear()
-    d = call(url + "/api/w/dxf_import", {"path": src, "name": "wbk", "pipe_layers": ["PIPE"], "mh_layers": ["MH"],
+    d = call(url + "/api/dxf_import", {"path": src, "name": "wbk", "pipe_layers": ["PIPE"], "mh_layers": ["MH"],
                                          "level_layers": ["GL"], "epsg": "local"})
     assert d["ok"]
     a, m3 = d["nodes"]["MH-1"]["latlng"], d["nodes"]["MH-3"]["latlng"]
     oht = {"name": "Prop-OHT-1", "lat": a[0], "lng": a[1], "existing": "0", "capacity_kl": "", "staging_m": ""}
     req = {"name": "wbk", "ohts": [oht], "pop_factor": 1, "pop_total": 1500}
-    z0 = call(url + "/api/w/water_zoning", req)
-    w0 = call(url + "/api/w/water_design", req)
+    z0 = call(url + "/api/water_zoning", req)
+    w0 = call(url + "/api/water_design", req)
     assert z0["ok"] and w0["ok"], (z0.get("log"), w0.get("log"))
     # no fire demand in the network's flow (user decision 30-Oct-2026): domestic x 1.10 + floating only; the fire held
     # in the OHT (its capacity: the zoning's demand has it)
@@ -52,7 +52,7 @@ def test_bulk_consumer_on_a_dxf_network(server, tmp_path):  # noqa: F811
             {"name": "Far", "lat": m3[0] + 0.01, "lng": m3[1], "kld": 10, "peak": ""},
             {"name": "Nothing", "lat": m3[0], "lng": m3[1], "kld": "", "peak": 2}]                # no KLD: left out
     req = dict(req, bulk=bulk)
-    z = call(url + "/api/w/water_zoning", req)
+    z = call(url + "/api/water_zoning", req)
     assert z["ok"], z.get("log")
     assert [(b["name"], b["peak"]) for b in z["bulk_pts"]] == [("Hospital", 3.0), ("Far", 2.5)]
     assert z["bulk_pts"][0]["node"] == "MH-3" and z["bulk_pts"][1]["dist_m"] > 200
@@ -68,8 +68,8 @@ def test_bulk_consumer_on_a_dxf_network(server, tmp_path):  # noqa: F811
     oz = z["zones"][0]
     assert oz["area_ha"] > 0 and oz["density"] == pytest.approx(oz["population"] / oz["area_ha"], rel=0.01)
     assert all(x["area_ha"] > 0 and x["density"] > 0 for x in z["dmas"])
-    assert call(url + "/api/w/water_last?name=wbk")["zoning"]["req"]["bulk"][0]["name"] == "Hospital"
-    w = call(url + "/api/w/water_design", req)
+    assert call(url + "/api/water_last?name=wbk")["zoning"]["req"]["bulk"][0]["name"] == "Hospital"
+    w = call(url + "/api/water_design", req)
     assert w["ok"], w.get("log")
     # the average demand + the bulk KLD with losses; at MH-3 the hospital at its own peak factor 3
     assert w["summary"]["demand_avg_lps"] == pytest.approx(w0["summary"]["demand_avg_lps"] + 231.0 / 86.4, abs=0.02)
@@ -88,8 +88,8 @@ def test_bulk_consumer_on_a_dxf_network(server, tmp_path):  # noqa: F811
     assert "BULK / INSTITUTIONAL CONSUMERS" in listed and "Hospital" in listed and "Far" in listed
     # kept with a DXF project, as its OHTs
     keep = [{"latlng": [m3[0], m3[1]], "props": {"name": "Hospital", "kld": "200", "peak": "3"}}]
-    assert call(url + "/api/w/bulk_save", {"name": "wbk", "bulk": keep})["ok"]
-    assert call(url + "/api/w/bulk?name=wbk")["bulk"] == keep
+    assert call(url + "/api/bulk_save", {"name": "wbk", "bulk": keep})["ok"]
+    assert call(url + "/api/bulk?name=wbk")["bulk"] == keep
 
 
 def test_a_bulk_point_of_the_kml_is_no_spot_level(server):  # noqa: F811
@@ -97,11 +97,11 @@ def test_a_bulk_point_of_the_kml_is_no_spot_level(server):  # noqa: F811
     with open(SAMPLE, encoding="utf-8") as fh:
         kml = fh.read()
     lay = {"gl_mode": "spots", "snap": 1, "spacing": 100}
-    r0 = call(url + "/api/w/layout", dict(lay, name="wkb0", kml=kml))
+    r0 = call(url + "/api/layout", dict(lay, name="wkb0", kml=kml))
     m = r0["manholes"][0]["latlng"]
     pt = (f'<Folder><name>Bulk consumers</name><Placemark><name>Hospital 2</name><ExtendedData><Data name="kind"><value>'
           f'bulk</value></Data><Data name="kld"><value>200</value></Data></ExtendedData><Point><coordinates>{m[1]},{m[0]},0'
           f'</coordinates></Point></Placemark></Folder>')
-    r1 = call(url + "/api/w/layout", dict(lay, name="wkb1", kml=kml.replace("</Document>", pt + "</Document>")))
+    r1 = call(url + "/api/layout", dict(lay, name="wkb1", kml=kml.replace("</Document>", pt + "</Document>")))
     assert r0["ok"] and r1["ok"], r1.get("log")
     assert [x["gl"] for x in r1["manholes"]] == [x["gl"] for x in r0["manholes"]]   # "Hospital 2" is no GL of 2 m

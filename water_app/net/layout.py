@@ -1,4 +1,4 @@
-"""WATER MODULE COPY of sewer_app/layout.py (isolation of sewer and water, user request 21-Oct-2026): changes here do not\nreach the sewer module, nor the reverse. Water rules are written in directly (a water main network keeps its loops\nand has no outfalls)."""
+"""WATER MODULE COPY of sewer_app/net/layout.py (isolation of sewer and water, user request 21-Oct-2026): changes here do not\nreach the sewer module, nor the reverse. Water rules are written in directly (a water main network keeps its loops\nand has no outfalls)."""
 """Sewer layout from roads (PFR): a manhole at every road junction, road end and bend (CPHEEO: a sewer is laid
 straight between manholes, a change of direction needs a manhole) and at most max_spacing apart along the roads, a
 sewer along every road centreline. The network is then zoned and designed like a drawn one (the

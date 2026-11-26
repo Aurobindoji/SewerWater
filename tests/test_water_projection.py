@@ -64,23 +64,23 @@ def test_zoning_and_design_on_a_projection(server):  # noqa: F811
     src = str(tmp / "small.dxf")
     make_dxf(src)
     netedit._UNDO.clear()
-    d = call(url + "/api/w/dxf_import", {"path": src, "name": "wpj", "pipe_layers": ["PIPE"], "mh_layers": ["MH"],
+    d = call(url + "/api/dxf_import", {"path": src, "name": "wpj", "pipe_layers": ["PIPE"], "mh_layers": ["MH"],
                                          "level_layers": ["GL"], "epsg": "local"})
     assert d["ok"]
     a = d["nodes"]["MH-1"]["latlng"]
     oht = {"name": "Prop-OHT-1", "lat": a[0], "lng": a[1], "existing": "0", "capacity_kl": "", "staging_m": ""}
     pj = {"base_pop": "1200", "census": "1991 800, 2001 950, 2011 1100", "method": ""}
-    prev = call(url + "/api/w/projection", {"base_year": 2027, "projection": pj})
+    prev = call(url + "/api/projection", {"base_year": 2027, "projection": pj})
     assert prev["ok"] and prev["projection"]["adopted"] == "geometrical"
     f = prev["projection"]
     # the factor, the total and the stages of the page are not used: the projection's
     req = {"name": "wpj", "ohts": [oht], "pop_factor": 9, "pop_total": 99, "base_year": 2027, "pop_initial": 5,
            "pop_mid": 7, "projection": pj}
-    z = call(url + "/api/w/water_zoning", req)
+    z = call(url + "/api/water_zoning", req)
     assert z["ok"], z.get("log")
     assert z["population"] == pytest.approx(f["pop"]["ult"], abs=1) and z["projection"]["adopted"] == "geometrical"
     assert any(x["text"].startswith("population projection - Geometrical Increase Method") for x in z["flags"])
-    w = call(url + "/api/w/water_design", req)
+    w = call(url + "/api/water_design", req)
     assert w["ok"], w.get("log")
     st = {s["stage"]: s for s in w["stages"]}
     assert st["init"]["pop"] == pytest.approx(1200, abs=1) and st["mid"]["pop"] == pytest.approx(f["pop"]["mid"], abs=1)
@@ -97,10 +97,10 @@ def test_zoning_and_design_on_a_projection(server):  # noqa: F811
     assert any(v.startswith("=$C$") and "*(1+$F$" in v for v in formulas)                     # Pc (1 + r)^n
     assert any(v.startswith("=CEILING($D$") and "/D" in v for v in formulas)                   # P0 x T / T(base)
     assert any(v.startswith("=SLOPE(G") for v in formulas) and any("=PRODUCT(F" in v for v in formulas)
-    last = call(url + "/api/w/water_last?name=wpj")["design"]["req"]
+    last = call(url + "/api/water_last?name=wpj")["design"]["req"]
     assert last["projection"]["census"] == pj["census"]
     # no census: as before (the factor and the total of the page)
-    z0 = call(url + "/api/w/water_zoning", dict(req, projection={"base_pop": "1200", "census": ""}, pop_factor=2,
+    z0 = call(url + "/api/water_zoning", dict(req, projection={"base_pop": "1200", "census": ""}, pop_factor=2,
                                                  pop_total=500))
     assert z0["ok"] and z0["population"] == 1000 and z0["projection"] is None
 

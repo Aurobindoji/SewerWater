@@ -5,7 +5,6 @@ function status(msg, cls) { const s = $("status"); s.textContent = msg; s.classN
 // the run's token the server wrote into this page (rewrite stage 1, 26-Nov-2026): every POST carries it
 const APP_TOKEN = (document.querySelector('meta[name="app-token"]') || {}).content || "";
 async function api(path, body) {
-  if (path.startsWith("/api/")) path = "/api/w/" + path.slice(5);
   const r = await fetch(path, body ? { method: "POST", headers: { "Content-Type": "application/json", "X-App-Token": APP_TOKEN }, body: JSON.stringify(body) } : {});
   return r.json();
 }

@@ -1,4 +1,4 @@
-"""WATER MODULE COPY of sewer_app/network.py (isolation of sewer and water, user request 21-Oct-2026): changes here do not\nreach the sewer module, nor the reverse. Water rules are written in directly (a water main network keeps its loops\nand has no outfalls)."""
+"""WATER MODULE COPY of sewer_app/core/network.py (isolation of sewer and water, user request 21-Oct-2026): changes here do not\nreach the sewer module, nor the reverse. Water rules are written in directly (a water main network keeps its loops\nand has no outfalls)."""
 """Sewer network as plain Python data - replaces the SewerGEMS model of the original scripts.
 
     net = read_extract_csv(manholes_csv, conduits_csv, outfalls=["O-1"])

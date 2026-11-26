@@ -136,10 +136,6 @@ def q(name):
     return "'" + name.replace("'", "''") + "'" if re.search(r"[^A-Za-z0-9_]", name) else name
 
 
-def _natural(s):
-    return [int(t) if t.isdigit() else t for t in re.split(r"(\d+)", str(s))]
-
-
 def size_key(name):
     """'HDPE 110' -> ('HDPE', 110)."""
     m = re.match(r"([A-Za-z]+)\s*(\d+)", name or "")

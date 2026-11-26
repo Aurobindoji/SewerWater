@@ -1,4 +1,4 @@
-"""WATER MODULE COPY of sewer_app/repair.py (isolation of sewer and water, user request 21-Oct-2026): changes here do not\nreach the sewer module, nor the reverse. Water rules are written in directly (a water main network keeps its loops\nand has no outfalls)."""
+"""WATER MODULE COPY of sewer_app/net/repair.py (isolation of sewer and water, user request 21-Oct-2026): changes here do not\nreach the sewer module, nor the reverse. Water rules are written in directly (a water main network keeps its loops\nand has no outfalls)."""
 """Check and repair a sewer network read from a drawing, before zoning / design (user decision 12-Oct-2026: start
 the design work with the network problems of the DXF).
 

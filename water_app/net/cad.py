@@ -1,4 +1,4 @@
-"""WATER MODULE COPY of sewer_app/cad.py (isolation of sewer and water, user request 21-Oct-2026): changes here do not\nreach the sewer module, nor the reverse. Water rules are written in directly (a water main network keeps its loops\nand has no outfalls)."""
+"""WATER MODULE COPY of sewer_app/out/cad.py (isolation of sewer and water, user request 21-Oct-2026): changes here do not\nreach the sewer module, nor the reverse. Water rules are written in directly (a water main network keeps its loops\nand has no outfalls)."""
 """CAD drawing (DXF) of a designed sewer, with the design values next to every element:
     manhole : label, GL (ground level), IL (invert level) and D (depth = GL - IL)
     conduit : label, diameter, slope (1:N) and length - along the pipe, and a flow arrow

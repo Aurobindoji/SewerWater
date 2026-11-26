@@ -14,19 +14,19 @@ def test_names(server):  # noqa: F811
     url, tmp = server
     with open(SAMPLE, encoding="utf-8") as fh:
         kml = fh.read()
-    r = call(url + "/api/w/layout", {"name": "wp", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100})
+    r = call(url + "/api/layout", {"name": "wp", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100})
     assert all(m["label"].startswith("J-") for m in r["manholes"]) and all(c["label"].startswith("P-") for c in r["conduits"])
-    r = call(url + "/api/w/layout", {"name": "wp", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100,
+    r = call(url + "/api/layout", {"name": "wp", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100,
                                      "node_prefix": "N-", "pipe_prefix": "L-"})
     assert all(m["label"].startswith("N-") for m in r["manholes"]) and all(c["label"].startswith("L-") for c in r["conduits"])
-    bad = call(url + "/api/w/layout", {"name": "wp", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100,
+    bad = call(url + "/api/layout", {"name": "wp", "kml": kml, "gl_mode": "spots", "snap": 1, "spacing": 100,
                                        "node_prefix": "1 x;", "pipe_prefix": ""})        # not a prefix: the default
     assert all(m["label"].startswith("J-") for m in bad["manholes"]) and all(c["label"].startswith("P-") for c in bad["conduits"])
     # a DXF import with the sewer's names in the water module: kept, not renamed to P- / J-G when opened again
     netedit._UNDO.clear()
     src = str(tmp / "small.dxf")
     make_dxf(src)
-    d = call(url + "/api/w/dxf_import", {"path": src, "name": "wpx", "pipe_layers": ["PIPE"], "mh_layers": ["MH"],
+    d = call(url + "/api/dxf_import", {"path": src, "name": "wpx", "pipe_layers": ["PIPE"], "mh_layers": ["MH"],
                                          "level_layers": ["GL"], "epsg": "local", "node_prefix": "MH-", "pipe_prefix": "CO-"})
     assert d["ok"] and all(c["label"].startswith("CO-") for c in d["conduits"])
     netedit._RENAME_SEEN.clear()

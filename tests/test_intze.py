@@ -1,4 +1,4 @@
-"""Intze OHT design and drawings (water_app/intze.py, intze_dwg.py, intze_api.py): the shape, sections and the
+"""Intze OHT design and drawings (water_app/intze/design/, intze_dwg.py, intze_api.py): the shape, sections and the
 annular raft of the user's example of 10-Nov-2026 (Brookfield Consultants, 2700 KL on 24 m, zone 14 Greenfield, Springfield)."""
 import math
 

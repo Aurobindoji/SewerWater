@@ -1,4 +1,4 @@
-"""WATER MODULE COPY of sewer_app/dxf_inspect.py (isolation of sewer and water, user request 21-Oct-2026): changes here do not\nreach the sewer module, nor the reverse. Water rules are written in directly (a water main network keeps its loops\nand has no outfalls)."""
+"""WATER MODULE COPY of sewer_app/net/dxf_inspect/ (isolation of sewer and water, user request 21-Oct-2026): changes here do not\nreach the sewer module, nor the reverse. Water rules are written in directly (a water main network keeps its loops\nand has no outfalls)."""
 """
 dxf_inspect.py - reading a CAD drawing (DXF / DWG) for the water network import (dxf_extract, netedit): entities,
 text kinds, joining lines into a network, its checks, ground levels per junction.
